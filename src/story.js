@@ -75,7 +75,7 @@ export const CHAPTERS = [
       'No soldiers seem to be on guard. The Palace Museum scholar Yu Hui reads the open, unguarded gate as one of the picture’s quiet warnings; others see simply a city at peace.',
     ],
     shots: [{ focus: [6380, 0, 8150, 1480], points: [
-      { at: [7420, 1190], r: 100, label: 'A camel caravan', dir: [1, 1] },
+      { at: [7462, 1212], r: 95, label: 'A camel caravan', dir: [1, 1] },
       { at: [7000, 330], r: 320, label: 'The gate tower', dir: [1, -1] },
     ] }],
   },
@@ -106,12 +106,23 @@ export const CHAPTERS = [
 ];
 
 export const OUTRO = {
-  zh: '卷终',
+  zh: '全卷',
   en: 'The whole scroll',
-  body: [
-    'Hundreds of people, with their animals, boats, carts and sedans. Counts run from about 500 to more than 800, depending on who counts and how.',
-    'Image: the Palace Museum scroll, from a public-domain scan on Wikimedia Commons.',
+  body: ['Seven scenes along 528.7 cm of silk; the seals mark where each one sits.'],
+  hint: 'Keep scrolling to roll it back up.',
+};
+
+// After the whole scroll, it rolls back up and these notes close the reading.
+export const CLOSING = {
+  zh: '卷终',
+  en: 'Rolled up again',
+  notes: [
+    { title: 'A day in five metres', body: 'In 528.7 centimetres the scroll walks from quiet fields, past the grain boats and the Rainbow Bridge, through the city gate and into the streets. Counts of the people in it run from about 500 to more than 800. Its subject is not an event but an ordinary day.' },
+    { title: 'Spring or autumn?', body: 'The traditional reading takes 清明 as the spring festival, and the willow on the sedan chair supports it. In 1981 Kong Xianyi argued for autumn instead, pointing to the charcoal coming into town and taverns selling new wine. Others read 清明 as a ward of Kaifeng, or as praise of a well-governed age. The question is still open.' },
+    { title: 'Prosperity or warning?', body: 'Most viewers see a capital at its height. Yu Hui of the Palace Museum also reads worries in it: the boat about to strike the bridge, the slack defences at the gate and, near the end, people consulting a doctor and a fortune-teller. Kaifeng fell to the Jurchen Jin in 1127, within a generation of the painting.' },
+    { title: 'The scroll’s own journey', body: 'A handscroll is made to be rolled up and carried, and this one passed through imperial and private hands for eight centuries. Puyi, the last emperor, took it out of the Forbidden City; after his state in Manchuria collapsed in 1945 it lay unrecognised among the paintings he left behind. Yang Renkai identified it in 1950. Back in the Palace Museum, it is unrolled only rarely: in 2025 it went on show for the first time in ten years.' },
   ],
+  coda: 'Its crowds have been animated before: the China Pavilion at the 2010 Shanghai Expo showed a 128-metre moving version. Here they move more quietly, with the painting’s own brushwork nudged a few pixels at a time.',
 };
 
 export const SOURCES = [
@@ -125,4 +136,11 @@ export const SOURCES = [
   ['吴钩：小市酒旗能唤客——宋朝的广告与商标 — rujiazg.com', 'https://www.rujiazg.com/article/3505'],
   ['On 赵太丞家 and Song medicine — rujiazg.com', 'https://www.rujiazg.com/article/18407'],
   ['On Yu Hui’s reading of the unguarded gate — The Paper (澎湃新闻)', 'https://www.thepaper.cn/newsDetail_forward_23508581'],
+  ['Yu Hui on the painting’s hidden worries — China News Service “东西问”, 2 January 2025', 'https://www.chinanews.com.cn/dxw/2025/01-02/10346759.shtml'],
+  ['On the season and the meaning of 清明, and Kong Xianyi’s autumn reading — The Paper (澎湃新闻)', 'https://www.thepaper.cn/newsDetail_forward_1317282'],
+  ['On Yang Renkai identifying the scroll — 中国作家网, 2024', 'https://www.chinawriter.com.cn/n1/2024/1217/c419382-40383569.html'],
+  ['Tsuji, on the Beijing scroll’s discovery (1950) and first display (1953) — Journal of Global Studies, Doshisha University', 'https://global-studies.doshisha.ac.jp/file/JGSvol.14%20(8Tsuji).pdf'],
+  ['On the 2025 display, the first in ten years — China Daily, 30 September 2025', 'https://global.chinadaily.com.cn/a/202509/30/WS68db150da310f735438b3095.html'],
+  ['China pavilion at Expo 2010 — Wikipedia', 'https://en.wikipedia.org/wiki/China_pavilion_at_Expo_2010'],
+  ['Jingkang incident (the fall of Kaifeng, 1127) — Wikipedia', 'https://en.wikipedia.org/wiki/Jingkang_incident'],
 ];

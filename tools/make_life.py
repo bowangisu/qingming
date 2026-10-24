@@ -7,7 +7,8 @@ px) is cut down to the brushwork inside it, so bare silk stays still and only th
   mask "fill"  (figures, default for gait and rock): the ink lines, with the shapes they enclose filled in
   mask "ink"   (branches, default for wind): the ink lines only
   mask "shape" (a whole boat): the shape as drawn
-The mask is feathered, drawn at half resolution and packed into one greyscale atlas. Flocks (birds drawn for this page)
+Outlines under "still" (the bridge) are cut out of every rig, so the boat can rock under the bridge while the bridge
+stays put. The mask is feathered, drawn at half resolution and packed into one greyscale atlas. Flocks (birds drawn for this page)
 are copied through unchanged.
 Writes assets/life-atlas.png and assets/life.json.
 Usage: python3 tools/make_life.py life/rigs.json source/Alongtheriver_QingMing.jpg assets
@@ -52,6 +53,7 @@ def brushwork(master, box, kind):
 def main(src, master_path, out):
     spec = json.loads(Path(src).read_text())
     master = Image.open(master_path)
+    still = [[tuple(p) for p in z['poly']] for z in spec.get('still', [])]
     masks = []
     for r in spec['rigs']:
         pts, f = shape_points(r), r.get('feather', 8)
@@ -64,6 +66,11 @@ def main(src, master_path, out):
             full = ImageChops.multiply(full, brushwork(master, (x0, y0, x1, y1), kind))
         w, h = max(2, round((x1 - x0) * SCALE)), max(2, round((y1 - y0) * SCALE))
         m = full.resize((w, h), Image.BOX).filter(ImageFilter.GaussianBlur(f * SCALE * .5))
+        if still:   # cut back from anything that must stay put, with a short ramp so the seam doesn't tear
+            hold = Image.new('L', (x1 - x0, y1 - y0), 0)
+            for poly in still: ImageDraw.Draw(hold).polygon([(x - x0, y - y0) for x, y in poly], fill=255)
+            hold = hold.filter(ImageFilter.MaxFilter(9)).resize((w, h), Image.BOX).filter(ImageFilter.GaussianBlur(2))
+            m = ImageChops.multiply(m, ImageChops.invert(hold))
         masks.append((r, (x0, y0, x1, y1), m))
     # shelf packing, tallest first
     order = sorted(range(len(masks)), key=lambda i: -masks[i][2].height)

@@ -127,6 +127,29 @@ body.opened #top .home { opacity: 1; }
 #outro .actions button { background: none; border: 0; border-bottom: 1px solid rgba(194, 67, 44, .8); padding: 3px 0; cursor: pointer; font-size: 16px; }
 #outro .actions button:hover { color: #fff; }
 
+#outro .hint { display: inline-flex; gap: 12px; align-items: baseline; margin-top: 10px; color: var(--silk); }
+#outro .hint .arrow { color: var(--cinnabar); font-size: 20px; animation: nudge-r 2.4s ease-in-out infinite; }
+@keyframes nudge-r { 50% { translate: 8px 0; } }
+
+/* ------------------------------------------------------------------ closed again: the closing notes */
+#closing {
+  position: fixed; z-index: 2; left: var(--gut-l); top: 50%; translate: 0 -50%; width: min(820px, 60vw);
+  padding-left: clamp(0px, 3vw, 40px); box-sizing: border-box; opacity: 0; visibility: hidden;
+}
+#closing h2 { margin: 0 0 22px; display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; font-weight: 400; }
+#closing h2 .zh { font-size: clamp(40px, 4.4vw, 60px); line-height: 1; letter-spacing: .06em; }
+#closing h2 .en { font-style: italic; font-size: clamp(19px, 1.7vw, 23px); }
+#closing .notes { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 36px; }
+#closing .note { min-width: 0; padding-top: 12px; border-top: 1px solid rgba(159, 177, 167, .35); }
+#closing .note h3 { margin: 0 0 6px; font-weight: 500; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--silk-dim); }
+#closing .note p { margin: 0; font-size: 15.5px; line-height: 1.55; text-wrap: pretty; }
+#closing .end { margin-top: 24px; }
+#closing .coda { margin: 0 0 14px; max-width: 46em; font-style: italic; color: var(--silk-dim); font-size: 15.5px; line-height: 1.5; }
+#closing .actions { display: flex; flex-wrap: wrap; gap: 12px 28px; margin: 0; }
+#closing .actions button { background: none; border: 0; border-bottom: 1px solid rgba(194, 67, 44, .8); padding: 3px 0; cursor: pointer; font-size: 16px; }
+#closing .actions button:hover { color: #fff; }
+@media (max-height: 760px) and (min-width: 720px) { #closing .note p { font-size: 14.5px; line-height: 1.5; } #closing h2 { margin-bottom: 14px; } }
+
 /* ------------------------------------------------------------------ the strip map */
 #map {
   position: fixed; z-index: 3; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); translate: -50% 0;
@@ -171,7 +194,7 @@ body.ready #loader { opacity: 0; visibility: hidden; }
 .noscript { position: fixed; inset: 40% 0 auto; text-align: center; }
 
 /* ------------------------------------------------------------------ narrow screens: painting above, text below */
-body.portrait #intro, body.portrait .panel, body.portrait #outro {
+body.portrait #intro, body.portrait .panel, body.portrait #outro, body.portrait #closing {
   left: 0; right: 0; top: calc(var(--band-h) + 50px); bottom: 0; translate: none; width: auto; display: block;
   padding: 6px var(--gut-r) calc(14px + env(safe-area-inset-bottom, 0px)) var(--gut-l); background: none; text-align: left;
 }
@@ -192,7 +215,15 @@ body.portrait .panel[data-stagger="1"] .body p { grid-area: 1 / 1; margin: 0; }
 body.portrait #outro h2 .zh { font-size: 30px; }
 body.portrait #outro h2 .en { font-size: 18px; }
 body.portrait #outro p { font-size: 15px; }
-body.portrait #outro .actions { justify-content: flex-start; }
+body.portrait #closing { top: calc(var(--band-h) + 8px); display: grid; grid-template-rows: auto 1fr; align-content: start; }
+body.portrait #closing .notes, body.portrait #closing .end { grid-row: 2; grid-column: 1; align-self: start; }
+body.portrait #closing h2 { margin-bottom: 12px; }
+body.portrait #closing h2 .zh { font-size: 34px; }
+body.portrait #closing h2 .en { font-size: 18px; }
+body.portrait #closing .notes { display: grid; grid-template-columns: 1fr; }
+body.portrait #closing .note { grid-area: 1 / 1; }
+body.portrait #closing .end { margin-top: 0; }
+body.portrait #closing .note p, body.portrait #closing .coda { font-size: 15px; }
 body.portrait #map { top: calc(var(--band-h) + 2px); bottom: auto; left: var(--gut-l); right: var(--gut-r); translate: none; width: auto; }
 body.portrait #map .ticks { height: 24px; }
 body.portrait #top .home .en { display: none; }
@@ -202,6 +233,6 @@ body.portrait .mark .name { display: none; }
 body.portrait .mark[data-row="1"] { --rise: 30px; }
 
 @media (prefers-reduced-motion: reduce) {
-  #intro .arrow, #loader .seal { animation: none; }
+  #intro .arrow, #outro .arrow, #loader .seal { animation: none; }
   #stage.arrive { animation: none; }
 }

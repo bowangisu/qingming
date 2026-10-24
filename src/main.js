@@ -1,7 +1,8 @@
 // The page. Scroll position is turned into a path for a camera along the scroll: the closed scroll unrolls from the
 // right, then the camera flies from one detail to the next (zooming out to travel and back in to look), holds on each
-// while the text, brush loops and labels appear, and ends on the whole scroll. renderer.js draws the painting.
-import { SCROLL, INTRO, CHAPTERS, OUTRO, SOURCES } from './story.js';
+// while the text, brush loops and labels appear, pulls out to the whole scroll, and follows it as it rolls back up to
+// where it started, closed, beside the closing notes. renderer.js draws the painting.
+import { SCROLL, INTRO, CHAPTERS, OUTRO, CLOSING, SOURCES } from './story.js';
 import { createRenderer } from './renderer.js';
 import { createTiles } from './tiles.js';
 import { createBirds } from './birds.js';
@@ -79,7 +80,7 @@ function zoomPath(a, b) {
 
 // --------------------------------------------------------------------------------------------------------- timeline
 // Lengths are in screen heights of scrolling and don't depend on the layout, so a resize keeps the reader's place.
-let segs = [], total = 0, spans = [], unrollTab, introLeft;
+let segs = [], total = 0, spans = [], unrollTab, introLeft, closeSeg, closedSeg;
 const DS = .004;
 function build() {
   segs = []; total = 0;
@@ -100,19 +101,32 @@ function build() {
   const oc = overviewCam();
   push('fly', 1.7, { path: zoomPath(prev, oc), from: prev, to: oc, ci: -1 });
   push('outro', 1.6, { cam: oc });
+  const cc = introCam();                       // closed again, framed as it was at the start
+  push('close', 2.6, { from: oc, to: cc });
+  push('closed', 1 + .62 * CLOSING.notes.length, { cam: cc });
+  closeSeg = segs[segs.length - 2]; closedSeg = segs[segs.length - 1];
   spans = CHAPTERS.map((ch, ci) => { const h = segs.filter(g => g.kind === 'hold' && g.ci === ci); return { a: h[0].s0, b: h[h.length - 1].s1, first: h[0] }; });
-  // How far the scroll is unrolled: it never rolls back up as you read on, and stays just out of sight on the left.
+  // How far the scroll is unrolled: it never rolls back up as you read on, and stays just out of sight on the left,
+  // until the end, when it rolls up again from its far end.
   const n = Math.ceil(total / DS) + 1;
   unrollTab = new Float32Array(n);
   let m = introLeft;
   for (let i = 0; i < n; i++) {
     const s = i * DS, st = sample(s, false);
     if (s < segs[1].s1) { unrollTab[i] = introUnroll(s); continue; }
+    if (s >= closeSeg.s0) { unrollTab[i] = closeUnroll(s); continue; }
     m = Math.min(m, st.cam.cx - st.cam.w / 2 - st.cam.w * .01 - 10);
     unrollTab[i] = Math.max(0, m);
   }
 }
 const introUnroll = s => lerp(W, introLeft, ease(clamp((s - segs[1].s0) / segs[1].len, 0, 1)));
+const closeUnroll = s => W * ease(clamp((s - closeSeg.s0) / closeSeg.len, 0, 1));
+// rolling up: the camera follows the roll from the scroll's far end back to its start, closing in as it goes
+function closeCam(g, t) {
+  const e = ease(t), w = Math.exp(lerp(Math.log(g.from.w), Math.log(g.to.w), e));
+  const f0 = (0 - (g.from.cx - g.from.w / 2)) / g.from.w, f1 = (W - (g.to.cx - g.to.w / 2)) / g.to.w;   // where the roll sits on screen
+  return clampCam({ cx: W * e - (lerp(f0, f1, e) - .5) * w, cy: lerp(g.from.cy, g.to.cy, e), w });
+}
 function unrollAt(s) { const f = clamp(s / DS, 0, unrollTab.length - 1), i = Math.floor(f), j = Math.min(i + 1, unrollTab.length - 1); return lerp(unrollTab[i], unrollTab[j], f - i); }
 const rollRadius = u => 40 + 170 * Math.sqrt(clamp(u, 0, W) / W);
 
@@ -131,6 +145,9 @@ function sample(s, full = true) {
   if (g.kind === 'fly') {
     if (REDUCED) { st.cam = t < .5 ? g.from : g.to; st.fade = 1 - Math.abs(t - .5) * 2; st.fade = smooth(0, .55, st.fade); }
     else st.cam = clampCam(g.path(ease(t)));
+  } else if (g.kind === 'close') {
+    if (REDUCED) { st.cam = t < .5 ? g.from : g.to; st.fade = smooth(0, .55, 1 - Math.abs(t - .5) * 2); }
+    else st.cam = closeCam(g, t);
   } else if (g.kind === 'hold') {
     st.cam = holdCam(g, t);
     st.spot = smooth(0, .12, t) * (1 - smooth(.9, 1, t));
@@ -161,7 +178,12 @@ function buildDom() {
   $('#outro').innerHTML = `
     <h2><span class="zh" lang="zh-Hans">${OUTRO.zh}</span><span class="en">${OUTRO.en}</span></h2>
     ${OUTRO.body.map(b => `<p>${b}</p>`).join('')}
-    <p class="actions"><button type="button" data-restart>Read it again from the start</button><button type="button" data-open-sources>Sources</button></p>`;
+    <p class="hint">${OUTRO.hint}<span class="arrow" aria-hidden="true">→</span></p>`;
+  $('#closing').innerHTML = `
+    <h2><span class="zh" lang="zh-Hans">${CLOSING.zh}</span><span class="en">${CLOSING.en}</span></h2>
+    <div class="notes">${CLOSING.notes.map(n => `<section class="note"><h3>${n.title}</h3><p>${n.body}</p></section>`).join('')}</div>
+    <div class="end"><p class="coda">${CLOSING.coda}</p>
+      <p class="actions"><button type="button" data-restart>Read it again from the start</button><button type="button" data-open-sources>Sources</button></p></div>`;
   const marks = $('#marks'), ticks = $('#map .ticks');
   CHAPTERS.forEach((ch, ci) => {
     const at = (ch.shots[0].focus[0] + ch.shots[0].focus[2]) / 2;
@@ -256,7 +278,7 @@ function overlays(st) {
   $('#intro').style.visibility = introA > .001 ? 'visible' : 'hidden';
   const slip = $('#slip'), k = L.band.w / cam.w;
   const [sx, sy] = toScreen(cam, st.unroll - st.roll, H * .1);
-  slip.style.opacity = 1 - smooth(u.s0, u.s0 + .3, s);
+  slip.style.opacity = Math.max(1 - smooth(u.s0, u.s0 + .3, s), smooth(closeSeg.s1 - .35, closeSeg.s1, s));
   slip.style.transform = `translate(${sx}px, ${sy}px) translateX(-50%)`;
   slip.style.width = `${st.roll * 2 * k * .5}px`; slip.style.height = `${H * .62 * k}px`;
   slip.style.fontSize = `${st.roll * 2 * k * .3}px`;
@@ -321,18 +343,34 @@ function overlays(st) {
   });
 
   // the end: the whole scroll with the places visited marked on it
-  const o = segs[segs.length - 1], outA = smooth(o.s0 - .45, o.s0 + .05, s);
+  const o = segs.find(x => x.kind === 'outro'), atEnd = smooth(o.s0 - .45, o.s0 + .05, s);
+  const outA = atEnd * (1 - smooth(closeSeg.s0 - .05, closeSeg.s0 + .35, s));
   $('#outro').style.opacity = outA;
   $('#outro').style.visibility = outA > .001 ? 'visible' : 'hidden';
   const marks = $('#marks');
-  $('#map').style.opacity = 1 - outA;
-  $('#map').style.visibility = outA < .999 ? 'visible' : 'hidden';
+  $('#map').style.opacity = 1 - atEnd;
+  $('#map').style.visibility = atEnd < .999 ? 'visible' : 'hidden';
   marks.style.opacity = outA; marks.style.visibility = outA > .001 ? 'visible' : 'hidden';
   for (const m of marks.children) {
     const [mx, my] = toScreen(cam, +m.dataset.x, -B);
     m.style.transform = `translate(${mx.toFixed(1)}px, ${my.toFixed(1)}px)`;
     m.tabIndex = outA > .5 ? 0 : -1;
   }
+
+  // closed again: the notes come in one after another (on a short screen, one at a time), then the last word
+  const closing = $('#closing'), cA = smooth(closeSeg.s1 - .5, closeSeg.s1 + .05, s), q = clamp((s - closedSeg.s0) / closedSeg.len, 0, 1);
+  closing.style.opacity = cA;
+  closing.style.visibility = cA > .001 ? 'visible' : 'hidden';
+  const notes = closing.querySelectorAll('.note'), N = notes.length, turns = closing.dataset.turns === '1';
+  const at = i => .04 + i * (.66 / N), endA = smooth(.74, .84, q);
+  notes.forEach((e, i) => {
+    let a = smooth(at(i), at(i) + .07, q);
+    if (turns) a *= 1 - (i < N - 1 ? smooth(at(i + 1) - .02, at(i + 1) + .04, q) : endA);
+    e.style.opacity = a;
+    e.style.transform = `translateY(${((1 - smooth(at(i), at(i) + .09, q)) * 10).toFixed(1)}px)`;
+  });
+  closing.querySelector('.end').style.opacity = endA;
+  closing.querySelectorAll('.end button').forEach(b => { b.tabIndex = endA > .5 ? 0 : -1; });
 
   // the strip map: what is still rolled up, where the camera is, which section is open
   const v0 = clamp((cam.cx - cam.w / 2) / W, 0, 1), v1 = clamp((cam.cx + cam.w / 2) / W, 0, 1);
@@ -375,6 +413,8 @@ function resize(first) {
     track.style.height = `${Math.round(total * L.vh + L.vh)}px`;
     if (!first) { window.scrollTo({ top: p * (document.documentElement.scrollHeight - innerHeight), behavior: 'instant' }); snap = true; }
   }
+  // the closing notes take turns on a narrow screen
+  $('#closing').dataset.turns = L.portrait ? '1' : '0';
   // panels that don't fit a short screen show one paragraph at a time
   for (const pn of panelList) {
     pn.dataset.stagger = '0';

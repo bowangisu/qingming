@@ -179,11 +179,11 @@ function buildDom() {
     <h2><span class="zh" lang="zh-Hans">${OUTRO.zh}</span><span class="en">${OUTRO.en}</span></h2>
     ${OUTRO.body.map(b => `<p>${b}</p>`).join('')}
     <p class="hint">${OUTRO.hint}<span class="arrow" aria-hidden="true">→</span></p>`;
-  $('#closing').innerHTML = `
+  $('#closing').innerHTML = `<div class="wrap">
     <h2><span class="zh" lang="zh-Hans">${CLOSING.zh}</span><span class="en">${CLOSING.en}</span></h2>
     <div class="notes">${CLOSING.notes.map(n => `<section class="note"><h3>${n.title}</h3><p>${n.body}</p></section>`).join('')}</div>
     <div class="end"><p class="coda">${CLOSING.coda}</p>
-      <p class="actions"><button type="button" data-restart>Read it again from the start</button><button type="button" data-open-sources>Sources</button></p></div>`;
+      <p class="actions"><button type="button" data-restart>Read it again from the start</button><button type="button" data-open-sources>Sources</button></p></div></div>`;
   const marks = $('#marks'), ticks = $('#map .ticks');
   CHAPTERS.forEach((ch, ci) => {
     const at = (ch.shots[0].focus[0] + ch.shots[0].focus[2]) / 2;

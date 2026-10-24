@@ -2,7 +2,8 @@
 // camera { cx, cy, w } (centre and visible width, master px) into the band of the screen the painting occupies.
 // Modes: 0 = a painting tile, 1 = the silk mount behind the painting, 2 = the rolled-up part of the scroll on its rod,
 // 3 = the scroll's soft shadow on the table. The tile mode also draws the living parts: ripples on open water (from the
-// water mask), drifting mist, and the spotlight that dims everything outside the current subject.
+// water mask), drifting mist, the spotlight that dims everything outside the current subject, and the rigs of the moving
+// layer (life/rigs.json): soft regions of the painting that bob, rock or sway in place.
 
 const VS = `#version 300 es
 in vec2 aCorner;
@@ -32,6 +33,15 @@ uniform float uSpot;       // 0..1 spotlight strength
 uniform float uMist;       // 0..1 mist strength (it only falls on the countryside)
 uniform float uBorder;     // silk mount above and below the painting (master px)
 uniform float uPx;         // master px per device px (for anti-aliased edges)
+#define MAX_RIGS 32
+uniform int uRigN;
+uniform vec4 uRigAll;              // the box around all of them, to skip the rest of the painting quickly
+uniform vec4 uRigBox[MAX_RIGS];    // region in master px
+uniform vec4 uRigUV[MAX_RIGS];     // its feathered mask in the atlas
+uniform vec4 uRigA[MAX_RIGS];      // type (0 gait, 1 rock, 2 wind), hz, phase, amount
+uniform vec4 uRigB[MAX_RIGS];      // pivot x, pivot y, surge or drift px, bounce or heave px
+uniform sampler2D uLife;           // rig mask atlas
+uniform float uLifeGain;           // larger movements when zoomed out, so they still read
 out vec4 fragColor;
 
 float hash(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
@@ -55,6 +65,36 @@ vec3 spot(vec3 c, vec2 p) {
   float o = smoothstep(0., max(140., uPx * 150.), length(max(r, 0.)));
   vec3 g = vec3(dot(c, vec3(.3, .59, .11)));
   return mix(c, mix(g, c, .5) * .46, o * uSpot);
+}
+
+// how far the moving layer carries the painting at p
+vec2 rigs(vec2 p, float t) {
+  vec2 d = vec2(0.);
+  for (int i = 0; i < MAX_RIGS; i++) {
+    if (i >= uRigN) break;
+    vec4 bx = uRigBox[i];
+    if (p.x < bx.x || p.y < bx.y || p.x > bx.z || p.y > bx.w) continue;
+    vec4 uv = uRigUV[i];
+    float w = textureLod(uLife, mix(uv.xy, uv.zw, (p - bx.xy) / (bx.zw - bx.xy)), 0.).r;
+    if (w < .003) continue;
+    vec4 a = uRigA[i], b = uRigB[i];
+    float ph = 6.2832 * a.y * t + a.z;
+    vec2 o;
+    if (a.x < .5) {                 // gait: a bounce on every step, with a little surge forward and back
+      o = vec2(b.z * sin(ph), -b.w * abs(sin(ph)));
+    } else if (a.x < 1.5) {         // rock: a turn about the pivot, with a slow drift and heave
+      float th = radians(a.w) * sin(ph);
+      vec2 r = p - b.xy;
+      o = vec2(cos(th) * r.x - sin(th) * r.y, sin(th) * r.x + cos(th) * r.y) - r
+        + vec2(b.z * sin(ph * .5 + 2.), b.w * sin(ph * .7 + 1.));
+    } else {                        // wind: sways more the higher it stands above the pivot's line, in uneven gusts
+      float h = clamp((b.y - p.y) / max(1., b.y - bx.y), 0., 1.); h *= h;
+      float gust = .6 + .4 * sin(ph * .37 + p.x * .002);
+      o = a.w * h * gust * vec2(sin(ph + p.x * .006) + .35 * sin(ph * 2.3 + p.y * .03), .15 * sin(ph * 1.7 + p.x * .01));
+    }
+    d += w * o;
+  }
+  return d * uLifeGain;
 }
 
 void main() {
@@ -92,7 +132,8 @@ void main() {
     float ph = p.x * .021 + p.y * .006 + fbm(p * .004 + t * .05) * 6.;
     d = m * vec2(sin(ph - t * 1.1) * 2.2 + sin(p.y * .09 + t * 1.7) * .9, sin(p.x * .015 + t * .8 + p.y * .03) * 1.6);
   }
-  vec2 q = p + d;
+  bool alive = uRigN > 0 && p.x >= uRigAll.x && p.y >= uRigAll.y && p.x <= uRigAll.z && p.y <= uRigAll.w;
+  vec2 q = p + d - (alive ? rigs(p, t) : vec2(0.));
   vec2 uv = vec2((q.x * uTile.z - uTile.x) / (uTile.y - uTile.x), q.y / uSize.y);
   vec3 c = texture(uTex, uv).rgb;
   if (m > .01) c *= 1. + m * (.045 * sin(p.x * .05 - t * 1.6 + fbm(p * .01) * 5.) + .02);
@@ -123,7 +164,8 @@ export function createRenderer(canvas) {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0);
   gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-  gl.uniform1i(U.uTex, 0); gl.uniform1i(U.uMask, 1);
+  gl.uniform1i(U.uTex, 0); gl.uniform1i(U.uMask, 1); gl.uniform1i(U.uLife, 2);
+  const MAX_RIGS = 32;
 
   function texture(source, mip = true) {
     const t = gl.createTexture();
@@ -139,7 +181,8 @@ export function createRenderer(canvas) {
   }
 
   // frame: { band: {x, y, w, h} device px, cam, size: [W, H], tiles: [{tex, ax, bx, scale, cx0, cx1}], mask, time,
-  //          unroll, roll, focus, spot, mist, border, table: [r, g, b] }
+  //          unroll, roll, focus, spot, mist, border, table: [r, g, b],
+  //          life: { atlas, gain, rigs: [{ box, uv, a, b }] } }
   function draw(f) {
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.disable(gl.SCISSOR_TEST);
@@ -152,6 +195,19 @@ export function createRenderer(canvas) {
     gl.uniform4f(U.uFocus, ...f.focus); gl.uniform1f(U.uSpot, f.spot); gl.uniform1f(U.uMist, f.mist);
     gl.uniform1f(U.uBorder, f.border); gl.uniform1f(U.uPx, f.cam.w / w);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, f.mask);
+    const rigs = f.life ? f.life.rigs.slice(0, MAX_RIGS) : [];
+    gl.uniform1i(U.uRigN, rigs.length);
+    if (rigs.length) {
+      for (const [name, key] of [['uRigBox[0]', 'box'], ['uRigUV[0]', 'uv'], ['uRigA[0]', 'a'], ['uRigB[0]', 'b']]) {
+        const v = new Float32Array(rigs.length * 4);
+        rigs.forEach((r, i) => v.set(r[key], i * 4));
+        gl.uniform4fv(U[name], v);
+      }
+      const all = rigs.reduce((m, r) => [Math.min(m[0], r.box[0]), Math.min(m[1], r.box[1]), Math.max(m[2], r.box[2]), Math.max(m[3], r.box[3])], [Infinity, Infinity, -Infinity, -Infinity]);
+      gl.uniform4f(U.uRigAll, ...all);
+      gl.uniform1f(U.uLifeGain, f.life.gain);
+      gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, f.life.atlas);
+    }
     const [W, H] = f.size, B = f.border;
     const quad = (mode, x0, y0, x1, y1) => { gl.uniform1i(U.uMode, mode); gl.uniform4f(U.uRect, x0, y0, x1, y1); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); };
     gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);

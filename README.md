@@ -5,8 +5,12 @@ Zhang Zeduan's handscroll *Along the River During the Qingming Festival* (Northe
 along the 5.3 metres of silk. At each one it zooms in and circles the details in cinnabar, and a short text explains
 what you are looking at. Between scenes it pulls back to show where you are on the scroll, then flies on to the next.
 
-The picture is the real painting, a 38,414 × 1,800 pixel public-domain scan, not generated artwork. Only the
-ripples on the water, the drifting mist and the shading around each subject are drawn live over it.
+The picture is the real painting, a 38,414 × 1,800 pixel public-domain scan, not generated artwork. The ripples on
+the water, the drifting mist and the shading around each subject are drawn live over it. In the opening road scene and
+under the Rainbow Bridge the painting also moves: donkeys and porters bob as they walk, the big boat rocks, the crew
+lean on their poles, onlookers sway at the rail and the trees move in the wind. That movement is the painting's own
+brushwork shifted a few pixels at a time, not redrawn. The crows and swallows are the one addition, drawn for this
+page.
 
 ## Run it
 
@@ -30,6 +34,7 @@ cross-fades, the slow push-in stops and the water and mist hold still.
 | Timeline | `src/main.js` | Scroll position, in screen heights, becomes a sequence: a closed scroll, unrolling, then *fly → hold* for every shot, and a last flight out to the whole scroll. Flights use van Wijk & Nuij's smooth zoom (2003), which pulls back in proportion to the distance travelled. During a hold the camera pushes in slightly while the loops, leader lines and labels draw one after another. The scroll's unrolled edge only ever moves left as you read on and stays just off-screen. |
 | Layout | `src/main.js`, `styles.css` | Wide screens put the painting full-bleed with the text in a column that alternates sides; the subject is framed in the space left over. Narrow screens put the painting in the top half and the text below it. On a screen too short for both paragraphs, they take turns. |
 | Renderer | `src/renderer.js` | WebGL 2. Draws the painting tiles, the blue-grey mount silk, the rolled part of the scroll on its rod with jade knobs, and the shadow on the table. In the same pass it draws ripples on open water (UV displacement and shimmer, limited by a water mask), mist over the countryside at the start, and the spotlight that dims and desaturates everything outside the subject. |
+| Moving layer | `life/rigs.json`, `tools/make_life.py`, `src/renderer.js`, `src/birds.js` | A *rig* is a region of the painting that moves in place: `gait` (a bounce on each step, for walkers and pack animals), `rock` (a turn about a pivot, for boats and gesturing figures) or `wind` (a sway that grows with height, for trees). Each rig's outline is cut down to the brushwork inside it, so only the figure or the branches move and the bare silk stays still. The masks go into one atlas, and the tile shader adds up the rigs' displacement, at most 32 in view at a time. Movements grow a little when the camera is far out, so they still read. Birds are SVG over the painting, multiplied into it like ink. |
 | Tiles | `src/tiles.js` | A four-level WebP pyramid (1, ½, ¼, ⅛). The two coarse levels (about 1 MB) load at start. The fine levels load where the camera is and where it is going next, and the least recently used are released. |
 
 ### Asset build
@@ -38,9 +43,10 @@ cross-fades, the slow push-in stops and the water and mist hold still.
 sha256sum source/Alongtheriver_QingMing.jpg   # must be ad9ccd83…6ed02950 (below)
 python3 tools/make_tiles.py source/Alongtheriver_QingMing.jpg assets/tiles
 python3 tools/make_masks.py assets/tiles assets # water mask, minimap; tools/water-mask-preview.png to check
+python3 tools/make_life.py life/rigs.json source/Alongtheriver_QingMing.jpg assets   # rig masks and life.json
 ```
 
-Both scripts use Pillow. `make_tiles.py` only crops and resamples (no colour changes). Each tile is padded by 8 px
+The scripts use Pillow. `make_tiles.py` only crops and resamples (no colour changes). Each tile is padded by 8 px
 from its neighbours so the ripple shader never samples across a seam. `make_masks.py` finds open water inside two
 hand-drawn outlines (the canal, the stream at the start). It keeps the smooth, low-detail parts, so boats, the bridge
 and the banks stay still.
@@ -65,6 +71,15 @@ The scene texts were written for this page from the sources listed in the page's
 and Song-dynasty studies of Qingming customs, tavern signs, Dr. Zhao's shop and Yu Hui's reading of the
 unguarded gate. Interpretations are given as readings, not facts. Distances "along the scroll" are measured from its
 right end, at 72.6 px per cm of the scan.
+
+## Adding movement
+
+Rigs live in `life/rigs.json`, in master pixels. Give each one an outline (`box`, `ellipse` or `poly`), a `type`, a
+rhythm (`hz`, `phase`) and an amount: `move: [surge, bounce]` for gait, `amp` in degrees with a `pivot` for rock
+(plus `move: [drift, heave]`), `amp` in pixels with the pivot's y as the base line for wind. Then rerun
+`make_life.py`. A whole boat should use `"mask": "shape"` so it moves as one piece; figures and trees default to
+masks cut from their brushwork. Keep movements to a few pixels: more than that and the silk around a figure starts to
+stretch.
 
 ## Changing the scenes
 

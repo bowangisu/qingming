@@ -4,6 +4,7 @@
 import { SCROLL, INTRO, CHAPTERS, OUTRO, SOURCES } from './story.js';
 import { createRenderer } from './renderer.js';
 import { createTiles } from './tiles.js';
+import { createBirds } from './birds.js';
 
 const W = SCROLL.width, H = SCROLL.height, PX_PER_CM = W / SCROLL.cm[1];
 const B = 70;                              // mount silk above and below the painting (master px)
@@ -207,7 +208,7 @@ function loopPath(x, y, r, seed) {
 function measure() { for (const s of slots) s.label = null; }
 
 // ----------------------------------------------------------------------------------------------------- per frame
-let renderer, tiles, mask, cur = 0, target = 0, snap = true, lastT = performance.now(), t0 = lastT, frameNo = 0;
+let renderer, tiles, mask, life, birds, cur = 0, target = 0, snap = true, lastT = performance.now(), t0 = lastT, frameNo = 0;
 const panelsEls = () => [...document.querySelectorAll('.panel')];
 let panelList = [];
 
@@ -232,9 +233,20 @@ function drawFrame(st, time) {
   const focus = st.g.kind === 'hold' ? st.g.shot.focus : [0, 0, 0, 0];
   renderer.draw({
     band: { x: 0, y: 0, w: canvas.width, h: canvas.height }, cam, size: [W, H], tiles: vis, mask, time,
-    unroll: st.unroll, roll: st.roll, focus, spot: st.spot, mist: 1, border: B, table: TABLE,
+    unroll: st.unroll, roll: st.roll, focus, spot: st.spot, mist: 1, border: B, table: TABLE, life: lifeFor(cam),
   });
+  birds?.update(time, { toScreen: (x, y) => toScreen(cam, x, y), k: band.w / cam.w, band, focus, spot: st.spot, x0: st.unroll + 20, x1: W - 20 });
 }
+// the moving layer's rigs in view, nearest the centre first; none when the scroll is too far away to see them move
+function lifeFor(cam) {
+  if (!life || cam.w > 11000) return null;
+  const x0 = cam.cx - cam.w / 2 - 40, x1 = cam.cx + cam.w / 2 + 40;
+  const rigs = life.rigs.filter(r => r.box[2] > Math.max(x0, unrollNow) && r.box[0] < x1)
+    .sort((a, b) => Math.abs((a.box[0] + a.box[2]) / 2 - cam.cx) - Math.abs((b.box[0] + b.box[2]) / 2 - cam.cx));
+  const k = L.band.w / cam.w;
+  return { atlas: life.tex, rigs, gain: clamp(.85 / k, 1, 2.2) };
+}
+let unrollNow = 0;
 
 function overlays(st) {
   const { s, g, t, cam } = st, u = segs[1];
@@ -340,9 +352,10 @@ function frame(now) {
   if (snap || REDUCED) { cur = target; snap = false; }
   else { cur += (target - cur) * (1 - Math.exp(-dt * 6.5)); if (Math.abs(target - cur) < 1e-4) cur = target; }
   const st = sample(cur);
-  drawFrame(st, REDUCED ? 9 : (now - t0) / 1000);
+  unrollNow = st.unroll;
+  drawFrame(st, window.__qm.time ?? (REDUCED ? 9 : (now - t0) / 1000));   // __qm.time: a fixed clock for recordings
   overlays(st);
-  window.__qm.state = { s: cur, kind: st.g.kind, ci: st.g.ci, t: st.t, cam: st.cam, unroll: st.unroll, pending: tiles.pending() };
+  window.__qm.state = { s: cur, kind: st.g.kind, ci: st.g.ci, t: st.t, cam: st.cam, unroll: st.unroll, pending: tiles.pending(), rigs: lifeFor(st.cam)?.rigs.length ?? 0 };
   requestAnimationFrame(frame);
 }
 
@@ -390,11 +403,16 @@ async function start() {
   }
   L = layout();
   const small = Math.max(innerWidth, innerHeight) < 1000;
-  const [t, m] = await Promise.all([
+  const bitmap = url => fetch(url).then(r => r.blob()).then(b => createImageBitmap(b, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' }));
+  const [t, m, lj] = await Promise.all([
     createTiles(renderer, 'assets/tiles', { budget: small ? [3, 6] : [5, 8] }),
-    fetch('assets/water-mask.png').then(r => r.blob()).then(b => createImageBitmap(b, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' })),
+    bitmap('assets/water-mask.png'),
+    fetch('assets/life.json').then(r => r.json()).catch(() => ({ rigs: [], flocks: [] })),
   ]);
   tiles = t; mask = renderer.texture(m, false);
+  // the moving layer is an extra: the page works without it
+  if (lj.atlas) bitmap(`assets/${lj.atlas}`).then(b => { life = { ...lj, tex: renderer.texture(b, false) }; }).catch(e => console.error('life', e));
+  birds = createBirds($('#birds'), lj.flocks);
   resize(true);
   addEventListener('resize', () => resize(false));
   motion.addEventListener?.('change', e => { REDUCED = e.matches; build(); });

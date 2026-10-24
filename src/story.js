@@ -2,8 +2,8 @@
 // (Wikimedia Commons "Alongtheriver_QingMing.jpg", 38,414 × 1,800): x = 0 is the scan's left edge, the city end; the
 // scroll starts at high x. Positions were read off full-resolution crops of the scan.
 //
-// shot.focus: the rectangle the camera frames [x0, y0, x1, y1]; shot.points: details circled in cinnabar (centre `at`,
-// radius `r`) and marked with a numbered seal and a short label that leads off in direction `dir`. side: where the
+// shot.focus: the rectangle the camera frames [x0, y0, x1, y1]; shot.points: details marked with a numbered seal and a
+// short label whose leader line points at the subject (centre `at`, rough size `r`) and leads off in direction `dir`. side: where the
 // text column sits on wide screens (the subject is framed on the other side).
 export const SCROLL = {
   width: 38414, height: 1800,
@@ -25,7 +25,7 @@ export const CHAPTERS = [
       'Two men drive a string of donkeys loaded with charcoal along the path toward town, the same way the whole scroll will travel.',
     ],
     shots: [{ focus: [36180, 560, 37000, 1130], points: [
-      { at: [36600, 860], r: 120, label: 'Donkeys loaded with charcoal', dir: [-1, -1] },
+      { at: [36478, 838], r: 55, label: 'Donkeys loaded with charcoal', dir: [-1, -1] },
       { at: [36420, 1050], r: 80, label: 'A plank bridge on stilts', dir: [-1, 1] },
     ] }],
   },

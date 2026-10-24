@@ -7,8 +7,9 @@ px) is cut down to the brushwork inside it, so bare silk stays still and only th
   mask "fill"  (figures, default for gait and rock): the ink lines, with the shapes they enclose filled in
   mask "ink"   (branches, default for wind): the ink lines only
   mask "shape" (a whole boat): the shape as drawn
-Outlines under "still" (the bridge) are cut out of every rig, so the boat can rock under the bridge while the bridge
-stays put. The mask is feathered, drawn at half resolution and packed into one greyscale atlas. Flocks (birds drawn for this page)
+Outlines under "still" (the bridge, its underside, the far bank seen through the arch) are cut out of every rig, so the
+boat can rock under the bridge while the bridge stays put. A rig marked "over" (a figure standing in front of one) keeps
+its whole silhouette. The mask is feathered, drawn at half resolution and packed into one greyscale atlas. Flocks (birds drawn for this page)
 are copied through unchanged.
 Writes assets/life-atlas.png and assets/life.json.
 Usage: python3 tools/make_life.py life/rigs.json source/Alongtheriver_QingMing.jpg assets
@@ -66,7 +67,7 @@ def main(src, master_path, out):
             full = ImageChops.multiply(full, brushwork(master, (x0, y0, x1, y1), kind))
         w, h = max(2, round((x1 - x0) * SCALE)), max(2, round((y1 - y0) * SCALE))
         m = full.resize((w, h), Image.BOX).filter(ImageFilter.GaussianBlur(f * SCALE * .5))
-        if still:   # cut back from anything that must stay put, with a short ramp so the seam doesn't tear
+        if still and not r.get('over'):   # cut back from anything that must stay put, with a short ramp so the seam doesn't tear
             hold = Image.new('L', (x1 - x0, y1 - y0), 0)
             for poly in still: ImageDraw.Draw(hold).polygon([(x - x0, y - y0) for x, y in poly], fill=255)
             hold = hold.filter(ImageFilter.MaxFilter(9)).resize((w, h), Image.BOX).filter(ImageFilter.GaussianBlur(2))

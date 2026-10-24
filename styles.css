@@ -45,10 +45,8 @@ button { font: inherit; color: inherit; }
 }
 
 .pt { transition: none; }
-.loop, .loop-under, .lead { fill: none; stroke-dasharray: 1 1; stroke-linecap: round; stroke-linejoin: round; }
-.loop { stroke: var(--cinnabar); stroke-width: 2.6; }
-.loop-under { stroke: rgba(247, 236, 216, .3); stroke-width: 5.5; }
-.lead { stroke: var(--cinnabar); stroke-width: 1.6; }
+.lead { fill: none; stroke: var(--cinnabar); stroke-width: 1.6; stroke-dasharray: 1 1; stroke-linecap: round; stroke-linejoin: round; }
+.dot { fill: var(--cinnabar); stroke: rgba(247, 236, 216, .55); stroke-width: 1.2; }
 .tag {
   position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 8px; padding: 4px 11px 4px 4px;
   background: rgba(var(--table-rgb), .82); border-radius: 2px; white-space: nowrap; font-size: 14.5px; line-height: 1.25;

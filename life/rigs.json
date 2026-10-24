@@ -1,5 +1,5 @@
 {
- "about": "The moving layer. Rigs move soft regions of the scan in place (master px): gait = a step bounce with a little surge (move: [surge, bounce]); rock = a turn of amp degrees about pivot, with a slow drift and heave (move); wind = a sway of amp px that grows with height above the pivot's y. hz is cycles per second; phase in radians. Flocks are birds drawn for this page. mask: fill (default for gait and rock), ink (default for wind) or shape; see tools/make_life.py, which builds the atlas. Still: outlines of things that must never move (the bridge); every rig is cut back from them.",
+ "about": "The moving layer. Rigs move soft regions of the scan in place (master px): gait = a step bounce with a little surge (move: [surge, bounce]); rock = a turn of amp degrees about pivot, with a slow drift and heave (move); wind = a sway of amp px that grows with height above the pivot's y. hz is cycles per second; phase in radians. Flocks are birds drawn for this page. mask: fill (default for gait and rock), ink (default for wind) or shape; see tools/make_life.py, which builds the atlas. Still: outlines of things that must never move (the bridge); every rig is cut back from them, except figures marked over (standing in front of them).",
  "rigs": [
   {
    "id": "road-donkey-1",
@@ -272,122 +272,110 @@
    "type": "rock",
    "poly": [
     [
-     19290,
-     452
-    ],
-    [
-     19400,
-     417
-    ],
-    [
      19500,
-     374
-    ],
-    [
-     19600,
-     362
-    ],
-    [
-     19700,
-     357
-    ],
-    [
-     19800,
-     382
-    ],
-    [
-     19900,
-     408
-    ],
-    [
-     19990,
-     428
-    ],
-    [
-     20060,
-     420
-    ],
-    [
-     20100,
-     330
-    ],
-    [
-     20170,
-     232
-    ],
-    [
-     20250,
-     174
-    ],
-    [
-     20305,
-     200
-    ],
-    [
-     20365,
-     262
-    ],
-    [
-     20450,
-     330
-    ],
-    [
-     20480,
-     430
-    ],
-    [
-     20470,
-     560
-    ],
-    [
-     20420,
-     660
-    ],
-    [
-     20250,
-     730
-    ],
-    [
-     20000,
-     790
-    ],
-    [
-     19780,
-     805
+     600
     ],
     [
      19560,
-     795
+     576
     ],
     [
-     19495,
-     730
+     19640,
+     563
     ],
     [
-     19470,
-     640
+     19760,
+     561
     ],
     [
-     19420,
-     630
+     19860,
+     563
     ],
     [
-     19290,
-     630
+     19950,
+     557
+    ],
+    [
+     20005,
+     520
+    ],
+    [
+     20050,
+     470
+    ],
+    [
+     20080,
+     432
+    ],
+    [
+     20095,
+     341
+    ],
+    [
+     20168,
+     236
+    ],
+    [
+     20253,
+     178
+    ],
+    [
+     20379,
+     257
+    ],
+    [
+     20453,
+     330
+    ],
+    [
+     20479,
+     436
+    ],
+    [
+     20474,
+     562
+    ],
+    [
+     20421,
+     662
+    ],
+    [
+     20250,
+     740
+    ],
+    [
+     20042,
+     783
+    ],
+    [
+     19780,
+     800
+    ],
+    [
+     19558,
+     790
+    ],
+    [
+     19526,
+     709
+    ],
+    [
+     19505,
+     650
     ]
    ],
    "mask": "shape",
-   "feather": 12,
+   "feather": 14,
    "hz": 0.2,
    "phase": 0,
-   "amp": 0.42,
+   "amp": 0.25,
    "pivot": [
     19900,
     760
    ],
    "move": [
-    1.2,
-    1.4
+    0.8,
+    1.0
    ]
   },
   {
@@ -426,7 +414,8 @@
    "pivot": [
     19670,
     610
-   ]
+   ],
+   "over": true
   },
   {
    "id": "bridge-crew-c",
@@ -444,7 +433,8 @@
    "move": [
     1.2,
     1.4
-   ]
+   ],
+   "over": true
   },
   {
    "id": "bridge-crew-d",
@@ -463,7 +453,8 @@
    "pivot": [
     19925,
     548
-   ]
+   ],
+   "over": true
   },
   {
    "id": "bridge-crew-e",
@@ -2584,6 +2575,92 @@
     [
      19050,
      770
+    ]
+   ]
+  },
+  {
+   "id": "bridge-underside",
+   "about": "under the arch: the timber underside of the bridge and, through the opening, the far bank with its railing. Nothing here moves either; only the boat below it does.",
+   "poly": [
+    [
+     19120,
+     600
+    ],
+    [
+     19190,
+     540
+    ],
+    [
+     19300,
+     432
+    ],
+    [
+     19400,
+     397
+    ],
+    [
+     19500,
+     354
+    ],
+    [
+     19600,
+     342
+    ],
+    [
+     19700,
+     338
+    ],
+    [
+     19800,
+     362
+    ],
+    [
+     19900,
+     390
+    ],
+    [
+     19990,
+     410
+    ],
+    [
+     20075,
+     420
+    ],
+    [
+     20040,
+     470
+    ],
+    [
+     19950,
+     540
+    ],
+    [
+     19860,
+     552
+    ],
+    [
+     19760,
+     550
+    ],
+    [
+     19640,
+     552
+    ],
+    [
+     19560,
+     563
+    ],
+    [
+     19480,
+     578
+    ],
+    [
+     19300,
+     578
+    ],
+    [
+     19120,
+     600
     ]
    ]
   }

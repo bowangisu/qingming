@@ -1,6 +1,6 @@
 // The page. Scroll position is turned into a path for a camera along the scroll: the closed scroll unrolls from the
 // right, then the camera flies from one detail to the next (zooming out to travel and back in to look), holds on each
-// while the text, brush loops and labels appear, pulls out to the whole scroll, and follows it as it rolls back up to
+// while the text and the numbered labels appear, pulls out to the whole scroll, and follows it as it rolls back up to
 // where it started, closed, beside the closing notes. renderer.js draws the painting.
 import { SCROLL, INTRO, CHAPTERS, OUTRO, CLOSING, SOURCES } from './story.js';
 import { createRenderer } from './renderer.js';
@@ -206,27 +206,16 @@ function buildDom() {
   $('#sources').addEventListener('click', e => { if (e.target === $('#sources')) $('#sources').close(); });
 }
 
-// three slots for a shot's details: a brush loop, a leader line and a label with a numbered seal
+// three slots for a shot's details: a leader line from a small dot on the subject to a label with a numbered seal
 const slots = [0, 1, 2].map(() => {
   const g = svgEl('g', { class: 'pt' });
-  const under = svgEl('path', { class: 'loop-under', pathLength: 1 }), loop = svgEl('path', { class: 'loop', pathLength: 1 });
-  const lead = svgEl('polyline', { class: 'lead', pathLength: 1 });
-  g.append(under, loop, lead); ink.append(g);
+  const lead = svgEl('polyline', { class: 'lead', pathLength: 1 }), dot = svgEl('circle', { class: 'dot', r: 2.6 });
+  g.append(lead, dot); ink.append(g);
   const tag = el('div', 'tag', '<b class="seal"></b><span></span>');
   tag.setAttribute('aria-hidden', 'true');
   tagsEl.append(tag);
-  return { g, under, loop, lead, tag, label: null, tw: 0, th: 0 };
+  return { g, lead, dot, tag, label: null, tw: 0, th: 0 };
 });
-// a hand-drawn loop: once round and a little more, the radius wandering and opening out slightly
-function loopPath(x, y, r, seed) {
-  let d = '';
-  for (let i = 0, n = 56; i <= n; i++) {
-    const t = i / n, a = -2.2 + seed + t * Math.PI * 2.24;
-    const rr = r * (1 + .045 * Math.sin(a * 2 + seed * 5) + .07 * t);
-    d += `${i ? 'L' : 'M'}${(x + rr * Math.cos(a) * 1.1).toFixed(1)} ${(y + rr * Math.sin(a) * .9).toFixed(1)}`;
-  }
-  return d;
-}
 function measure() { for (const s of slots) s.label = null; }
 
 // ----------------------------------------------------------------------------------------------------- per frame
@@ -298,7 +287,7 @@ function overlays(st) {
     p.classList.toggle('current', al > .5);
   });
 
-  // details of the current shot: loops drawn one after another, each followed by its leader line and label
+  // details of the current shot, one after another: a leader line drawn out from the subject, then its label
   const pts = g.kind === 'hold' ? g.shot.points : [];
   const out = 1 - smooth(.9, .985, t), A = g.kind === 'hold' ? freeArea(g.ch.side) : null, placed = [];
   slots.forEach((sl, j) => {
@@ -308,7 +297,7 @@ function overlays(st) {
       sl.tag.querySelector('b').textContent = j + 1; sl.tag.querySelector('span').textContent = p.label;
       sl.label = p.label; sl.tw = sl.tag.offsetWidth; sl.th = sl.tag.offsetHeight;
     }
-    const { tw, th } = sl, c0 = .07 + j * (.6 / pts.length);
+    const { tw, th } = sl, c0 = .07 + j * (.5 / pts.length);
     const [x, y] = toScreen(cam, p.at[0], p.at[1]), r = Math.max(14, (p.r || 70) * k);
     // the label leads off the way the story says, unless there is more room on the other side
     let [dx, dy] = p.dir;
@@ -319,9 +308,10 @@ function overlays(st) {
     if (dy < 0 && !fitsUp) dy = 1; else if (dy > 0 && !fitsDown) dy = -1;
     // two labels leading toward each other at the same height would cross: send this one the other way vertically
     if (placed.some(q => q.dy === dy && (q.px < x ? q.dx > 0 && dx < 0 : q.dx < 0 && dx > 0)) && (dy < 0 ? fitsDown : fitsUp)) dy = -dy;
-    const n = Math.hypot(dx * 1.1, dy * .9), ex = x + dx * 1.1 / n * r * 1.05, ey = y + dy * .9 / n * r * 1.05;
-    const kx = ex + dx * 18;
-    let tx = clamp(dx > 0 ? kx + 18 : kx - 18 - tw, 6, L.band.w - 6 - tw), ty = ey + dy * 18 - th / 2;
+    // the line starts on the subject, a little off its centre so the dot doesn't sit on a face
+    const n = Math.hypot(dx * 1.1, dy * .9), ex = x + dx * 1.1 / n * r * .22, ey = y + dy * .9 / n * r * .22;
+    const kx = ex + dx * (18 + r * .75);
+    let tx = clamp(dx > 0 ? kx + 18 : kx - 18 - tw, 6, L.band.w - 6 - tw), ty = ey + dy * (18 + r * .75) - th / 2;
     for (let i = 0; i < 3; i++) {          // step clear of labels already placed
       const hit = placed.find(q => tx < q.x + q.w + 6 && tx + tw + 6 > q.x && ty < q.y + q.h + 5 && ty + th + 5 > q.y);
       if (!hit) break;
@@ -330,16 +320,15 @@ function overlays(st) {
     ty = clamp(ty, L.safe.top - 26, L.band.h - L.safe.bottom + 8 - th);
     placed.push({ x: tx, y: ty, w: tw, h: th, px: x, dx, dy });
     const ky = ty + th / 2, lx = dx > 0 ? Math.max(tx, kx) : Math.min(tx + tw, kx);
-    const d = loopPath(x, y, r, j * 1.7 + (g.si || 0));
-    sl.under.setAttribute('d', d); sl.loop.setAttribute('d', d);
+    sl.dot.setAttribute('cx', ex.toFixed(1)); sl.dot.setAttribute('cy', ey.toFixed(1));
     sl.lead.setAttribute('points', `${ex.toFixed(1)},${ey.toFixed(1)} ${kx.toFixed(1)},${ky.toFixed(1)} ${lx.toFixed(1)},${ky.toFixed(1)}`);
-    const pl = smooth(c0, c0 + .13, t), pd = smooth(c0 + .11, c0 + .17, t), pt = smooth(c0 + .14, c0 + .21, t);
-    sl.loop.style.strokeDashoffset = sl.under.style.strokeDashoffset = 1 - pl;
+    const pdot = smooth(c0, c0 + .03, t), pd = smooth(c0 + .01, c0 + .08, t), pt = smooth(c0 + .05, c0 + .12, t);
     sl.lead.style.strokeDashoffset = 1 - pd;
-    sl.g.style.opacity = out * (pl > 0 ? 1 : 0);
+    sl.dot.style.opacity = pdot;
+    sl.g.style.opacity = out * (pdot > 0 ? 1 : 0);
     sl.tag.style.opacity = pt * out;
     sl.tag.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px)`;
-    sl.tag.querySelector('b').style.transform = `scale(${lerp(1.5, 1, smooth(c0 + .14, c0 + .19, t))})`;
+    sl.tag.querySelector('b').style.transform = `scale(${lerp(1.5, 1, smooth(c0 + .05, c0 + .1, t))})`;
   });
 
   // the end: the whole scroll with the places visited marked on it

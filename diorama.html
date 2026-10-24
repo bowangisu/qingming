@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>虹桥 · On the Rainbow Bridge</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Walk a porter across the Rainbow Bridge of Along the River During the Qingming Festival, the painting cut into layers and stood up in 3D.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Noto+Serif+SC:wght@400;600&display=swap">
+<link rel="stylesheet" href="diorama.css">
+</head>
+<body>
+<canvas id="gl" role="img" aria-label="The Rainbow Bridge from Along the River During the Qingming Festival, cut into layers and shown in 3D, with a porter you can walk across it"></canvas>
+
+<header id="top">
+  <a class="back" href="index.html#bridge">← Back to the scroll</a>
+  <div class="title">
+    <span class="seal" lang="zh-Hans">四</span>
+    <h1><span class="zh" lang="zh-Hans">虹桥</span><span class="en">On the Rainbow Bridge</span></h1>
+  </div>
+  <button type="button" class="link" id="about-btn" aria-expanded="false" aria-controls="about">About this view</button>
+</header>
+
+<section id="about" hidden>
+  <p>The bridge, its crowd, the big boat and the near bank are cut out of the painting and stood up at their own
+    depths, so they shift against each other as you move. The crowded street on the left bank stands up in strips,
+    like the flats of a paper theatre. Nothing is repainted: where a cut-out used to cover the silk, the gap is filled
+    with blank silk.</p>
+  <p>Your walker is a porter with two baskets on a shoulder pole, borrowed from the street outside Dr. Zhao’s shop near
+    the end of the scroll. He is mirrored when he walks to the right.</p>
+  <p>Look around only a little: the cut-outs are flat, and from too far to the side they show it.</p>
+</section>
+
+<footer id="controls">
+  <div class="where" id="where" aria-hidden="true"><span></span></div>
+  <div class="row">
+    <button type="button" class="walk" id="walk-left" aria-label="Walk left, across the bridge">◀</button>
+    <p class="hint"><span class="desk"><span class="keys">← →</span> or the wheel to walk · drag to look around</span><span class="touch">Hold ◀ or ▶ to walk · drag to look around</span></p>
+    <button type="button" class="walk" id="walk-right" aria-label="Walk right">▶</button>
+  </div>
+  <button type="button" class="link" id="flat">See it as painted</button>
+</footer>
+
+<div id="loader" role="status"><span class="seal" lang="zh-Hans">桥</span><p>Cutting out the bridge…</p></div>
+<noscript><p class="noscript">This view needs JavaScript and WebGL 2.</p></noscript>
+<script type="module" src="src/diorama.js"></script>
+</body>
+</html>

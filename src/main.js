@@ -172,7 +172,8 @@ function buildDom() {
     p.innerHTML = `<div class="inner">
       <p class="kicker"><span class="seal" lang="zh-Hans">${ch.num}</span><span>${cmAlong(at)} cm along the scroll</span></p>
       <h2><span class="zh" lang="zh-Hans">${ch.zh}</span><span class="en">${ch.en}</span></h2>
-      <div class="body">${ch.body.map(b => `<p>${b}</p>`).join('')}</div></div>`;
+      <div class="body">${ch.body.map(b => `<p>${b}</p>`).join('')}</div>
+      ${ch.walk ? `<p class="walk-in"><a href="${ch.walk.href}">${ch.walk.label} <span aria-hidden="true">→</span></a></p>` : ''}</div>`;
     panels.append(p);
   });
   $('#outro').innerHTML = `

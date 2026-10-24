@@ -110,6 +110,13 @@ body.opened #top .home { opacity: 1; }
 .panel h2 .en { font-style: italic; font-size: 22px; line-height: 1.25; }
 .panel .body p { margin: 0 0 .85em; text-wrap: pretty; }
 .panel .body p:last-child { margin-bottom: 0; }
+.walk-in { margin: 18px 0 0; }
+.walk-in a {
+  pointer-events: auto; display: inline-flex; gap: 10px; align-items: baseline; color: var(--silk); text-decoration: none;
+  font-size: 16px; padding: 8px 14px; border: 1px solid rgba(194, 67, 44, .85); border-radius: 2px; background: rgba(194, 67, 44, .14);
+}
+.walk-in a:hover { background: rgba(194, 67, 44, .32); }
+.walk-in span { color: var(--cinnabar); }
 
 /* ------------------------------------------------------------------ the end */
 #outro {
@@ -218,6 +225,8 @@ body.portrait .panel h2 { margin-bottom: 10px; gap: 0; }
 body.portrait .panel h2 .zh { font-size: 25px; }
 body.portrait .panel h2 .en { font-size: 18px; }
 body.portrait .panel .body { font-size: 15.5px; line-height: 1.5; }
+body.portrait .walk-in { margin-top: 10px; }
+body.portrait .walk-in a { font-size: 15px; padding: 6px 12px; }
 body.portrait .panel[data-stagger="1"] .body { display: grid; }
 body.portrait .panel[data-stagger="1"] .body p { grid-area: 1 / 1; margin: 0; }
 body.portrait #outro h2 .zh { font-size: 30px; }

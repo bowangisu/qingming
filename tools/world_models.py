@@ -1,6 +1,7 @@
-"""Simple 3D models fitted to things the painting shows: houses, open sheds, mat awnings, umbrellas, and trees and
-boats as flat cut-outs elsewhere. Every model is given in the painting's own terms (master px, as painted) and built
-in the world of tools/make_world.py, where a point (X, Y, Z) is painted at u = X + a·Z, v = c − s·Z − Y.
+"""Simple 3D models fitted to things the painting shows: houses (boxes with hip, gable or shed roofs, or traced off
+the painted roof's own corners), open sheds and pavilions on posts, mat awnings and tables, umbrellas. Every model is
+given in the painting's own terms (master px, as painted) and built in the world of tools/make_world.py, where a point
+(X, Y, Z) is painted at u = X + a·Z, v = c − s·Z − Y.
 
 Every vertex carries the painting px it shows. A face the painter could see shows the painting at its own painted
 position, so from his direction the model is the painting exactly. A face he could not see (the back of a house,
@@ -126,7 +127,8 @@ def house(W, H):
             nn = np.cross(pts[1] - pts[0], pts[3] - pts[0]); nn /= np.linalg.norm(nn)
             if np.dot(nn, ((a + b) / 2 - C) * [1, 0, 1]) < 0: nn = -nn      # outward
             painted_face(M, W, pts, mir, nn)
-    R = H['roof']; o = R.get('eave', 12); ye = Hw; yr = Hw + R['rise']
+    R = H['roof']
+    o = R.get('eave', 12); ye = Hw; yr = Hw + R['rise']
     E = [q + up * ye for q in (FL - f * o - n * o, FR + f * o - n * o, BR + f * o + n * o, BL - f * o + n * o)]
     t = R.get('type', 'hip')
     if t == 'shed':                                      # one slope, high at the back
@@ -146,6 +148,51 @@ def house(W, H):
     else:                                                # gable: the roof's ends are walls up to the ridge
         g = lambda a, b, r: painted_face(M, W, [a, b, r], mir_l)
         g(BL + up * Hw, FL + up * Hw, C - f * L / 2 + up * yr); g(FR + up * Hw, BR + up * Hw, C + f * L / 2 + up * yr)
+    return M
+
+
+def traced(W, T):
+    """A building traced off the painting: its roof's four eave corners as painted (u, v) (front-left, front-right,
+    back-right, back-left) at height eave_y, its ridge's two ends as painted at height ridge_y (both world heights
+    above the water). A hip roof has its ridge ends inside the eaves; a gable has them above the middle of the left
+    and right eaves, which makes those ends upright gables. Seen from the painter's direction it lands exactly on the
+    painted roof, whatever heights it is given; the heights decide how deep and how tall it is. walls: the walls stand
+    that far in from the eaves (world units), from the ground (y, default the bank) up to the eaves."""
+    ye, yr = T['eave_y'], T['ridge_y']
+    E = [W.at(u, v, ye) for u, v in T['eaves']]
+    R = [W.at(u, v, yr) for u, v in T['ridge']]
+    if len(E) == 2:                                       # only the front eaves given: the back mirrors them across the ridge
+        r0, r1 = R[0] * [1, 0, 1], R[1] * [1, 0, 1]; dr = (r1 - r0) / np.linalg.norm(r1 - r0)
+        def across(e):
+            q = e * [1, 0, 1]; foot = r0 + dr * np.dot(q - r0, dr); b = 2 * foot - q; return np.array([b[0], ye, b[2]])
+        E = [E[0], E[1], across(E[1]), across(E[0])]
+    # affine local coordinates on the eave quad: p = E0 + t (E1 - E0) + d (E3 - E0)
+    A = np.array([[E[1][0] - E[0][0], E[3][0] - E[0][0]], [E[1][2] - E[0][2], E[3][2] - E[0][2]]]); Ai = np.linalg.inv(A)
+    def local(p): return Ai @ np.array([p[0] - E[0][0], p[2] - E[0][2]])
+    def world(t, d, y): q = A @ np.array([t, d]); return np.array([E[0][0] + q[0], y, E[0][2] + q[1]])
+    def mir_d(p): t, d = local(p); return world(t, 1 - d, p[1])
+    def mir_l(p): t, d = local(p); return world(1 - t, d, p[1])
+    M = Mesh()
+    painted_face(M, W, [E[0], E[1], R[1], R[0]], mir_d)
+    painted_face(M, W, [E[2], E[3], R[0], R[1]], mir_d)
+    painted_face(M, W, [E[1], E[2], R[1]], mir_l)
+    painted_face(M, W, [E[3], E[0], R[0]], mir_l)
+    if 'walls' in T or 'open' in T:
+        g = T.get('y', W.bank); k = T.get('walls', T.get('open'))
+        # the wall loop: the eave loop pulled in by k world units
+        c = np.mean(E, 0)
+        wl = [c + (e - c) * (1 - k / max(np.linalg.norm((e - c) * [1, 0, 1]), 1)) for e in E]
+        if 'open' in T:                                   # a pavilion: a post at each corner instead of walls
+            for e in wl: M.timber(np.array([e[0], g, e[2]]), np.array([e[0], ye, e[2]]), 3.0)
+            return M
+        for i in range(4):
+            a, b = wl[i], wl[(i + 1) % 4]
+            pts = [np.array([a[0], g, a[2]]), np.array([b[0], g, b[2]]), np.array([b[0], ye, b[2]]), np.array([a[0], ye, a[2]])]
+            nn = np.cross(pts[1] - pts[0], pts[3] - pts[0]); nn /= np.linalg.norm(nn)
+            if np.dot(nn, ((a + b) / 2 - c) * [1, 0, 1]) < 0: nn = -nn
+            painted_face(M, W, pts, mir_d if i % 2 == 0 else mir_l, nn)
+    for P in T.get('posts', []):                          # posts as painted: their foot (u, v) on the ground
+        q = W.at(*P, T.get('y', W.bank)); M.timber(q, q + np.array([0, ye - q[1], 0]), 2.4)
     return M
 
 

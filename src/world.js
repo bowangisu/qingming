@@ -33,7 +33,7 @@ uniform int uMode;        // 0 river, 1 bank, 2 revetment, 3 textured mesh, 4 cu
                           // 8 the painting, flat, 9 painted surface (vUV holds the painting px it shows), 10 painted post
 uniform vec3 uMap;        // a, s, c
 uniform vec4 uRegion;     // the painting px the paint texture covers
-uniform sampler2D uPaint, uMasks, uTone, uSilk, uWater, uTex;
+uniform sampler2D uPaint, uMasks, uTone, uSilk, uWater, uTex, uPaint2;   // the painting in two halves
 uniform vec2 uSilkSize, uWaterSize;
 uniform vec3 uEye, uHome; // the camera; the direction back toward the painter's own view
 uniform vec3 uMist;
@@ -52,6 +52,10 @@ float fbm(vec2 p) { float v = 0., a = .5; for (int i = 0; i < 4; i++) { v += a *
 
 vec2 painted(vec3 p) { return vec2(p.x + uMap.x * p.z, uMap.z - uMap.y * p.z - p.y); }
 vec2 inRegion(vec2 q) { return (q - uRegion.xy) / (uRegion.zw - uRegion.xy); }
+vec3 paintAt(vec2 uv) {             // both halves sampled, so mip levels stay right across the seam
+  vec2 a = vec2(uv.x * 2., uv.y), b = vec2(uv.x * 2. - 1., uv.y);
+  return mix(texture(uPaint, a).rgb, texture(uPaint2, b).rgb, step(.5, uv.x));
+}
 vec3 tone(vec2 uv, float land) {      // the tone texture holds the water's tone above the land's
   return texture(uTone, vec2(uv.x, clamp(uv.y, .004, .996) * .5 + land * .5)).rgb;
 }
@@ -82,7 +86,7 @@ void main() {
     vec2 out2 = max(uRegion.xy - q, q - uRegion.zw);
     float beyond = smoothstep(0., 260., max(max(out2.x, out2.y), 0.));    // past the painting's edge, into mist
     vec4 m = inside ? texture(uMasks, uv) : vec4(0.);
-    vec3 paint = texture(uPaint, uv).rgb;
+    vec3 paint = paintAt(uv);
     if (uMode == 0) {
       vec3 fill = weave(uWater, q, uWaterSize) * tone(uv, 0.);
       col = mix(fill, paint, m.r);
@@ -128,14 +132,14 @@ void main() {
   } else if (uMode == 7) {
     col = uColor.rgb * (.82 + .18 * clamp(dot(normalize(vNrm), normalize(vec3(.3, 1., -.4))), 0., 1.));
   } else if (uMode == 10) {          // a post: the painting along it, darkened toward timber
-    vec3 p = texture(uPaint, inRegion(vUV)).rgb;
+    vec3 p = paintAt(inRegion(vUV));
     col = mix(p * .9, uColor.rgb, .18) * light(vNrm);
   } else if (uMode == 9) {
     vec2 uv = inRegion(vUV);
     vec2 o = max(uRegion.xy - vUV, vUV - uRegion.zw);
     float beyondPx = max(max(o.x, o.y), 0.);
     float past = smoothstep(0., 6., beyondPx);                               // beyond the painting: its blank silk,
-    col = mix(texture(uPaint, uv).rgb, weave(uSilk, vUV, uSilkSize) * tone(uv, 1.), past);
+    col = mix(paintAt(uv), weave(uSilk, vUV, uSilkSize) * tone(uv, 1.), past);
     col *= uShade * light(vNrm) * (1. - .14 * (1. - smoothstep(0., 16., vPos.y)));
     col = mix(col, uMist, smoothstep(0., 160., beyondPx) * .92);              // then mist, as the ground does there
   } else {
@@ -144,7 +148,7 @@ void main() {
     // its edges, and the scan's pale top edge, melt into the mist round it
     vec2 e = min(q - uRegion.xy - vec2(0., 24.), uRegion.zw - q);
     float k = smoothstep(0., 120., min(e.x, e.y));
-    fragColor = vec4(mix(uMist, texture(uPaint, uv).rgb, k), 1.) * uAlpha;
+    fragColor = vec4(mix(uMist, paintAt(uv), k), 1.) * uAlpha;
     return;
   }
   fragColor = vec4(mist(col, 1.), 1.);
@@ -163,7 +167,7 @@ function createGL(canvas) {
   gl.useProgram(prog);
   const U = {};
   for (let i = 0, n = gl.getProgramParameter(prog, gl.ACTIVE_UNIFORMS); i < n; i++) { const a = gl.getActiveUniform(prog, i); U[a.name] = gl.getUniformLocation(prog, a.name); }
-  ['uPaint', 'uMasks', 'uTone', 'uSilk', 'uWater', 'uTex'].forEach((k, i) => gl.uniform1i(U[k], i));
+  ['uPaint', 'uMasks', 'uTone', 'uSilk', 'uWater', 'uTex', 'uPaint2'].forEach((k, i) => gl.uniform1i(U[k], i));
   gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
   gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
   function texture(bmp, { mip = true, repeat = false } = {}) {
@@ -477,7 +481,8 @@ function treeQuads(view, t) {
   for (const [i, T] of (S.trees || []).entries()) {
     const [x0, y0, x1, y1] = A.rects[T.sprite], h = y1 - y0, [ax, ay] = T.anchor;
     const sway = REDUCED ? 0 : T.sway * (Math.sin(t * .9 + i * 2) + .4 * Math.sin(t * 2.3 + i));
-    const l = -ax, r = x1 - x0 - ax, top = ay, bot = ay - h;
+    const bob = REDUCED ? 0 : (T.bob || 0) * Math.max(0, Math.sin(t * (.8 + (i % 4) * .15) + i * 1.3));
+    const l = -ax, r = x1 - x0 - ax, top = ay + bob, bot = ay - h + bob;
     const corners = [[l + sway, top], [r + sway, top], [l, bot], [r, bot]].map(([x, y]) => [T.p[0] + right[0] * x, T.p[1] + y, T.p[2] + right[2] * x]);
     const uv = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => [x / A.size[0], y / A.size[1]]);
     out.push({ tex: 'sprites', corners, uv, alpha: 1, pos: T.p });
@@ -679,8 +684,8 @@ function render(dt, t) {
   gl.uniformMatrix4fv(U.uVP, false, new Float32Array(view.vp));
   gl.uniform1f(U.uTime, t);
   gl.uniform3fv(U.uEye, view.eye); gl.uniform3fv(U.uMist, mistC);
-  const fogEnd = 2600 + cam.dist * 1.2, e = ease(cam.p);
-  gl.uniform4f(U.uFog, lerp(1e6, 900 + cam.dist * .6, e), lerp(2e6, fogEnd, e), lerp(1e6, 1500, e), lerp(2e6, 2900, e));
+  const fogEnd = 3800 + cam.dist * 1.2, e = ease(cam.p);
+  gl.uniform4f(U.uFog, lerp(1e6, 1300 + cam.dist * .6, e), lerp(2e6, fogEnd, e), lerp(1e6, 2300, e), lerp(2e6, 4200, e));
   // the ground
   G.draw(world.water, { mode: 0 });
   for (const m of world.banks) G.draw(m, { mode: 1 });
@@ -773,7 +778,7 @@ async function start() {
   try { G = createGL(canvas); } catch (e) { $('#loader p').textContent = 'This needs WebGL 2, which this browser does not provide. A recent Chrome, Edge, Firefox or Safari will show it.'; console.error(e); return; }
   S = await (await fetch(`${BASE}/scene.json`)).json();
   const pre = { premultiplyAlpha: 'premultiply' }, raw = { premultiplyAlpha: 'none', colorSpaceConversion: 'none' };
-  const jobs = [['paint', S.paint.file, pre, {}], ['masks', S.masks.file, raw, {}], ['tone', S.tone.file, raw, { mip: false }],
+  const jobs = [['paint', S.paint.files[0], pre, {}], ['paint2', S.paint.files[1], pre, {}], ['masks', S.masks.file, raw, {}], ['tone', S.tone.file, raw, { mip: false }],
     ['silk', S.silk.file, pre, { repeat: true }], ['water', S.water.file, pre, { repeat: true }],
     ['face', S.bridge.face.file, pre, {}], ['soffit', S.bridge.soffit_tex.file, pre, { repeat: true }], ['deck', S.bridge.deck_tex.file, pre, { repeat: true }],
     ...S.walker.pieces.map(P => ['w-' + P.id, P.file, pre, {}]), ...(S.crowd?.people || []).map(C => ['c-' + C.id, C.file, pre, {}]), ...(S.sprites ? [['sprites', S.sprites.file, pre, {}]] : [])];
@@ -781,6 +786,7 @@ async function start() {
   jobs.forEach(([k, , , o], i) => { tex[k] = G.texture(bmps[i], o); });
   const { gl, U } = G;
   ['paint', 'masks', 'tone', 'silk', 'water'].forEach((k, i) => { gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, tex[k]); });
+  gl.activeTexture(gl.TEXTURE6); gl.bindTexture(gl.TEXTURE_2D, tex.paint2);
   gl.uniform3f(U.uMap, S.map.a, S.map.s, S.map.c); gl.uniform4f(U.uRegion, ...S.region);
   gl.uniform2f(U.uSilkSize, ...S.silk.size); gl.uniform2f(U.uWaterSize, ...S.water.size);
   world = buildWorld();

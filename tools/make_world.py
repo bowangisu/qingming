@@ -7,7 +7,7 @@ and the banks, so the ground needs no texture of its own, only masks saying wher
 where it shows land, and blank water and blank silk for the rest: the swatches here, in the tone of the painting
 around them. The bridge is designed rather than traced, and its faces are painted by stretching the painted bridge
 between its own curves: the railing along the painted rail, the face between the painted deck line and the arch.
-Writes assets/world/<name>/: paint.webp, masks.png, tone.png, silk.webp, water.webp, bridge-face.webp,
+Writes assets/world/<name>/: paint-0.webp and paint-1.webp (the region's two halves), masks.webp, tone.png, silk.webp, water.webp, bridge-face.webp,
 bridge-soffit.webp, bridge-deck.webp, the porter's pieces, scene.json; and a preview of the masks in tools/.
 Usage: python3 tools/make_world.py life/world-bridge.json source/Alongtheriver_QingMing.jpg assets/world/bridge
 """
@@ -68,6 +68,18 @@ def cut(master, box, kind, halo=HALO):
         solid = np.asarray(fill_holes(Image.fromarray((grow(ink, halo) > .5).astype(np.uint8) * 255)), np.float32) / 255
         return np.clip(blur(solid, halo * .4) * 1.3, 0, 1)
     return np.asarray(brushwork(master, tuple(box), kind), np.float32) / 255
+
+
+def line_alpha(master, box, lo=7, hi=26):
+    """the brushwork in box as a continuous 0..1 alpha: how much darker than the silk around it each pixel is, so a
+    stroke keeps its own soft edge and thin lines stay whole (for trees and lattices cut along their strokes)"""
+    grey = master.crop(tuple(box)).convert('L')
+    half = grey.resize((max(1, grey.width // 2), max(1, grey.height // 2)), Image.BOX)
+    silk = np.asarray(half.filter(ImageFilter.MedianFilter(13)).resize(grey.size, Image.BILINEAR), np.float32)
+    silk = blur(silk, 6)
+    d = silk - blur(np.asarray(grey, np.float32), .7)
+    a = np.clip((d - lo) / (hi - lo), 0, 1)
+    return np.clip(np.maximum(a, blur(a, 1.2) * 1.25), 0, 1)
 
 
 def save(rgb, path, alpha=None, q=QUALITY):
@@ -262,13 +274,15 @@ def pack(sprites, width=2048, pad=3):
     return atlas, place
 
 
-def person_cell(us, vs, uh, vh, bottom):
+def person_cell(us, vs, uh, vh, bottom, k=1.0):
     """a standing figure's rough shape below its head centre (uh, vh): the head, widening to the shoulders, a body
-    down to the row bottom (per column)"""
-    d = vs - vh
-    head = np.sqrt(np.clip(11 ** 2 - np.clip(d + 2, None, 0) ** 2 * .75, 0, None))       # rounded on top
-    hw = np.where(d < 6, head, np.minimum(10 + (d - 6) * .8, 17) + np.clip(d - 20, 0, None) * .05)
-    return (d >= -14) & (vs <= bottom) & (np.abs(us - uh) <= np.minimum(hw, 19))
+    down to the row bottom (per column). k scales it: painted size (figures near the painter are drawn bigger), and
+    width for a porter's pole and baskets"""
+    kh, kw = k if isinstance(k, tuple) else (k, k)
+    d = (vs - vh) / kh
+    head = np.sqrt(np.clip(11 ** 2 - np.clip(d + 2, None, 0) ** 2 * .75, 0, None)) * kh   # rounded on top
+    hw = np.where(d < 6, head, (np.minimum(10 + (d - 6) * .8, 17) + np.clip(d - 20, 0, None) * .05) * kw)
+    return (d >= -14) & (vs <= bottom) & (np.abs(us - uh) <= np.minimum(hw, 19 * kw))
 
 
 def robe(C, A, cu, ratio, rng):
@@ -357,17 +371,19 @@ def stand_people(spec, master, silk_tone, br):
                 Z = (m['c'] - foot - gy) / m['s']
                 where = {'on': 'bank', 'p': [round(uh - m['a'] * Z, 1), gy, round(Z, 1)]}
                 near = foot
-            figs.append((near, uh, vh, foot, bottom, where))
+            scale = (foot - vh) / 82 if G['on'] != 'deck' else 1.0                 # this figure's painted size
+            wide = hd[3] if len(hd) > 3 else 1.0
+            figs.append((near, uh, vh, foot, bottom, where, (max(1.0, scale), max(1.0, scale) * wide)))
         owner = np.full((H, Wd), -1, np.int32)
         for i in sorted(range(len(figs)), key=lambda i: -figs[i][0]):
-            _, uh, vh, foot, bottom, _ = figs[i]
-            cell = person_cell(us, vs, uh, vh, bottom)
+            _, uh, vh, foot, bottom, _, k = figs[i]
+            cell = person_cell(us, vs, uh, vh, bottom, k)
             owner[cell & (owner < 0)] = i
-        for i, (_, uh, vh, foot, bottom, where) in enumerate(figs):
+        for i, (_, uh, vh, foot, bottom, where, k) in enumerate(figs):
             own = blur((owner == i).astype(np.float32), 1.6)            # rounded where two figures meet
             a = np.clip(blur(own * halo, 1.0) * 1.1, 0, 1) * np.clip(own * 1.6, 0, 1)
-            top = int(vh - 15 - y0); bot = int(round(foot - y0)) + 1
-            l = int(uh - 26 - x0); r = int(uh + 27 - x0)
+            top = int(vh - 15 * k[0] - y0); bot = int(round(foot - y0)) + 1
+            l = int(uh - 26 * k[1] - x0); r = int(uh + 27 * k[1] - x0)
             A = np.zeros((bot - top, r - l), np.float32); C = np.zeros((bot - top, r - l, 3), np.float32)
             sy0, sy1 = max(0, top), min(H, bot); sx0, sx1 = max(0, l), min(Wd, r)
             A[sy0 - top:sy1 - top, sx0 - l:sx1 - l] = a[sy0:sy1, sx0:sx1]
@@ -376,7 +392,8 @@ def stand_people(spec, master, silk_tone, br):
             gy0, gx0 = y0 - R[1], x0 - R[0]
             taken[gy0 + sy0:gy0 + sy1, gx0 + sx0:gx0 + sx1] = np.maximum(taken[gy0 + sy0:gy0 + sy1, gx0 + sx0:gx0 + sx1], a[sy0:sy1, sx0:sx1])
             C = retone(C, A, silk_tone)
-            C, A = robe(C, A, int(uh - x0 - l), ratio * np.asarray(silk_tone, np.float32) / np.asarray(silk_tone, np.float32), rng)
+            if G['on'] == 'deck' or G.get('robes'):
+                C, A = robe(C, A, int(uh - x0 - l), ratio, rng)
             # trim empty columns, keeping the feet's column as the anchor
             cols = np.where(A.max(0) > .02)[0]
             c0, c1 = cols.min(), cols.max() + 1
@@ -385,13 +402,17 @@ def stand_people(spec, master, silk_tone, br):
     return out, taken
 
 
+BUILD = {'traced': WM.traced, 'house': WM.house, 'awning': WM.awning, 'table': WM.awning, 'umbrella': WM.umbrella}
+
+
 def main(spec_path, master_path, out_dir):
     spec = json.loads(Path(spec_path).read_text())
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
     master = Image.open(master_path)
     R = spec['region']; W, H = R[2] - R[0], R[3] - R[1]
     rgb = np.asarray(master.crop(tuple(R)).convert('RGB'), np.float32)
-    save(rgb, out / 'paint.webp')
+    half = W // 2                                   # two textures, so each stays within what phones can hold
+    save(rgb[:, :half], out / 'paint-0.webp'); save(rgb[:, half:], out / 'paint-1.webp')
 
     # where the painting shows open water: inside the river's outline, away from dense brushwork, and not under
     # anything rebuilt in 3D; where it shows land: outside the outline and not under anything rebuilt
@@ -413,7 +434,7 @@ def main(spec_path, master_path, out_dir):
     Wd = WM.World(spec['map']['a'], spec['map']['s'], spec['map']['c'], spec['bank'])
     models = []
     for Md in spec.get('models', []):
-        M = {'house': WM.house, 'awning': WM.awning, 'umbrella': WM.umbrella}[Md['type']](Wd, Md)
+        M = BUILD[Md['type']](Wd, Md)
         models.append(M.export(Wd, Md['id'], kind=Md['type']))
         rebuilt = np.maximum(rebuilt, grow((M.outline(Wd, (W, H), R) > .5).astype(np.float32), 3))
 
@@ -428,17 +449,18 @@ def main(spec_path, master_path, out_dir):
         rebuilt = np.maximum(rebuilt, grow((taken > .2).astype(np.float32), 3))
     # trees, stood up as cut-outs of their brushwork, at their trunk's foot
     trees = []
-    for T in spec.get('trees', []):
+    for T in spec.get('trees', []) + spec.get('standees', []):
         xs = [p[0] for p in T['poly']]; ys = [p[1] for p in T['poly']]
         box = [max(R[0], int(min(xs))), max(R[1] + 22, int(min(ys))), min(R[2], int(max(xs))), min(R[3], int(max(ys)))]
         bw, bh = box[2] - box[0], box[3] - box[1]
         k = T.get('kind', 'halo')
-        a = np.clip(blur(poly_mask((bw, bh), T['poly'], box), 2) * (cut(master, box, 'halo', 2) if k == 'halo' else np.clip(blur(cut(master, box, 'ink'), 1.0) * 1.4, 0, 1)), 0, 1)
+        inner = {'halo': lambda: cut(master, box, 'halo', T.get('halo', 3)), 'ink': lambda: line_alpha(master, box)}[k]()
+        a = np.clip(blur(poly_mask((bw, bh), T['poly'], box), 2) * inner, 0, 1)
         a *= np.clip((T['foot'][1] - (np.arange(bh)[:, None] + box[1])) / 4 + .5, 0, 1)        # nothing below the foot
         col = retone(np.asarray(master.crop(tuple(box)).convert('RGB'), np.float32), a, silk_tone)
         key = f"tree-{T['id']}"; sprites[key] = np.dstack([np.clip(col, 0, 255), a * 255]).astype(np.uint8)
         gy = T.get('y', spec['bank']); Z = (spec['map']['c'] - T['foot'][1] - gy) / spec['map']['s']
-        trees.append({'sprite': key, 'anchor': [T['foot'][0] - box[0], T['foot'][1] - box[1]], 'sway': T.get('sway', 3),
+        trees.append({'sprite': key, 'anchor': [T['foot'][0] - box[0], T['foot'][1] - box[1]], 'sway': T.get('sway', 0), 'bob': T.get('bob', 0),
                       'p': [round(T['foot'][0] - spec['map']['a'] * Z, 1), gy, round(Z, 1)]})
         g = np.zeros((H, W), np.float32); g[box[1] - R[1]:box[3] - R[1], box[0] - R[0]:box[2] - R[0]] = a
         rebuilt = np.maximum(rebuilt, grow((g > .3).astype(np.float32), 3))
@@ -448,7 +470,8 @@ def main(spec_path, master_path, out_dir):
     water_s, land_s = np.clip(blur(water, 3), 0, 1), np.clip(blur(land, 3), 0, 1)
     busy = np.clip((dense - .12) / .25, 0, 1)                        # how much a stretch of land is a thing standing up
     m = np.dstack([shrink(water_s, MASK), shrink(land_s, MASK), np.zeros((H // MASK, W // MASK)), shrink(busy, MASK)])
-    save(m[..., :3] * 255, out / 'masks.png', alpha=m[..., 3])
+    px = (np.clip(m, 0, 1) * 255).astype(np.uint8)
+    Image.fromarray(px, 'RGBA').save(out / 'masks.webp', lossless=True, method=6)
 
     # the tone under the fills: the painting's own colour, carried in from the water and the land nearby
     small = shrink(rgb, TONE)
@@ -464,7 +487,7 @@ def main(spec_path, master_path, out_dir):
     water_tone = np.median(rgb[water > .5], 0)
 
     scene = {'map': spec['map'], 'region': R, 'bank': spec['bank'], 'river': spec['river']['poly'],
-             'paint': {'file': 'paint.webp', 'size': [W, H]}, 'masks': {'file': 'masks.png', 'scale': MASK},
+             'paint': {'files': ['paint-0.webp', 'paint-1.webp'], 'size': [W, H]}, 'masks': {'file': 'masks.webp', 'scale': MASK},
              'tone': {'file': 'tone.png', 'scale': TONE}, 'silk': {'file': 'silk.webp', 'size': list(silk.shape[1::-1]), 'tone': [round(float(v), 1) for v in silk_tone]},
              'water': {'file': 'water.webp', 'size': list(wat.shape[1::-1]), 'tone': [round(float(v), 1) for v in water_tone]}}
     b = bridge_textures(spec, master, out, silk_tone)
@@ -493,8 +516,8 @@ def main(spec_path, master_path, out_dir):
     if models: scene['models'] = models
     if sprites:
         atlas, place = pack(sprites)
-        save(atlas[..., :3], out / 'sprites.png', alpha=atlas[..., 3] / 255)
-        scene['sprites'] = {'file': 'sprites.png', 'size': [atlas.shape[1], atlas.shape[0]],
+        save(atlas[..., :3], out / 'sprites.webp', alpha=atlas[..., 3] / 255)
+        scene['sprites'] = {'file': 'sprites.webp', 'size': [atlas.shape[1], atlas.shape[0]],
                             'rects': {k: v for k, v in place.items()}}
     if 'boat' in spec: scene['boat'] = {k: v for k, v in spec['boat'].items() if k not in ('poly', 'about')}
     if 'boats' in spec: scene['boats'] = [{k: v for k, v in Bt.items() if k != 'about'} for Bt in spec['boats']]

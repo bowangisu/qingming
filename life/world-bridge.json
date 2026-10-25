@@ -5,15 +5,15 @@
   "s": 0.5,
   "c": 1300
  },
- "region": [17600, 0, 21600, 1350],
+ "region": [16400, 0, 22800, 1800],
  "bank": 110,
  "river": {
   "about": "the water's edge in world (X, Z); land is everything outside, raised to the bank height with a timber revetment along this line",
-  "poly": [[16178, 460], [17271, 470], [17664, 480], [17716, 620], [17518, 1060], [17336, 1420], [17342, 1540], [17900, 1400], [18080, 1060], [18214, 753], [18430, 650], [18700, 520], [19000, 430], [19450, 420], [19620, 300], [20600, 290], [22600, 320], [22600, 1760], [20600, 1790], [19600, 1790], [18951, 1740], [18735, 1843], [18300, 1990], [17400, 2080], [16400, 2120]]
+  "poly": [[14678, 460], [16078, 460], [17271, 470], [17664, 480], [17716, 620], [17518, 1060], [17336, 1420], [17342, 1540], [17900, 1400], [18080, 1060], [18214, 753], [18430, 650], [18700, 520], [19000, 430], [19450, 420], [19620, 300], [20600, 290], [20896, 220], [21384, -120], [21844, -420], [22250, -500], [22562, -860], [22848, -1140], [24798, -1140], [22796, 1720], [21168, 1760], [20717, 1690], [20250, 2100], [19513, 2124], [19380, 2100], [19554, 1780], [19204, 1780], [18951, 1740], [18735, 1843], [18300, 1990], [17634, 1880], [17173, 1796], [16931, 1956], [16224, 1966], [15203, 1996], [13603, 1996]]
  },
  "water_paint": {
   "about": "where the painting shows open water (master px), before figures, boats and the bridge are taken out of it",
-  "poly": [[17600, 950], [18000, 945], [18150, 875], [18260, 655], [18330, 475], [18420, 415], [18700, 420], [18990, 470], [19000, 1010], [19420, 1030], [19620, 1070], [20450, 1050], [21600, 990], [21600, 430], [20800, 440], [20300, 430], [20100, 440], [20080, 380], [19950, 440], [19300, 460], [19000, 330], [18700, 290], [17600, 230]]
+  "poly": [[16400, 960], [17600, 950], [18000, 945], [18150, 875], [18260, 655], [18330, 475], [18420, 415], [18700, 420], [18990, 470], [19000, 1010], [19420, 1030], [19620, 1070], [20450, 1050], [20800, 1052], [21050, 1090], [21300, 1262], [21550, 1412], [21950, 1432], [22050, 1762], [22800, 1772], [22800, 322], [22400, 318], [21900, 352], [21720, 148], [21000, 136], [20850, 148], [20800, 440], [20300, 430], [20100, 440], [20080, 380], [19950, 440], [19300, 460], [19000, 330], [18700, 290], [18300, 222], [17600, 217], [16400, 200]]
  },
  "bridge": {
   "about": "the bridge is designed, not traced: a symmetric arch between two feet on the river's edge, its deck landing on the banks; the faces are painted with the painted bridge's own front, stretched from its curves",
@@ -52,8 +52,10 @@
  },
  "people": [
   {"id": "deck", "about": "the crowd on the bridge: head centres (master px), optionally how far back across the deck (0 front railing, 1 far railing)", "on": "deck", "box": [19040, 150, 20000, 512], "heads": [[19076, 405], [19092, 362, 0.35], [19150, 332], [19180, 305], [19236, 254], [19222, 215, 0.85], [19270, 178, 0.9], [19292, 236], [19300, 278], [19332, 212], [19352, 228], [19415, 220], [19450, 236], [19482, 203], [19528, 212], [19582, 192], [19630, 192], [19676, 203], [19714, 208], [19765, 222], [19863, 252], [19893, 268], [19925, 280]]},
-  {"id": "boat-porters", "about": "the porters on the loading boat at the left bank; their deck is y above the water. Heads, and each one's height as painted", "on": "bank", "y": 52, "box": [17690, 660, 17980, 860], "heads": [[17734, 733, 105], [17775, 690, 145], [17842, 697, 140], [17872, 690, 145], [17890, 697, 140], [17922, 688, 148]]},
-  {"id": "street", "about": "people in the street at the bridge's left foot: heads, and each one's height as painted", "on": "bank", "box": [18380, 380, 18960, 1110], "heads": [[18580, 835, 175], [18465, 979, 120], [18696, 527, 110], [18757, 625, 100], [18644, 669, 75], [18854, 401, 115], [18810, 454, 95], [18433, 793, 115]]}
+  {"id": "boat-porters", "about": "the porters on the loading boat at the left bank; their deck is y above the water. Heads, and each one's height as painted", "on": "bank", "y": 52, "box": [17690, 660, 17980, 860], "heads": [[17734, 733, 105], [17775, 690, 145], [17842, 697, 140], [17872, 690, 145], [17890, 697, 140], [17922, 688, 148]], "robes": true, "halo": 7},
+  {"id": "street", "about": "people in the street at the bridge's left foot: heads, and each one's height as painted", "on": "bank", "box": [18380, 380, 18960, 1110], "heads": [[18580, 835, 175], [18465, 979, 120], [18696, 527, 110], [18757, 625, 100], [18644, 669, 75], [18854, 401, 115], [18810, 454, 95], [18433, 793, 115]], "halo": 7},
+  {"id": "street-south", "about": "people in the street between the wine shop and the bridge: heads, height as painted, and how wide (porters with baskets)", "on": "bank", "box": [17420, 1230, 18440, 1800], "heads": [[17515, 1612, 160], [17610, 1632, 160], [17541, 1712, 80], [17772, 1585, 180], [17652, 1250, 190], [18185, 1585, 175, 1.8], [18330, 1536, 170, 1.3]], "halo": 7},
+  {"id": "trackers", "about": "the trackers hauling the passenger boat upstream on its towline", "on": "bank", "box": [21780, 120, 22200, 420], "heads": [[21825, 150, 62], [21880, 170, 58], [21940, 172, 58], [21995, 182, 58], [22085, 215, 58], [22125, 322, 62]], "halo": 7}
  ],
  "crowd_height": 84,
  "crowd": [
@@ -97,8 +99,6 @@
   {"id": "far-shop-2", "type": "house", "base": [[18340, 150], [18530, 140]], "recede": [0, -1], "depth": 80, "wall": 70, "posts": true, "bays": 2, "roof": {"type": "gable", "rise": 40, "eave": 12}},
   {"id": "far-house", "type": "house", "base": [[17640, 150], [17880, 140]], "recede": [0, -1], "depth": 80, "wall": 60, "roof": {"type": "gable", "rise": 40, "eave": 12}},
   {"id": "thatched-shed", "about": "the thatched shed on the near bank, its diners under it", "type": "house", "base": [[18955, 1290], [19420, 1290]], "recede": [0, -1], "depth": 192, "wall": 190, "posts": true, "bays": 3, "roof": {"type": "gable", "rise": 45, "eave": 14}},
-  {"id": "near-roof-left", "about": "the tiled roofs along the bottom edge", "type": "house", "base": [[18950, 1490], [19310, 1490]], "recede": [0, -1], "depth": 240, "wall": 110, "roof": {"type": "hip", "hip": 0.45, "rise": 111, "eave": 20}},
-  {"id": "near-roof-right", "type": "house", "base": [[19835, 1445], [20690, 1420]], "recede": [0, -1], "depth": 240, "wall": 110, "roof": {"type": "gable", "rise": 105, "eave": 20}},
   {"id": "near-umbrella-1", "type": "umbrella", "at": [19520, 1105], "y": 260, "r": 100},
   {"id": "near-umbrella-2", "type": "umbrella", "at": [19800, 1262], "y": 230, "r": 84},
   {"id": "near-awning", "type": "awning", "corners": [[19470, 1300], [19790, 1300], [19900, 1160], [19580, 1160]], "y": [200, 250]},
@@ -110,16 +110,57 @@
   {"id": "left-umbrella-3", "type": "umbrella", "at": [18780, 940], "y": 170, "r": 95},
   {"id": "left-umbrella-4", "type": "umbrella", "at": [17990, 1030], "y": 185, "r": 90},
   {"id": "far-right-house-1", "about": "the shops on the far bank, right of the teahouse", "type": "house", "base": [[20830, 118], [21110, 108]], "recede": [0, -1], "depth": 70, "wall": 70, "roof": {"type": "gable", "rise": 40, "eave": 12}},
-  {"id": "far-right-house-2", "type": "house", "base": [[21170, 112], [21420, 108]], "recede": [0, -1], "depth": 70, "wall": 62, "roof": {"type": "gable", "rise": 38, "eave": 12}}
+  {"id": "far-right-house-2", "type": "house", "base": [[21170, 112], [21420, 108]], "recede": [0, -1], "depth": 70, "wall": 62, "roof": {"type": "gable", "rise": 38, "eave": 12}},
+  {"id": "near-hall", "about": "the big hall on the near bank below the bridge: a hip-and-gable roof, its small gable toward the painter", "type": "traced", "eaves": [[18440, 1776], [19300, 1782], [19590, 1392], [18770, 1338]], "ridge": [[18862, 1492], [19112, 1196]], "eave_y": 230, "ridge_y": 470, "walls": 30},
+  {"id": "near-restaurant", "about": "the open restaurant on the near bank, diners at its tables", "type": "traced", "eaves": [[19620, 1452], [20470, 1452]], "ridge": [[19790, 1186], [20400, 1186]], "eave_y": 250, "ridge_y": 415, "walls": 20},
+  {"id": "near-front-roof", "type": "traced", "eaves": [[19540, 1840], [20500, 1840]], "ridge": [[19600, 1646], [20160, 1646]], "eave_y": 230, "ridge_y": 350, "walls": 20},
+  {"id": "near-long-roof", "about": "the long roof under the willow, right", "type": "traced", "eaves": [[20500, 1585], [21430, 1705]], "ridge": [[20885, 1336], [21390, 1588]], "eave_y": 230, "ridge_y": 330, "walls": 20},
+  {"id": "wine-hall", "about": "the hall of the wine shop at the bridge's west end (the 脚店), its long roof running back", "type": "traced", "eaves": [[16400, 1700], [16570, 1800], [16845, 1245], [16470, 1245]], "ridge": [[16440, 1470], [16700, 1520]], "eave_y": 240, "ridge_y": 330, "walls": 20},
+  {"id": "wine-gate-roof", "about": "the wine shop's gate, under its pole gateway", "type": "traced", "eaves": [[16865, 1392], [17205, 1392], [17272, 1165], [16840, 1262]], "ridge": [[16930, 1250], [17170, 1240]], "eave_y": 440, "ridge_y": 470, "open": 14},
+  {"id": "far-west-house", "type": "house", "base": [[16770, 165], [16890, 160]], "recede": [0, -1], "depth": 60, "wall": 55, "roof": {"type": "gable", "rise": 30, "eave": 10}},
+  {"id": "far-west-teahouse", "type": "house", "base": [[17360, 150], [17470, 148]], "recede": [0, -1], "depth": 50, "wall": 45, "posts": true, "bays": 2, "roof": {"type": "gable", "rise": 25, "eave": 8}},
+  {"id": "far-bank-awning", "about": "stalls on the far bank behind the bridge", "type": "awning", "corners": [[18960, 110], [19120, 110], [19120, 70], [18960, 60]], "y": [190, 200]},
+  {"id": "far-bank-table-1", "type": "table", "corners": [[19110, 62], [19200, 62], [19205, 48], [19115, 48]], "y": [140, 140]},
+  {"id": "far-bank-table-2", "type": "table", "corners": [[19380, 62], [19460, 62], [19465, 46], [19385, 46]], "y": [140, 140]},
+  {"id": "far-bank-table-3", "type": "table", "corners": [[19520, 60], [19620, 60], [19625, 44], [19525, 44]], "y": [140, 140]},
+  {"id": "far-bank-umbrella-1", "type": "umbrella", "at": [19290, 92], "y": 200, "r": 42},
+  {"id": "far-bank-umbrella-2", "type": "umbrella", "at": [19530, 40], "y": 200, "r": 32},
+  {"id": "street-mat", "about": "the big woven sunshade over the stalls at the left street's corner", "type": "awning", "corners": [[17610, 1095], [17960, 1090], [17990, 960], [17640, 950]], "y": [150, 175]},
+  {"id": "street-hardware", "about": "a stall of knives, scissors and tools", "type": "table", "corners": [[18090, 1100], [18260, 1100], [18280, 1040], [18110, 1035]], "y": [150, 150]},
+  {"id": "street-goods-table", "type": "table", "corners": [[18440, 690], [18590, 685], [18600, 640], [18450, 640]], "y": [150, 150]},
+  {"id": "street-umbrella-big", "about": "the two umbrellas over a stall by the near-bank hall", "type": "umbrella", "at": [18555, 1440], "y": 225, "r": 140},
+  {"id": "street-umbrella-top", "type": "umbrella", "at": [18575, 1388], "y": 277, "r": 108}
  ],
  "boats": [
   {"id": "moored-boat", "about": "the covered boat moored at the far bank, right of the bridge", "waterline": [[20450, 445], [20560, 458], [20700, 462], [20850, 458], [20960, 448]], "gunwale": [[20450, 412], [20560, 422], [20700, 426], [20850, 422], [20960, 412]], "beam": 80, "cabin": {"from": 0.03, "to": 0.9, "inset": 8, "wall": 62, "arch": 12}, "rock": {"roll": 0.6, "pitch": 0.3, "heave": 1.2, "hz": 0.13}},
   {"id": "skiff", "about": "the empty skiff by the near bank", "waterline": [[18965, 968], [19050, 985], [19150, 996], [19220, 990], [19262, 955]], "gunwale": [[18965, 960], [19050, 975], [19150, 985], [19220, 975], [19255, 945]], "beam": 34, "rock": {"roll": 1.6, "pitch": 0.6, "heave": 1.0, "hz": 0.2}},
   {"id": "loading-boat", "about": "the boat at the left bank, porters carrying its sacks ashore", "waterline": [[17690, 860], [17800, 905], [17900, 925], [18000, 935], [18100, 935]], "gunwale": [[17660, 835], [17780, 848], [17900, 860], [18000, 868], [18100, 872]], "beam": 110, "rock": {"roll": 0.5, "pitch": 0.2, "heave": 0.8, "hz": 0.12}},
-  {"id": "far-right-boat", "about": "the cargo boat moored along the far bank, right", "waterline": [[20880, 300], [21100, 305], [21300, 300], [21500, 290], [21590, 285]], "gunwale": [[20880, 235], [21100, 240], [21300, 236], [21500, 225], [21590, 218]], "beam": 110, "cabin": {"from": 0.12, "to": 0.32, "inset": 8, "wall": 40, "arch": 14}, "rock": {"roll": 0.5, "pitch": 0.2, "heave": 1.0, "hz": 0.11}}
+  {"id": "far-right-boat", "about": "the cargo boat moored along the far bank, right", "waterline": [[20880, 300], [21100, 305], [21300, 300], [21500, 290], [21590, 285]], "gunwale": [[20880, 235], [21100, 240], [21300, 236], [21500, 225], [21590, 218]], "beam": 80, "cabin": {"from": 0.12, "to": 0.32, "inset": 8, "wall": 40, "arch": 14}, "rock": {"roll": 0.5, "pitch": 0.2, "heave": 1.0, "hz": 0.11}},
+  {"id": "far-long-boat-1", "about": "long boats moored along the far bank, west", "waterline": [[16430, 350], [16600, 352], [16800, 352], [16990, 350]], "gunwale": [[16430, 320], [16600, 322], [16800, 322], [16990, 320]], "beam": 90, "cabin": {"from": 0.04, "to": 0.96, "inset": 6, "wall": 50, "arch": 8}, "rock": {"roll": 0.4, "pitch": 0.2, "heave": 0.8, "hz": 0.1}},
+  {"id": "far-long-boat-2", "waterline": [[16995, 350], [17200, 350], [17360, 346]], "gunwale": [[16995, 318], [17200, 318], [17360, 314]], "beam": 80, "cabin": {"from": 0.05, "to": 0.9, "inset": 6, "wall": 46, "arch": 8}, "rock": {"roll": 0.4, "pitch": 0.2, "heave": 0.8, "hz": 0.12}},
+  {"id": "far-covered-boat", "waterline": [[17620, 330], [17750, 334], [17880, 330]], "gunwale": [[17620, 302], [17750, 306], [17880, 302]], "beam": 70, "cabin": {"from": 0.05, "to": 0.6, "inset": 5, "wall": 55, "arch": 22}, "rock": {"roll": 0.6, "pitch": 0.3, "heave": 1.0, "hz": 0.14}},
+  {"id": "far-boat-3", "waterline": [[17890, 330], [18050, 334], [18240, 328]], "gunwale": [[17890, 300], [18050, 304], [18240, 298]], "beam": 80, "cabin": {"from": 0.1, "to": 0.95, "inset": 6, "wall": 38, "arch": 14}, "rock": {"roll": 0.5, "pitch": 0.2, "heave": 0.9, "hz": 0.12}},
+  {"id": "east-passenger-boat", "about": "the big passenger boat being towed upstream at the east end", "waterline": [[22360, 700], [22450, 780], [22600, 830], [22800, 860]], "gunwale": [[22300, 645], [22450, 700], [22600, 722], [22800, 732]], "beam": 150, "cabin": {"from": 0.4, "to": 1.0, "inset": 10, "wall": 110, "arch": 30}, "rock": {"roll": 0.5, "pitch": 0.25, "heave": 1.2, "hz": 0.1}},
+  {"id": "east-sampan", "waterline": [[21960, 1560], [22050, 1590], [22150, 1600], [22240, 1580]], "gunwale": [[21960, 1500], [22050, 1540], [22150, 1555], [22240, 1520]], "beam": 60, "rock": {"roll": 1.2, "pitch": 0.5, "heave": 1.0, "hz": 0.18}},
+  {"id": "east-covered-boat", "waterline": [[22240, 1620], [22400, 1640], [22600, 1640], [22760, 1620]], "gunwale": [[22240, 1570], [22400, 1585], [22600, 1585], [22760, 1560]], "beam": 110, "cabin": {"from": 0.05, "to": 0.95, "inset": 6, "wall": 70, "arch": 18}, "rock": {"roll": 0.7, "pitch": 0.3, "heave": 1.0, "hz": 0.13}}
  ],
  "trees": [
   {"id": "near-willow", "about": "the willow over the near bank's rooftops, right of the bridge: its trunk rises from behind the roofs", "poly": [[20250, 780], [20470, 720], [20700, 730], [20900, 800], [21000, 900], [21000, 1180], [20840, 1240], [20700, 1290], [20620, 1290], [20570, 1130], [20400, 1000], [20250, 900]], "foot": [20640, 1290], "sway": 6, "kind": "ink"},
-  {"id": "far-willow", "about": "the two willows on the far bank by the teahouse", "poly": [[20400, 30], [20780, 30], [20780, 170], [20700, 240], [20640, 262], [20560, 262], [20470, 180], [20400, 150]], "foot": [20590, 262], "sway": 3, "kind": "ink"}
+  {"id": "far-willow", "about": "the two willows on the far bank by the teahouse", "poly": [[20400, 30], [20780, 30], [20780, 170], [20700, 240], [20640, 262], [20560, 262], [20470, 180], [20400, 150]], "foot": [20590, 262], "sway": 3, "kind": "ink"},
+  {"id": "wine-willow", "about": "the willow over the wine shop", "poly": [[16400, 720], [16900, 720], [16900, 1235], [16400, 1235]], "foot": [16640, 1235], "sway": 4, "kind": "ink"},
+  {"id": "big-east-willow", "about": "the great willows on the near bank at the east end", "poly": [[20950, 380], [21650, 380], [21650, 1290], [20950, 1290]], "foot": [21430, 1290], "sway": 6, "kind": "ink"},
+  {"id": "far-west-willow-1", "poly": [[16440, 22], [16720, 22], [16720, 190], [16440, 190]], "foot": [16590, 190], "sway": 3, "kind": "ink"},
+  {"id": "far-west-willow-2", "poly": [[17020, 22], [17280, 22], [17280, 190], [17020, 190]], "foot": [17150, 190], "sway": 3, "kind": "ink"},
+  {"id": "far-east-willows", "about": "the willows where the trackers pull the boat", "poly": [[21880, 22], [22420, 22], [22420, 320], [21880, 320]], "foot": [22200, 300], "sway": 3, "kind": "ink"}
+ ],
+ "standees": [
+  {"id": "wine-gateway", "about": "the wine shop's festive pole gateway (彩楼欢门), cut along its poles; it stands on the gate's roof", "poly": [[16840, 720], [17290, 720], [17290, 1290], [16840, 1290]], "foot": [17060, 1290], "y": 470, "kind": "ink"},
+  {"id": "wine-horse", "about": "a horse at the wine shop's gate", "poly": [[17250, 1585], [17350, 1585], [17350, 1770], [17250, 1770]], "foot": [17300, 1770], "bob": 1.2},
+  {"id": "black-donkey", "poly": [[17915, 1478], [18090, 1478], [18090, 1632], [17915, 1632]], "foot": [18000, 1630], "bob": 1.5},
+  {"id": "street-horse", "poly": [[18535, 1178], [18705, 1178], [18705, 1352], [18535, 1352]], "foot": [18620, 1350], "bob": 1.2},
+  {"id": "sedan", "about": "a sedan chair carried up the street", "poly": [[18685, 428], [18800, 428], [18800, 588], [18685, 588]], "foot": [18742, 586], "bob": 1.0},
+  {"id": "far-bank-cart", "about": "a handcart at the bridge's far end", "poly": [[19835, 95], [20010, 95], [20010, 212], [19835, 212]], "foot": [19930, 210]},
+  {"id": "timber-cart", "about": "a two-wheeled cart loaded with timber, pushed toward the wine shop", "poly": [[17460, 1320], [17690, 1300], [17760, 1330], [17800, 1430], [17760, 1560], [17560, 1570], [17470, 1520], [17420, 1450]], "foot": [17640, 1560], "halo": 5},
+  {"id": "basket-cart", "about": "a covered two-wheeled cart", "poly": [[18060, 1235], [18200, 1225], [18300, 1290], [18310, 1380], [18210, 1470], [18110, 1470], [18050, 1380]], "foot": [18170, 1470], "halo": 5}
  ]
 }

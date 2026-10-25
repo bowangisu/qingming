@@ -18,10 +18,12 @@ page.
 
 **Walk the bridge in 3D** (`world.html`, linked from the Rainbow Bridge scene) rebuilds that scene as a small world
 you can go all the way round. It opens on the painting, flat, then lifts into 3D: the bridge and the big boat are
-rebuilt as simple models dressed in their own painted timbers, and so are the other boats, the houses, sheds, stalls
-and umbrellas around it. The painting's own people stand up where they are painted: the crowd on the bridge, the
-porters on a boat and the street at the bridge's foot. The river and the banks are the painting laid back down on the
-ground it shows, and you walk a porter from elsewhere on the scroll across the deck among them.
+rebuilt as simple models dressed in their own painted timbers, and so are the other boats, the houses, halls, sheds,
+stalls, tables and umbrellas along both banks, from the wine shop with its pole gateway west of the bridge to the big
+passenger boat being towed upstream east of it. The painting's own people, carts, horses and donkeys stand up where
+they are painted: the crowd on the bridge, the street at the bridge's foot, the trackers on the far bank. The river
+and the banks are the painting laid back down on the ground it shows, and you walk a porter from elsewhere on the
+scroll across the deck among them.
 
 ## Run it
 
@@ -73,9 +75,13 @@ at Y = 0 and the banks raised to Y = 110. A point (X, Y, Z) is painted at *u* = 
   and a mast with its stays sit on top. Every vertex carries the painting pixel it shows. On the side the painter saw,
   that is the pixel it is painted at. On the far side, which he never saw, it is the matching pixel on the near side,
   mirrored. It rocks slowly.
+- **The scene** covers x 16,400–22,800 of the scroll, its full height, read as the painting in two halves (so each
+  texture stays within what phones hold) with masks for open water and land beside it.
 - **Houses, sheds, awnings and umbrellas** (`tools/world_models.py`) are simple shapes fitted over the painted ones by
-  eye: a house is a front wall's two painted corners, a depth, a wall height and a hip, gable or shed roof; an awning
-  is four painted corners on poles; an umbrella is a painted centre and radius. Every vertex shows the painting where
+  eye: a house is a front wall's two painted corners, a depth, a wall height and a hip, gable or shed roof; a *traced*
+  building is its painted roof's eave corners and ridge ends, at an eave and ridge height, with walls or corner posts
+  under it (the big near-bank halls, the wine shop and its gate); an awning or a table is four painted corners on
+  poles; an umbrella is a painted centre and radius. Every vertex shows the painting where
   the painter could see that face and the opposite face, mirrored, where he could not; posts show the painted post
   they stand in front of. They were placed by drawing each model's edges over the scan and adjusting by eye.
 - **More boats** use the big boat's builder: a painted waterline and gunwale, a beam, an optional cabin, a slow rock.
@@ -84,7 +90,9 @@ at Y = 0 and the banks raised to Y = 110. A point (X, Y, Z) is painted at *u* = 
   and where the painting hides its legs (behind the railing, behind people in front) its robe is carried down to its
   feet with a hem and shoes drawn in the painting's ink. On the bridge each stands behind the front railing, as far
   back across the deck as it is painted above the rail.
-- **Willows** are cut-outs of their brushwork that sway from the trunk's foot.
+- **Willows, carts, horses, donkeys, a sedan chair and the wine shop's pole gateway** are cut-outs that turn to face
+  you, standing at their painted foot: carts and animals cut along their outline, willows and the gateway along their
+  strokes (how much darker than the silk each pixel is, so thin lines stay whole). Willows sway; animals shift.
 - **Walkers** turn to face you: the porter from the street outside Dr. Zhao's shop (x ≈ 1150–1375, y ≈ 1055–1250),
   in three pieces so his baskets swing, and seven walkers traced from other scenes. Every cut-out's colours are scaled
   so the silk round it matches the scene's silk, so no pale halo shows. Seen as painted, cut-outs stand flat across

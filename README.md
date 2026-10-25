@@ -18,8 +18,10 @@ page.
 
 **Walk the bridge in 3D** (`world.html`, linked from the Rainbow Bridge scene) rebuilds that scene as a small world
 you can go all the way round. It opens on the painting, flat, then lifts into 3D: the bridge and the big boat are
-rebuilt as simple models dressed in their own painted timbers, the river and the banks are the painting laid back down
-on the ground it shows, and you walk a porter from elsewhere on the scroll across the deck among a few other walkers.
+rebuilt as simple models dressed in their own painted timbers, and so are the other boats, the houses, sheds, stalls
+and umbrellas around it. The painting's own people stand up where they are painted: the crowd on the bridge, the
+porters on a boat and the street at the bridge's foot. The river and the banks are the painting laid back down on the
+ground it shows, and you walk a porter from elsewhere on the scroll across the deck among them.
 
 ## Run it
 
@@ -71,9 +73,22 @@ at Y = 0 and the banks raised to Y = 110. A point (X, Y, Z) is painted at *u* = 
   and a mast with its stays sit on top. Every vertex carries the painting pixel it shows. On the side the painter saw,
   that is the pixel it is painted at. On the far side, which he never saw, it is the matching pixel on the near side,
   mirrored. It rocks slowly.
-- **People** are cut-outs that always turn to face you: the porter from the street outside Dr. Zhao's shop (x ≈
-  1150–1375, y ≈ 1055–1250), in three pieces so his baskets swing, and seven walkers traced from other scenes. Their
-  colours are scaled so the silk round them matches the scene's silk, so no pale halo shows.
+- **Houses, sheds, awnings and umbrellas** (`tools/world_models.py`) are simple shapes fitted over the painted ones by
+  eye: a house is a front wall's two painted corners, a depth, a wall height and a hip, gable or shed roof; an awning
+  is four painted corners on poles; an umbrella is a painted centre and radius. Every vertex shows the painting where
+  the painter could see that face and the opposite face, mirrored, where he could not; posts show the painted post
+  they stand in front of. They were placed by drawing each model's edges over the scan and adjusting by eye.
+- **More boats** use the big boat's builder: a painted waterline and gunwale, a beam, an optional cabin, a slow rock.
+- **The painting's own people** are cut out where they stand. For each group the spec lists head centres; each figure
+  takes the brushwork inside a rough figure shape below its head (the nearer of two figures keeps what they share),
+  and where the painting hides its legs (behind the railing, behind people in front) its robe is carried down to its
+  feet with a hem and shoes drawn in the painting's ink. On the bridge each stands behind the front railing, as far
+  back across the deck as it is painted above the rail.
+- **Willows** are cut-outs of their brushwork that sway from the trunk's foot.
+- **Walkers** turn to face you: the porter from the street outside Dr. Zhao's shop (x ≈ 1150–1375, y ≈ 1055–1250),
+  in three pieces so his baskets swing, and seven walkers traced from other scenes. Every cut-out's colours are scaled
+  so the silk round it matches the scene's silk, so no pale halo shows. Seen as painted, cut-outs stand flat across
+  the scroll; as the camera frees they turn to face it.
 - **Camera:** it opens on the painting through a very long lens far off along the painter's own line of sight, with a
   shear that turns its picture into the scroll's oblique one. Then it lifts into an ordinary perspective camera that
   orbits the porter. Drag to go round (all the way), wheel or pinch to come closer; ← → or the buttons walk.

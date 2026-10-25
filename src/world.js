@@ -30,7 +30,7 @@ const FS = `#version 300 es
 precision highp float;
 in vec3 vPos; in vec2 vUV; in vec3 vNrm;
 uniform int uMode;        // 0 river, 1 bank, 2 revetment, 3 textured mesh, 4 cut-out, 5 soft shadow, 6 marker, 7 flat colour,
-                          // 8 the painting, flat, 9 painted surface (vUV holds the painting px it shows)
+                          // 8 the painting, flat, 9 painted surface (vUV holds the painting px it shows), 10 painted post
 uniform vec3 uMap;        // a, s, c
 uniform vec4 uRegion;     // the painting px the paint texture covers
 uniform sampler2D uPaint, uMasks, uTone, uSilk, uWater, uTex;
@@ -127,8 +127,17 @@ void main() {
     return;
   } else if (uMode == 7) {
     col = uColor.rgb * (.82 + .18 * clamp(dot(normalize(vNrm), normalize(vec3(.3, 1., -.4))), 0., 1.));
+  } else if (uMode == 10) {          // a post: the painting along it, darkened toward timber
+    vec3 p = texture(uPaint, inRegion(vUV)).rgb;
+    col = mix(p * .9, uColor.rgb, .18) * light(vNrm);
   } else if (uMode == 9) {
-    col = texture(uPaint, inRegion(vUV)).rgb * uShade * light(vNrm) * (1. - .14 * (1. - smoothstep(0., 16., vPos.y)));
+    vec2 uv = inRegion(vUV);
+    vec2 o = max(uRegion.xy - vUV, vUV - uRegion.zw);
+    float beyondPx = max(max(o.x, o.y), 0.);
+    float past = smoothstep(0., 6., beyondPx);                               // beyond the painting: its blank silk,
+    col = mix(texture(uPaint, uv).rgb, weave(uSilk, vUV, uSilkSize) * tone(uv, 1.), past);
+    col *= uShade * light(vNrm) * (1. - .14 * (1. - smoothstep(0., 16., vPos.y)));
+    col = mix(col, uMist, smoothstep(0., 160., beyondPx) * .92);              // then mist, as the ground does there
   } else {
     vec2 q = painted(vPos), uv = inRegion(q);
     if (uv.x < 0. || uv.y < 0. || uv.x > 1. || uv.y > 1.) discard;
@@ -250,8 +259,10 @@ let S, G, tex = {}, world;
 function buildWorld() {
   const B = S.bank, riv = S.river;
   // the river's two edges, carried on straight past the outline so the banks reach the mist
-  const south = [[12000, riv[0][1] + 60], ...riv.slice(0, 12), [27000, riv[11][1] + 10]];
-  const north = [[27000, riv[12][1]], ...riv.slice(12), [12000, riv[19][1] + 40]];
+  // the outline runs east along the near (south) edge to its easternmost point, then back west along the far edge
+  const k = riv.reduce((m, p, i) => (p[0] > riv[m][0] ? i : m), 0) + 1, last = riv.length - 1;
+  const south = [[12000, riv[0][1] + 60], ...riv.slice(0, k), [27000, riv[k - 1][1] + 10]];
+  const north = [[27000, riv[k][1]], ...riv.slice(k), [12000, riv[last][1] + 40]];
   const far = 7000, flat = (pts, y, nrm = [0, 1, 0]) => pts.flatMap(([x, z]) => [x, y, z, 0, 0, ...nrm]);
   const southLand = [[12000, -far], [27000, -far], ...south.slice().reverse()];
   const northLand = [[27000, 2000 + far], [12000, 2000 + far], ...north.slice().reverse()];
@@ -270,11 +281,24 @@ function buildWorld() {
   }
   const walls = G.mesh(wv, wi);
   const bridge = buildBridge();
-  const boat = S.boat ? buildBoat() : null;
+  const boat = S.boat ? buildBoat(S.boat) : null;
+  const boats = (S.boats || []).map((Bt, i) => ({ ...buildBoat(Bt), spec: Bt, phase: i * 2.1 + 1 }));
+  // houses, sheds, awnings, umbrellas: painted meshes from the bake, and their plain timbers
+  const models = (S.models || []).map(Md => {
+    const n = Md.pos.length / 3, v = [];
+    for (let i = 0; i < n; i++) v.push(Md.pos[i * 3], Md.pos[i * 3 + 1], Md.pos[i * 3 + 2], Md.uv[i * 2], Md.uv[i * 2 + 1], Md.nrm[i * 3], Md.nrm[i * 3 + 1], Md.nrm[i * 3 + 2]);
+    const out = { id: Md.id, shade: Md.shade, mesh: n ? G.mesh(v, Md.idx) : null };
+    if (Md.plain) {
+      const P = Md.plain, m = P.pos.length / 3, w = [];
+      for (let i = 0; i < m; i++) w.push(P.pos[i * 3], P.pos[i * 3 + 1], P.pos[i * 3 + 2], P.uv[i * 2], P.uv[i * 2 + 1], P.nrm[i * 3], P.nrm[i * 3 + 1], P.nrm[i * 3 + 2]);
+      out.plain = G.mesh(w, P.idx); out.color = [...P.color, 1];
+    }
+    return out;
+  });
   // the painting, lying on the water: what the scene opens on, and fades from
   const R = S.region, { a, s, c } = S.map, ground = (u, v) => { const z = (c - v) / s; return [u - a * z, 0, z]; };
   const sheet = G.mesh([ground(R[0], R[1]), ground(R[2], R[1]), ground(R[0], R[3]), ground(R[2], R[3])].flatMap(p => [...p, 0, 0, 0, 1, 0]), [0, 2, 1, 1, 2, 3]);
-  return { water, banks, walls, bridge, boat, sheet };
+  return { water, banks, walls, bridge, boat, boats, models, sheet };
 }
 
 // the bridge: an arch between two feet on the river's edge. Stations run along the chord from the south foot; the
@@ -318,8 +342,8 @@ function buildBridge() {
 // the boat: a hull standing on its painted waterline with the painted gunwale above it, a deck, a cabin with a
 // rounded roof, a mast. Every vertex carries the painting px it shows: where the painter could see a surface, the px it
 // is painted at; on the far side, which he could not, the px of the matching point on the near side, mirrored
-function buildBoat() {
-  const Bt = S.boat, { a, s, c } = S.map, N = 56;
+function buildBoat(Bt) {
+  const { a, s, c } = S.map, N = 56;
   const at = (pts, u) => {
     if (u <= pts[0][0]) return pts[0][1];
     for (let i = 1; i < pts.length; i++) if (u <= pts[i][0]) return lerp(pts[i - 1][1], pts[i][1], (u - pts[i - 1][0]) / (pts[i][0] - pts[i - 1][0]));
@@ -352,8 +376,11 @@ function buildBoat() {
   // the deck, a little below the gunwale, seen from above as painted
   grid(N, 6, (k, j) => { const w = beam(st[k].t) * j / 6, p = P(k, w, st[k].h - 4); return [p, paintAt(p), up]; });
   // the cabin: walls a little in from the sides, and a rounded roof
-  const C = Bt.cabin, ka = Math.round(C.from * N), kb = Math.round(C.to * N), M = 10;
+  const C = Bt.cabin || { from: 0, to: 0, inset: 0, wall: 0, arch: 0 }, ka = Math.round(C.from * N), kb = Math.round(C.to * N), M = 10;
   const roofY = (k, f) => st[k].h + C.wall + C.arch * Math.sin(Math.PI * f);
+  // the ends, which the painter saw only edge-on: dressed in the near side's planks just round the corner from them
+  const round = (k, w, inward) => clamp(Math.round(k + inward * 7 * w), 0, N);
+  if (Bt.cabin) {
   grid(kb - ka, 1, (i, j) => { const k = ka + i, p = P(k, C.inset, j ? st[k].h + C.wall : st[k].h - 4); return [p, paintAt(p), nNear]; });
   grid(kb - ka, 1, (i, j) => { const k = ka + i, w = beam(st[k].t) - C.inset, y = j ? st[k].h + C.wall : st[k].h - 4; return [P(k, w, y), near(k, w, y), nFar]; });
   grid(kb - ka, M, (i, j) => {
@@ -363,17 +390,18 @@ function buildBoat() {
     const g = Math.min(f, 1 - f), q = P(k, lerp(C.inset, beam(st[k].t) - C.inset, g), roofY(k, g));
     return [p, paintAt(q), n];
   });
-  // the ends, which the painter saw only edge-on: dressed in the near side's planks just round the corner from them
-  const round = (k, w, inward) => clamp(Math.round(k + inward * 7 * w), 0, N);
   for (const k of [ka, kb]) grid(1, M, (i, j) => {
     const f = j / M, w = lerp(C.inset, beam(st[k].t) - C.inset, f), y = i ? roofY(k, f) : st[k].h - 4, p = P(k, w, y);
     const kk = round(k, f, k === kb ? -1 : 1);
     return [p, paintAt(P(kk, C.inset, i ? st[kk].h + C.wall : st[kk].h - 4)), [axis[0] * (k === kb ? 1 : -1), 0, axis[1] * (k === kb ? 1 : -1)]];
   });
+  }
   for (const k of [0, N]) grid(4, 6, (i, j) => {
     const w = beam(st[k].t) * j / 6, f = i / 4, p = P(k, w, lerp(-8, st[k].h, f)), kk = round(k, j / 6, k ? -1 : 1);
     return [p, paintAt(P(kk, 0, f * st[kk].h)), [axis[0] * (k ? 1 : -1), 0, axis[1] * (k ? 1 : -1)]];
   });
+  const mid = P(N >> 1, beam(.5) / 2, 0);
+  if (!Bt.mast) return { mesh: G.mesh(V, I), mid, axis, perp, st, beam, P, len: al };
   const mesh = G.mesh(V, I);
   // the mast, leaning back toward the stern as the crew lower it, and its stays
   const km = Math.round(Bt.mast.at * N), mb = P(km, beam(st[km].t) / 2, st[km].h - 4), lean = rad(Bt.mast.lean);
@@ -388,7 +416,6 @@ function buildBoat() {
   const mast = G.mesh(mv, mi);
   const stays = [P(0, beam(0) / 2, st[0].h), P(N, beam(1) / 2, st[N].h), P(km - 9, 0, st[km - 9].h), P(km - 9, beam(st[km - 9].t), st[km - 9].h),
     P(Math.min(N, km + 12), 0, st[Math.min(N, km + 12)].h), P(Math.min(N, km + 12), beam(st[Math.min(N, km + 12)].t), st[Math.min(N, km + 12)].h)];
-  const mid = P(N >> 1, beam(.5) / 2, 0);
   return { mesh, mast, top: mt, stays, mid, axis, perp, st, beam, P, len: al };
 }
 
@@ -397,8 +424,8 @@ function rotAxis(ax, th) {           // a 4×4 rotation about the unit axis ax
   return [t * x * x + c, t * x * y + s * z, t * x * z - s * y, 0, t * x * y - s * z, t * y * y + c, t * y * z + s * x, 0, t * x * z + s * y, t * y * z - s * x, t * z * z + c, 0, 0, 0, 0, 1];
 }
 function translate(v) { return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, v[0], v[1], v[2], 1]; }
-function boatModel(t) {
-  const b = world.boat, R = S.boat.rock, w = 6.2832 * R.hz * t;
+function boatModel(t, b = world.boat, R = S.boat.rock, phase = 0) {
+  const w = 6.2832 * R.hz * t + phase;
   if (REDUCED) return null;
   const roll = rad(R.roll) * Math.sin(w), pitch = rad(R.pitch) * Math.sin(w * .73 + 1.3), heave = R.heave * Math.sin(w * .61 + .4);
   const c = b.mid;
@@ -428,12 +455,41 @@ function stepCrowd(dt) {
     if (p.s > hi) p.s = lo; if (p.s < lo) p.s = hi;
   }
 }
+// the painting's own people, stood up (tools/make_world.py): on the deck behind the front railing, as far back
+// across it as each is painted above the rail, or on a bank at their painted feet. Each idles a little.
+function peopleQuads(view, t) {
+  const sh = world.bridge.sh, A = S.sprites, out = [], right = view.bb;
+  for (const [i, p] of (S.people || []).entries()) {
+    const [x0, y0, x1, y1] = A.rects[p.sprite], w = x1 - x0, h = y1 - y0;
+    const pos = p.on === 'deck' ? sh.at(p.s, sh.W * p.w, sh.deck(p.s)) : p.p;
+    const ph = i * 1.7, bob = REDUCED ? 0 : Math.max(0, Math.sin(t * (.7 + (i % 5) * .13) + ph)) * 1.2;
+    const lean = REDUCED ? 0 : Math.sin(t * (.45 + (i % 3) * .1) + ph) * 1.6;
+    const l = -p.anchor, r = w - p.anchor;
+    const corners = [[l + lean, h + bob], [r + lean, h + bob], [l, 0], [r, 0]].map(([x, y]) => [pos[0] + right[0] * x, pos[1] + y, pos[2] + right[2] * x]);
+    const uv = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => [x / A.size[0], y / A.size[1]]);
+    out.push({ tex: 'sprites', corners, uv, alpha: 1, pos });
+  }
+  return out;
+}
+// trees: cut-outs of their brushwork at the trunk's foot, the crown swaying
+function treeQuads(view, t) {
+  const A = S.sprites, out = [], right = view.bb;
+  for (const [i, T] of (S.trees || []).entries()) {
+    const [x0, y0, x1, y1] = A.rects[T.sprite], h = y1 - y0, [ax, ay] = T.anchor;
+    const sway = REDUCED ? 0 : T.sway * (Math.sin(t * .9 + i * 2) + .4 * Math.sin(t * 2.3 + i));
+    const l = -ax, r = x1 - x0 - ax, top = ay, bot = ay - h;
+    const corners = [[l + sway, top], [r + sway, top], [l, bot], [r, bot]].map(([x, y]) => [T.p[0] + right[0] * x, T.p[1] + y, T.p[2] + right[2] * x]);
+    const uv = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => [x / A.size[0], y / A.size[1]]);
+    out.push({ tex: 'sprites', corners, uv, alpha: 1, pos: T.p });
+  }
+  return out;
+}
 function crowdQuads(view) {
-  const sh = world.bridge.sh, right = view.right, out = [];
+  const sh = world.bridge.sh, right = view.bb, out = [];
   for (const p of crowd) {
     const F = p.fig, y = p.s > 0 && p.s < sh.L ? sh.deck(p.s) : S.bank, pos = sh.at(p.s, sh.W * p.w, y);
     const sc = p.h / (F.feet[1] - F.top);
-    const screenDir = (sh.b[0] * right[0] + sh.b[1] * right[2]) * Math.sign(p.v);
+    const screenDir = (sh.b[0] * view.right[0] + sh.b[1] * view.right[2]) * Math.sign(p.v);
     const facesRight = F.faces === 'right', flip = (screenDir > 0) === facesRight ? 1 : -1;
     const bob = REDUCED ? 0 : Math.abs(Math.sin(p.phase * Math.PI)) * 1.6;
     const [x0, y0, x1, y1] = F.box, fx = F.feet[0], fy = F.feet[1];
@@ -484,8 +540,8 @@ function stepPorter(dt, want) {
 function porterQuads(view, t) {
   const pos = porterAt(P0.s), Wk = S.walker, [fx, fy] = Wk.feet;
   const sc = Wk.height / (fy - Wk.pieces[0].box[1]);
-  const right = view.right, along = world.bridge.sh.b;
-  const screenDir = (along[0] * right[0] + along[1] * right[2]) * P0.dir;
+  const right = view.bb, along = world.bridge.sh.b;
+  const screenDir = (along[0] * view.right[0] + along[1] * view.right[2]) * P0.dir;
   const flip = screenDir > 0 ? -1 : 1, speed = Math.abs(P0.vel) / SPEED, s = Math.sin(P0.phase * Math.PI);
   const bob = REDUCED ? 0 : Math.abs(s) * 4 * speed + Math.sin(t * 1.7) * .5 * (1 - speed);
   const tilt = rad((REDUCED ? 0 : s * 2.6 * speed) + 3.5 * speed);
@@ -543,7 +599,9 @@ function viewAt(p, aspect, target) {
     const M = [A[0], A[3], 0, 0, A[1], A[4], 0, 0, 0, 0, 1, 0, A[2], A[5], 0, 1];
     vp = mul(M, vp);
   }
-  return { vp, eye, yaw, pitch, right: [Math.cos(yaw), 0, Math.sin(yaw)], fov };
+  // cut-outs stand across world X as painted (the painting's horizontal), turning to face the camera as it frees
+  const right = [Math.cos(yaw), 0, Math.sin(yaw)], bx = lerp(1, right[0], e), bz = lerp(0, right[2], e), bl = Math.hypot(bx, bz);
+  return { vp, eye, yaw, pitch, right, bb: [bx / bl, 0, bz / bl], fov };
 }
 function shear(vp, tgt, hf) {
   const { a, s, c } = S.map;
@@ -632,6 +690,11 @@ function render(dt, t) {
   G.draw(Bm.front, { tex: tex.face, shade: 1 }); G.draw(Bm.back, { tex: tex.face, shade: .9 });
   G.draw(Bm.deckTop, { tex: tex.deck, shade: 1 }); G.draw(Bm.under, { tex: tex.soffit, shade: .78 });
   for (const c of Bm.caps) G.draw(c, { mode: 7, color: [.22, .17, .12, 1] });
+  // the houses and stalls
+  for (const Mo of world.models) {
+    if (Mo.mesh) G.draw(Mo.mesh, { mode: 9, shade: Mo.shade });
+    if (Mo.plain) G.draw(Mo.plain, { mode: 10, color: Mo.color });
+  }
   // the boat, rocking a little
   if (world.boat) {
     const model = boatModel(t), Bo = world.boat;
@@ -641,17 +704,18 @@ function render(dt, t) {
     const top = mvp(Bo.top);
     for (const st of Bo.stays) rope(top, mvp(st), view, [.34, .28, .21, 1], .75);
   }
+  for (const Bo of world.boats) G.draw(Bo.mesh, { mode: 9, model: boatModel(t, Bo, Bo.spec.rock || S.boat.rock, Bo.phase), shade: 1 });
   // the people: crowd and porter, far ones first
   stepCrowd(dt);
   const pq = porterQuads(view, t);
   gl.depthMask(false);
   G.quad(pq.shadow, { mode: 5, alpha: e });
-  const sprites = crowdQuads(view).map(q => ({ ...q, d: dist2(q.pos, view.eye) }));
+  const sprites = [...crowdQuads(view), ...peopleQuads(view, t), ...treeQuads(view, t)].map(q => ({ ...q, d: dist2(q.pos, view.eye) }));
   sprites.push({ porter: true, d: dist2(porterAt(P0.s), view.eye) });
   sprites.sort((a, b) => b.d - a.d);
   for (const q of sprites) {
     if (q.porter) { for (const pc of pq.pieces) G.quad(pc.corners, { tex: tex[pc.tex], alpha: 1 }); }
-    else G.quad(q.corners, { tex: tex[q.tex], alpha: q.alpha });
+    else G.quad(q.corners, { tex: tex[q.tex], alpha: q.alpha }, q.uv);
   }
   gl.depthMask(true);
   G.quad(pq.marker, { mode: 6, alpha: e });
@@ -712,7 +776,7 @@ async function start() {
   const jobs = [['paint', S.paint.file, pre, {}], ['masks', S.masks.file, raw, {}], ['tone', S.tone.file, raw, { mip: false }],
     ['silk', S.silk.file, pre, { repeat: true }], ['water', S.water.file, pre, { repeat: true }],
     ['face', S.bridge.face.file, pre, {}], ['soffit', S.bridge.soffit_tex.file, pre, { repeat: true }], ['deck', S.bridge.deck_tex.file, pre, { repeat: true }],
-    ...S.walker.pieces.map(P => ['w-' + P.id, P.file, pre, {}]), ...(S.crowd?.people || []).map(C => ['c-' + C.id, C.file, pre, {}])];
+    ...S.walker.pieces.map(P => ['w-' + P.id, P.file, pre, {}]), ...(S.crowd?.people || []).map(C => ['c-' + C.id, C.file, pre, {}]), ...(S.sprites ? [['sprites', S.sprites.file, pre, {}]] : [])];
   const bmps = await Promise.all(jobs.map(([, f, o]) => bitmap(`${BASE}/${f}`, o)));
   jobs.forEach(([k, , , o], i) => { tex[k] = G.texture(bmps[i], o); });
   const { gl, U } = G;

@@ -1,0 +1,2668 @@
+{
+ "about": "The moving layer. Rigs move soft regions of the scan in place (master px): gait = a step bounce with a little surge (move: [surge, bounce]); rock = a turn of amp degrees about pivot, with a slow drift and heave (move); wind = a sway of amp px that grows with height above the pivot's y. hz is cycles per second; phase in radians. Flocks are birds drawn for this page. mask: fill (default for gait and rock), ink (default for wind) or shape; see tools/make_life.py, which builds the atlas. Still: outlines of things that must never move (the bridge); every rig is cut back from them, except figures marked over (standing in front of them).",
+ "rigs": [
+  {
+   "id": "road-donkey-1",
+   "scene": "road",
+   "type": "gait",
+   "box": [
+    36281,
+    731,
+    36346,
+    823
+   ],
+   "feather": 6,
+   "hz": 0.85,
+   "phase": 0,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "road-load-1",
+   "scene": "road",
+   "type": "gait",
+   "box": [
+    36283,
+    733,
+    36342,
+    790
+   ],
+   "feather": 5,
+   "hz": 0.85,
+   "phase": 0.9,
+   "move": [
+    0,
+    0.9
+   ]
+  },
+  {
+   "id": "road-donkey-2",
+   "scene": "road",
+   "type": "gait",
+   "box": [
+    36342,
+    754,
+    36435,
+    842
+   ],
+   "feather": 6,
+   "hz": 0.85,
+   "phase": 1.7,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "road-load-2",
+   "scene": "road",
+   "type": "gait",
+   "box": [
+    36348,
+    756,
+    36415,
+    808
+   ],
+   "feather": 5,
+   "hz": 0.85,
+   "phase": 2.6,
+   "move": [
+    0,
+    0.9
+   ]
+  },
+  {
+   "id": "road-donkey-3",
+   "scene": "road",
+   "type": "gait",
+   "box": [
+    36435,
+    800,
+    36515,
+    885
+   ],
+   "feather": 6,
+   "hz": 0.85,
+   "phase": 3.3,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "road-load-3",
+   "scene": "road",
+   "type": "gait",
+   "box": [
+    36455,
+    801,
+    36512,
+    836
+   ],
+   "feather": 5,
+   "hz": 0.85,
+   "phase": 4.2,
+   "move": [
+    0,
+    0.9
+   ]
+  },
+  {
+   "id": "road-donkey-4-head",
+   "scene": "road",
+   "type": "rock",
+   "box": [
+    36640,
+    825,
+    36705,
+    875
+   ],
+   "feather": 6,
+   "hz": 0.45,
+   "phase": 0,
+   "amp": 4,
+   "pivot": [
+    36645,
+    862
+   ]
+  },
+  {
+   "id": "road-herder",
+   "scene": "road",
+   "type": "gait",
+   "box": [
+    36225,
+    702,
+    36272,
+    792
+   ],
+   "feather": 5,
+   "hz": 0.8,
+   "phase": 2.2,
+   "move": [
+    0.4,
+    1.4
+   ]
+  },
+  {
+   "id": "road-donkey-5",
+   "scene": "road",
+   "type": "gait",
+   "box": [
+    36698,
+    850,
+    36769,
+    950
+   ],
+   "feather": 6,
+   "hz": 0.85,
+   "phase": 4.9,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "road-load-5",
+   "scene": "road",
+   "type": "gait",
+   "box": [
+    36700,
+    852,
+    36765,
+    905
+   ],
+   "feather": 5,
+   "hz": 0.85,
+   "phase": 5.8,
+   "move": [
+    0,
+    0.9
+   ]
+  },
+  {
+   "id": "road-driver",
+   "scene": "road",
+   "type": "gait",
+   "box": [
+    36765,
+    827,
+    36850,
+    931
+   ],
+   "feather": 6,
+   "hz": 0.8,
+   "phase": 0.4,
+   "move": [
+    0.6,
+    2.0
+   ]
+  },
+  {
+   "id": "road-canopy",
+   "scene": "road",
+   "type": "wind",
+   "poly": [
+    [
+     36150,
+     480
+    ],
+    [
+     36920,
+     480
+    ],
+    [
+     36920,
+     760
+    ],
+    [
+     36620,
+     760
+    ],
+    [
+     36600,
+     722
+    ],
+    [
+     36450,
+     722
+    ],
+    [
+     36440,
+     705
+    ],
+    [
+     36150,
+     705
+    ]
+   ],
+   "feather": 16,
+   "hz": 0.18,
+   "phase": 0,
+   "amp": 3.2,
+   "pivot": [
+    36600,
+    900
+   ]
+  },
+  {
+   "id": "road-treeline",
+   "scene": "road",
+   "type": "wind",
+   "box": [
+    35000,
+    60,
+    37000,
+    470
+   ],
+   "feather": 20,
+   "hz": 0.15,
+   "phase": 1,
+   "amp": 2.4,
+   "pivot": [
+    36000,
+    700
+   ]
+  },
+  {
+   "id": "bridge-boat",
+   "scene": "bridge",
+   "type": "rock",
+   "poly": [
+    [
+     19500,
+     600
+    ],
+    [
+     19560,
+     576
+    ],
+    [
+     19640,
+     563
+    ],
+    [
+     19760,
+     561
+    ],
+    [
+     19860,
+     563
+    ],
+    [
+     19950,
+     557
+    ],
+    [
+     20005,
+     520
+    ],
+    [
+     20050,
+     470
+    ],
+    [
+     20080,
+     432
+    ],
+    [
+     20095,
+     341
+    ],
+    [
+     20168,
+     236
+    ],
+    [
+     20253,
+     178
+    ],
+    [
+     20379,
+     257
+    ],
+    [
+     20453,
+     330
+    ],
+    [
+     20479,
+     436
+    ],
+    [
+     20474,
+     562
+    ],
+    [
+     20421,
+     662
+    ],
+    [
+     20250,
+     740
+    ],
+    [
+     20042,
+     783
+    ],
+    [
+     19780,
+     800
+    ],
+    [
+     19558,
+     790
+    ],
+    [
+     19526,
+     709
+    ],
+    [
+     19505,
+     650
+    ]
+   ],
+   "mask": "shape",
+   "feather": 14,
+   "hz": 0.2,
+   "phase": 0,
+   "amp": 0.25,
+   "pivot": [
+    19900,
+    760
+   ],
+   "move": [
+    0.8,
+    1.0
+   ]
+  },
+  {
+   "id": "bridge-crew-a",
+   "scene": "bridge",
+   "type": "rock",
+   "box": [
+    19494,
+    595,
+    19606,
+    690
+   ],
+   "feather": 6,
+   "hz": 0.75,
+   "phase": 0,
+   "amp": 2.5,
+   "pivot": [
+    19560,
+    690
+   ]
+  },
+  {
+   "id": "bridge-crew-b",
+   "scene": "bridge",
+   "type": "rock",
+   "box": [
+    19606,
+    495,
+    19705,
+    610
+   ],
+   "feather": 6,
+   "hz": 0.7,
+   "phase": 1.2,
+   "amp": 2.2,
+   "pivot": [
+    19670,
+    610
+   ],
+   "over": true
+  },
+  {
+   "id": "bridge-crew-c",
+   "scene": "bridge",
+   "type": "gait",
+   "box": [
+    19775,
+    457,
+    19875,
+    626
+   ],
+   "feather": 6,
+   "hz": 0.55,
+   "phase": 2,
+   "move": [
+    1.2,
+    1.4
+   ],
+   "over": true
+  },
+  {
+   "id": "bridge-crew-d",
+   "scene": "bridge",
+   "type": "rock",
+   "box": [
+    19895,
+    465,
+    19955,
+    548
+   ],
+   "feather": 6,
+   "hz": 0.8,
+   "phase": 2.6,
+   "amp": 2.5,
+   "pivot": [
+    19925,
+    548
+   ],
+   "over": true
+  },
+  {
+   "id": "bridge-crew-e",
+   "scene": "bridge",
+   "type": "gait",
+   "box": [
+    19694,
+    645,
+    19787,
+    722
+   ],
+   "feather": 6,
+   "hz": 0.6,
+   "phase": 3.1,
+   "move": [
+    1.0,
+    1.2
+   ]
+  },
+  {
+   "id": "bridge-onlooker-1",
+   "scene": "bridge",
+   "type": "rock",
+   "box": [
+    19308,
+    192,
+    19380,
+    266
+   ],
+   "feather": 6,
+   "hz": 0.6,
+   "phase": 0.3,
+   "amp": 3,
+   "pivot": [
+    19344,
+    268
+   ]
+  },
+  {
+   "id": "bridge-onlooker-2",
+   "scene": "bridge",
+   "type": "rock",
+   "box": [
+    19380,
+    184,
+    19444,
+    266
+   ],
+   "feather": 6,
+   "hz": 0.85,
+   "phase": 2.1,
+   "amp": 2.5,
+   "pivot": [
+    19412,
+    268
+   ]
+  },
+  {
+   "id": "bridge-onlooker-3",
+   "scene": "bridge",
+   "type": "rock",
+   "box": [
+    19444,
+    176,
+    19508,
+    272
+   ],
+   "feather": 6,
+   "hz": 0.7,
+   "phase": 4,
+   "amp": 3.2,
+   "pivot": [
+    19476,
+    272
+   ]
+  },
+  {
+   "id": "bridge-onlooker-4",
+   "scene": "bridge",
+   "type": "rock",
+   "box": [
+    19508,
+    168,
+    19596,
+    266
+   ],
+   "feather": 6,
+   "hz": 0.55,
+   "phase": 5.2,
+   "amp": 2.6,
+   "pivot": [
+    19552,
+    268
+   ]
+  },
+  {
+   "id": "bridge-walker-1",
+   "scene": "bridge",
+   "type": "gait",
+   "box": [
+    19084,
+    160,
+    19148,
+    240
+   ],
+   "feather": 6,
+   "hz": 0.95,
+   "phase": 0,
+   "move": [
+    0.6,
+    1.5
+   ]
+  },
+  {
+   "id": "bridge-walker-2",
+   "scene": "bridge",
+   "type": "gait",
+   "box": [
+    19196,
+    152,
+    19260,
+    240
+   ],
+   "feather": 6,
+   "hz": 1.05,
+   "phase": 1.4,
+   "move": [
+    0.6,
+    1.5
+   ]
+  },
+  {
+   "id": "bridge-walker-3",
+   "scene": "bridge",
+   "type": "gait",
+   "box": [
+    19004,
+    248,
+    19076,
+    344
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 2.8,
+   "move": [
+    0.6,
+    1.5
+   ]
+  },
+  {
+   "id": "bridge-walker-4",
+   "scene": "bridge",
+   "type": "gait",
+   "box": [
+    18884,
+    240,
+    18964,
+    336
+   ],
+   "feather": 6,
+   "hz": 1.0,
+   "phase": 4.4,
+   "move": [
+    0.6,
+    1.5
+   ]
+  },
+  {
+   "id": "bridge-walker-5",
+   "scene": "bridge",
+   "type": "gait",
+   "box": [
+    18780,
+    240,
+    18860,
+    344
+   ],
+   "feather": 6,
+   "hz": 0.92,
+   "phase": 5.5,
+   "move": [
+    0.6,
+    1.5
+   ]
+  },
+  {
+   "id": "bridge-walker-6",
+   "scene": "bridge",
+   "type": "gait",
+   "box": [
+    19100,
+    304,
+    19180,
+    360
+   ],
+   "feather": 6,
+   "hz": 1.1,
+   "phase": 3.6,
+   "move": [
+    0.6,
+    1.5
+   ]
+  },
+  {
+   "id": "bridge-moored-boat",
+   "scene": "bridge",
+   "type": "rock",
+   "box": [
+    20440,
+    262,
+    20760,
+    432
+   ],
+   "feather": 10,
+   "hz": 0.17,
+   "phase": 2,
+   "amp": 0.5,
+   "pivot": [
+    20600,
+    420
+   ],
+   "move": [
+    0.8,
+    1.0
+   ]
+  },
+  {
+   "id": "bridge-skiff",
+   "scene": "bridge",
+   "type": "rock",
+   "box": [
+    19000,
+    925,
+    19285,
+    1008
+   ],
+   "feather": 8,
+   "hz": 0.16,
+   "phase": 1,
+   "amp": 0.8,
+   "pivot": [
+    19140,
+    1000
+   ],
+   "move": [
+    2.5,
+    1.2
+   ]
+  },
+  {
+   "id": "bridge-bank-man",
+   "scene": "bridge",
+   "type": "rock",
+   "box": [
+    19885,
+    930,
+    19965,
+    1046
+   ],
+   "feather": 6,
+   "hz": 0.6,
+   "phase": 0.5,
+   "amp": 3,
+   "pivot": [
+    19925,
+    1046
+   ]
+  },
+  {
+   "id": "bridge-willow",
+   "scene": "bridge",
+   "type": "wind",
+   "box": [
+    20180,
+    740,
+    20700,
+    1150
+   ],
+   "feather": 18,
+   "hz": 0.22,
+   "phase": 2,
+   "amp": 4,
+   "pivot": [
+    20450,
+    1200
+   ]
+  },
+  {
+   "id": "willow-porter",
+   "scene": "willow",
+   "type": "gait",
+   "box": [
+    30866,
+    246,
+    30912,
+    332
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 0,
+   "move": [
+    0.5,
+    1.4
+   ]
+  },
+  {
+   "id": "willow-horse",
+   "scene": "willow",
+   "type": "gait",
+   "box": [
+    30945,
+    236,
+    31035,
+    356
+   ],
+   "feather": 6,
+   "hz": 0.75,
+   "phase": 1,
+   "move": [
+    0.6,
+    1.6
+   ]
+  },
+  {
+   "id": "willow-walker-1",
+   "scene": "willow",
+   "type": "gait",
+   "box": [
+    31048,
+    306,
+    31094,
+    402
+   ],
+   "feather": 6,
+   "hz": 0.95,
+   "phase": 2,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "willow-pole-porter",
+   "scene": "willow",
+   "type": "gait",
+   "box": [
+    31102,
+    346,
+    31164,
+    442
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 3,
+   "move": [
+    0.5,
+    1.8
+   ]
+  },
+  {
+   "id": "willow-sedan",
+   "scene": "willow",
+   "type": "gait",
+   "box": [
+    30836,
+    406,
+    30944,
+    584
+   ],
+   "feather": 6,
+   "hz": 0.8,
+   "phase": 0.5,
+   "move": [
+    0.4,
+    1.5
+   ]
+  },
+  {
+   "id": "willow-bearer-front",
+   "scene": "willow",
+   "type": "gait",
+   "box": [
+    30946,
+    452,
+    31014,
+    584
+   ],
+   "feather": 6,
+   "hz": 0.8,
+   "phase": 1.2,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "willow-bearer-rear",
+   "scene": "willow",
+   "type": "gait",
+   "box": [
+    30796,
+    520,
+    30852,
+    594
+   ],
+   "feather": 6,
+   "hz": 0.8,
+   "phase": 4.3,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "willow-walker-2",
+   "scene": "willow",
+   "type": "gait",
+   "box": [
+    31042,
+    420,
+    31118,
+    548
+   ],
+   "feather": 6,
+   "hz": 1.0,
+   "phase": 5,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "willow-walker-3",
+   "scene": "willow",
+   "type": "gait",
+   "box": [
+    30602,
+    566,
+    30704,
+    694
+   ],
+   "feather": 6,
+   "hz": 1.05,
+   "phase": 2.4,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "willow-trees-left",
+   "scene": "willow",
+   "type": "wind",
+   "box": [
+    30550,
+    80,
+    30830,
+    470
+   ],
+   "feather": 18,
+   "hz": 0.2,
+   "phase": 0,
+   "amp": 3,
+   "pivot": [
+    30690,
+    520
+   ]
+  },
+  {
+   "id": "willow-trees-right",
+   "scene": "willow",
+   "type": "wind",
+   "box": [
+    31240,
+    80,
+    31700,
+    620
+   ],
+   "feather": 18,
+   "hz": 0.17,
+   "phase": 1.5,
+   "amp": 3.2,
+   "pivot": [
+    31470,
+    700
+   ]
+  },
+  {
+   "id": "willow-trees-top",
+   "scene": "willow",
+   "type": "wind",
+   "box": [
+    30950,
+    80,
+    31240,
+    228
+   ],
+   "feather": 18,
+   "hz": 0.19,
+   "phase": 2.5,
+   "amp": 2.2,
+   "pivot": [
+    31100,
+    300
+   ]
+  },
+  {
+   "id": "willow-foreground",
+   "scene": "willow",
+   "type": "wind",
+   "box": [
+    30715,
+    600,
+    31700,
+    860
+   ],
+   "feather": 18,
+   "hz": 0.21,
+   "phase": 3,
+   "amp": 3,
+   "pivot": [
+    31200,
+    980
+   ]
+  },
+  {
+   "id": "grain-boat",
+   "scene": "grain",
+   "type": "rock",
+   "feather": 12,
+   "hz": 0.15,
+   "phase": 0,
+   "amp": 0.3,
+   "pivot": [
+    27650,
+    1520
+   ],
+   "mask": "shape",
+   "poly": [
+    [
+     27269,
+     1027
+    ],
+    [
+     27382,
+     969
+    ],
+    [
+     27618,
+     991
+    ],
+    [
+     27764,
+     1064
+    ],
+    [
+     27873,
+     1155
+    ],
+    [
+     28018,
+     1200
+    ],
+    [
+     28036,
+     1318
+    ],
+    [
+     28000,
+     1464
+    ],
+    [
+     27873,
+     1555
+    ],
+    [
+     27618,
+     1536
+    ],
+    [
+     27418,
+     1464
+    ],
+    [
+     27291,
+     1318
+    ],
+    [
+     27264,
+     1155
+    ]
+   ],
+   "move": [
+    1.0,
+    1.2
+   ]
+  },
+  {
+   "id": "grain-talker-1",
+   "scene": "grain",
+   "type": "gait",
+   "box": [
+    28052,
+    615,
+    28112,
+    758
+   ],
+   "feather": 6,
+   "hz": 0.5,
+   "phase": 0,
+   "move": [
+    0.3,
+    0.9
+   ]
+  },
+  {
+   "id": "grain-talker-2",
+   "scene": "grain",
+   "type": "gait",
+   "box": [
+    28124,
+    650,
+    28186,
+    792
+   ],
+   "feather": 6,
+   "hz": 0.45,
+   "phase": 1.7,
+   "move": [
+    0.3,
+    0.9
+   ]
+  },
+  {
+   "id": "grain-talker-3",
+   "scene": "grain",
+   "type": "gait",
+   "box": [
+    28198,
+    632,
+    28286,
+    776
+   ],
+   "feather": 6,
+   "hz": 0.5,
+   "phase": 3.1,
+   "move": [
+    0.3,
+    0.9
+   ]
+  },
+  {
+   "id": "grain-porter-1",
+   "scene": "grain",
+   "type": "gait",
+   "box": [
+    28024,
+    786,
+    28094,
+    902
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 0.4,
+   "move": [
+    0.5,
+    1.8
+   ]
+  },
+  {
+   "id": "grain-porter-2",
+   "scene": "grain",
+   "type": "gait",
+   "box": [
+    28240,
+    805,
+    28350,
+    930
+   ],
+   "feather": 6,
+   "hz": 0.85,
+   "phase": 2.2,
+   "move": [
+    0.5,
+    1.8
+   ]
+  },
+  {
+   "id": "grain-porter-3",
+   "scene": "grain",
+   "type": "gait",
+   "box": [
+    28352,
+    770,
+    28420,
+    905
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 4.0,
+   "move": [
+    0.5,
+    1.8
+   ]
+  },
+  {
+   "id": "grain-boatman",
+   "scene": "grain",
+   "type": "gait",
+   "box": [
+    28345,
+    1098,
+    28402,
+    1157
+   ],
+   "feather": 6,
+   "hz": 0.7,
+   "phase": 1.3,
+   "move": [
+    0.4,
+    1.2
+   ]
+  },
+  {
+   "id": "grain-willows",
+   "scene": "grain",
+   "type": "wind",
+   "box": [
+    28380,
+    680,
+    28900,
+    1180
+   ],
+   "feather": 18,
+   "hz": 0.18,
+   "phase": 0.8,
+   "amp": 3,
+   "pivot": [
+    28640,
+    1300
+   ]
+  },
+  {
+   "id": "gate-camel-a",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    5884,
+    1012,
+    6138,
+    1266
+   ],
+   "feather": 7,
+   "hz": 0.5,
+   "phase": 0,
+   "move": [
+    0.6,
+    1.7
+   ]
+  },
+  {
+   "id": "gate-camel-a-head",
+   "scene": "gate",
+   "type": "rock",
+   "box": [
+    6080,
+    1058,
+    6142,
+    1128
+   ],
+   "feather": 6,
+   "hz": 0.38,
+   "phase": 1,
+   "amp": 3.5,
+   "pivot": [
+    6086,
+    1124
+   ]
+  },
+  {
+   "id": "gate-camel-b",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    6144,
+    1069,
+    6423,
+    1300
+   ],
+   "feather": 7,
+   "hz": 0.5,
+   "phase": 1.9,
+   "move": [
+    0.6,
+    1.7
+   ]
+  },
+  {
+   "id": "gate-walker-1",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    6100,
+    1212,
+    6196,
+    1408
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 0.7,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "gate-walker-2",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    5798,
+    1076,
+    5860,
+    1273
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 3,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "gate-walker-3",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    6255,
+    1319,
+    6331,
+    1452
+   ],
+   "feather": 6,
+   "hz": 0.95,
+   "phase": 4.1,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "gate-camel-c",
+   "scene": "gate",
+   "type": "gait",
+   "feather": 5,
+   "hz": 0.5,
+   "phase": 3,
+   "move": [
+    1.0,
+    1.7
+   ],
+   "poly": [
+    [
+     7408,
+     1124
+    ],
+    [
+     7472,
+     1124
+    ],
+    [
+     7486,
+     1178
+    ],
+    [
+     7522,
+     1196
+    ],
+    [
+     7524,
+     1300
+    ],
+    [
+     7408,
+     1300
+    ]
+   ],
+   "mask": "shape"
+  },
+  {
+   "id": "gate-gesture",
+   "scene": "gate",
+   "type": "rock",
+   "box": [
+    7648,
+    998,
+    7722,
+    1102
+   ],
+   "feather": 6,
+   "hz": 0.6,
+   "phase": 0.5,
+   "amp": 2.5,
+   "pivot": [
+    7690,
+    1102
+   ]
+  },
+  {
+   "id": "gate-traveller-1",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    7698,
+    1078,
+    7762,
+    1262
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 1.1,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "gate-traveller-2",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    7638,
+    1178,
+    7702,
+    1352
+   ],
+   "feather": 6,
+   "hz": 0.95,
+   "phase": 2.7,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "gate-traveller-3",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    7578,
+    1218,
+    7642,
+    1402
+   ],
+   "feather": 6,
+   "hz": 0.85,
+   "phase": 4.6,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "gate-traveller-4",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    7798,
+    1098,
+    7872,
+    1292
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 5.4,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "gate-rider",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    7998,
+    1118,
+    8132,
+    1302
+   ],
+   "feather": 6,
+   "hz": 0.7,
+   "phase": 0.9,
+   "move": [
+    0.6,
+    1.6
+   ]
+  },
+  {
+   "id": "gate-porter-1",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    7968,
+    1288,
+    8112,
+    1452
+   ],
+   "feather": 6,
+   "hz": 1.0,
+   "phase": 2.0,
+   "move": [
+    0.4,
+    2.0
+   ]
+  },
+  {
+   "id": "gate-porter-2",
+   "scene": "gate",
+   "type": "gait",
+   "box": [
+    7758,
+    1308,
+    7832,
+    1432
+   ],
+   "feather": 6,
+   "hz": 0.95,
+   "phase": 3.6,
+   "move": [
+    0.4,
+    1.8
+   ]
+  },
+  {
+   "id": "gate-willows",
+   "scene": "gate",
+   "type": "wind",
+   "box": [
+    7690,
+    30,
+    8140,
+    930
+   ],
+   "feather": 18,
+   "hz": 0.17,
+   "phase": 1,
+   "amp": 3.2,
+   "pivot": [
+    7970,
+    1050
+   ]
+  },
+  {
+   "id": "tavern-sedan-1",
+   "scene": "tavern",
+   "type": "gait",
+   "feather": 7,
+   "hz": 0.8,
+   "phase": 0,
+   "move": [
+    0.5,
+    1.6
+   ],
+   "poly": [
+    [
+     4170,
+     1150
+    ],
+    [
+     4280,
+     1080
+    ],
+    [
+     4430,
+     1080
+    ],
+    [
+     4545,
+     1150
+    ],
+    [
+     4545,
+     1330
+    ],
+    [
+     4420,
+     1330
+    ],
+    [
+     4350,
+     1300
+    ],
+    [
+     4300,
+     1290
+    ],
+    [
+     4170,
+     1290
+    ]
+   ]
+  },
+  {
+   "id": "tavern-sedan-2",
+   "scene": "tavern",
+   "type": "gait",
+   "box": [
+    4620,
+    1095,
+    4965,
+    1365
+   ],
+   "feather": 7,
+   "hz": 0.78,
+   "phase": 2.1,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "tavern-porter",
+   "scene": "tavern",
+   "type": "gait",
+   "box": [
+    3637,
+    1125,
+    3800,
+    1287
+   ],
+   "feather": 6,
+   "hz": 1.0,
+   "phase": 0.8,
+   "move": [
+    0.4,
+    2.0
+   ]
+  },
+  {
+   "id": "tavern-fan",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    3950,
+    1025,
+    4025,
+    1162
+   ],
+   "feather": 6,
+   "hz": 0.55,
+   "phase": 1.5,
+   "amp": 2.5,
+   "pivot": [
+    3990,
+    1162
+   ]
+  },
+  {
+   "id": "tavern-walker-1",
+   "scene": "tavern",
+   "type": "gait",
+   "box": [
+    4000,
+    1137,
+    4087,
+    1275
+   ],
+   "feather": 6,
+   "hz": 0.95,
+   "phase": 3.3,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "tavern-walker-2",
+   "scene": "tavern",
+   "type": "gait",
+   "box": [
+    4548,
+    1200,
+    4600,
+    1325
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 4.4,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "tavern-boy",
+   "scene": "tavern",
+   "type": "gait",
+   "box": [
+    4996,
+    1168,
+    5092,
+    1302
+   ],
+   "feather": 6,
+   "hz": 1.15,
+   "phase": 1.9,
+   "move": [
+    0.5,
+    1.8
+   ]
+  },
+  {
+   "id": "tavern-donkey-a",
+   "scene": "tavern",
+   "type": "gait",
+   "box": [
+    5150,
+    905,
+    5320,
+    1060
+   ],
+   "feather": 6,
+   "hz": 0.7,
+   "phase": 0.3,
+   "move": [
+    0.5,
+    1.4
+   ]
+  },
+  {
+   "id": "tavern-donkey-b",
+   "scene": "tavern",
+   "type": "gait",
+   "box": [
+    5255,
+    985,
+    5440,
+    1112
+   ],
+   "feather": 6,
+   "hz": 0.7,
+   "phase": 2.0,
+   "move": [
+    0.5,
+    1.4
+   ]
+  },
+  {
+   "id": "tavern-driver",
+   "scene": "tavern",
+   "type": "gait",
+   "box": [
+    5370,
+    870,
+    5455,
+    1005
+   ],
+   "feather": 6,
+   "hz": 0.7,
+   "phase": 3.4,
+   "move": [
+    0.4,
+    1.2
+   ]
+  },
+  {
+   "id": "tavern-leaning",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    5310,
+    1240,
+    5410,
+    1400
+   ],
+   "feather": 6,
+   "hz": 0.45,
+   "phase": 0.6,
+   "amp": 1.8,
+   "pivot": [
+    5360,
+    1400
+   ]
+  },
+  {
+   "id": "tavern-resting-head",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    5200,
+    1350,
+    5262,
+    1422
+   ],
+   "feather": 6,
+   "hz": 0.3,
+   "phase": 2.4,
+   "amp": 3,
+   "pivot": [
+    5255,
+    1400
+   ]
+  },
+  {
+   "id": "end-porter",
+   "scene": "end",
+   "type": "gait",
+   "box": [
+    1175,
+    1055,
+    1365,
+    1245
+   ],
+   "feather": 6,
+   "hz": 1.0,
+   "phase": 0,
+   "move": [
+    0.4,
+    2.0
+   ]
+  },
+  {
+   "id": "end-rider",
+   "scene": "end",
+   "type": "gait",
+   "feather": 7,
+   "hz": 0.7,
+   "phase": 1.2,
+   "move": [
+    0.6,
+    1.6
+   ],
+   "poly": [
+    [
+     1560,
+     980
+    ],
+    [
+     1700,
+     980
+    ],
+    [
+     1785,
+     1090
+    ],
+    [
+     1785,
+     1285
+    ],
+    [
+     1610,
+     1285
+    ],
+    [
+     1605,
+     1175
+    ],
+    [
+     1560,
+     1100
+    ]
+   ]
+  },
+  {
+   "id": "end-pole-pair",
+   "scene": "end",
+   "type": "gait",
+   "box": [
+    1350,
+    1060,
+    1560,
+    1175
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 2.3,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "end-walker-1",
+   "scene": "end",
+   "type": "gait",
+   "box": [
+    1857,
+    1110,
+    1910,
+    1257
+   ],
+   "feather": 6,
+   "hz": 0.95,
+   "phase": 0.6,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "end-walker-2",
+   "scene": "end",
+   "type": "gait",
+   "box": [
+    1950,
+    1097,
+    2017,
+    1257
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 2.0,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "end-walker-3",
+   "scene": "end",
+   "type": "gait",
+   "box": [
+    2043,
+    1057,
+    2097,
+    1243
+   ],
+   "feather": 6,
+   "hz": 1.0,
+   "phase": 3.2,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "end-vendor",
+   "scene": "end",
+   "type": "gait",
+   "box": [
+    2003,
+    990,
+    2137,
+    1150
+   ],
+   "feather": 6,
+   "hz": 0.85,
+   "phase": 4.4,
+   "move": [
+    0.4,
+    1.6
+   ]
+  },
+  {
+   "id": "end-well-1",
+   "scene": "end",
+   "type": "rock",
+   "box": [
+    2137,
+    777,
+    2203,
+    910
+   ],
+   "feather": 6,
+   "hz": 0.5,
+   "phase": 0,
+   "amp": 3,
+   "pivot": [
+    2170,
+    910
+   ]
+  },
+  {
+   "id": "end-well-2",
+   "scene": "end",
+   "type": "rock",
+   "box": [
+    2003,
+    750,
+    2070,
+    857
+   ],
+   "feather": 6,
+   "hz": 0.5,
+   "phase": 2.5,
+   "amp": 2.5,
+   "pivot": [
+    2036,
+    857
+   ]
+  },
+  {
+   "id": "end-walker-shop",
+   "scene": "end",
+   "type": "gait",
+   "box": [
+    1257,
+    803,
+    1350,
+    977
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 5.1,
+   "move": [
+    0.5,
+    1.6
+   ]
+  },
+  {
+   "id": "end-talkers",
+   "scene": "end",
+   "type": "rock",
+   "box": [
+    2297,
+    897,
+    2470,
+    1150
+   ],
+   "feather": 6,
+   "hz": 0.4,
+   "phase": 1.4,
+   "amp": 1.2,
+   "pivot": [
+    2383,
+    1150
+   ]
+  },
+  {
+   "id": "end-willow",
+   "scene": "end",
+   "type": "wind",
+   "box": [
+    1810,
+    350,
+    2500,
+    620
+   ],
+   "feather": 18,
+   "hz": 0.18,
+   "phase": 0.4,
+   "amp": 3,
+   "pivot": [
+    2150,
+    760
+   ]
+  },
+  {
+   "id": "end-bush",
+   "scene": "end",
+   "type": "wind",
+   "box": [
+    985,
+    985,
+    1170,
+    1250
+   ],
+   "feather": 18,
+   "hz": 0.22,
+   "phase": 1.7,
+   "amp": 2.5,
+   "pivot": [
+    1080,
+    1300
+   ]
+  },
+  {
+   "id": "gate-pines",
+   "scene": "gate",
+   "type": "wind",
+   "feather": 18,
+   "hz": 0.16,
+   "phase": 2.2,
+   "amp": 3,
+   "pivot": [
+    6920,
+    1560
+   ],
+   "poly": [
+    [
+     6420,
+     1180
+    ],
+    [
+     6640,
+     1150
+    ],
+    [
+     6800,
+     1060
+    ],
+    [
+     6850,
+     900
+    ],
+    [
+     7120,
+     900
+    ],
+    [
+     7160,
+     1100
+    ],
+    [
+     7250,
+     1240
+    ],
+    [
+     7420,
+     1250
+    ],
+    [
+     7420,
+     1480
+    ],
+    [
+     6420,
+     1480
+    ]
+   ]
+  },
+  {
+   "id": "gate-trees-wall",
+   "scene": "gate",
+   "type": "wind",
+   "box": [
+    6380,
+    30,
+    6620,
+    480
+   ],
+   "feather": 18,
+   "hz": 0.18,
+   "phase": 3.1,
+   "amp": 2.4,
+   "pivot": [
+    6500,
+    560
+   ]
+  },
+  {
+   "id": "gate-tower-man",
+   "scene": "gate",
+   "type": "rock",
+   "box": [
+    7040,
+    380,
+    7090,
+    440
+   ],
+   "feather": 6,
+   "hz": 0.4,
+   "phase": 1.3,
+   "amp": 3,
+   "pivot": [
+    7065,
+    440
+   ]
+  },
+  {
+   "id": "tavern-storyteller",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    3800,
+    737,
+    3858,
+    830
+   ],
+   "feather": 6,
+   "hz": 0.55,
+   "phase": 0,
+   "amp": 3.5,
+   "pivot": [
+    3829,
+    830
+   ]
+  },
+  {
+   "id": "tavern-listener-1",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    3602,
+    735,
+    3658,
+    990
+   ],
+   "feather": 6,
+   "hz": 0.35,
+   "phase": 1.1,
+   "amp": 1.4,
+   "pivot": [
+    3630,
+    990
+   ]
+  },
+  {
+   "id": "tavern-listener-2",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    3658,
+    727,
+    3708,
+    990
+   ],
+   "feather": 6,
+   "hz": 0.4,
+   "phase": 2.6,
+   "amp": 1.6,
+   "pivot": [
+    3683,
+    990
+   ]
+  },
+  {
+   "id": "tavern-listener-3",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    3722,
+    852,
+    3780,
+    1020
+   ],
+   "feather": 6,
+   "hz": 0.38,
+   "phase": 3.4,
+   "amp": 1.5,
+   "pivot": [
+    3750,
+    1020
+   ]
+  },
+  {
+   "id": "tavern-listener-4",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    3858,
+    847,
+    3925,
+    1030
+   ],
+   "feather": 6,
+   "hz": 0.42,
+   "phase": 4.8,
+   "amp": 1.7,
+   "pivot": [
+    3891,
+    1030
+   ]
+  },
+  {
+   "id": "tavern-listener-5",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    3912,
+    737,
+    3965,
+    900
+   ],
+   "feather": 6,
+   "hz": 0.36,
+   "phase": 0.3,
+   "amp": 1.6,
+   "pivot": [
+    3938,
+    900
+   ]
+  },
+  {
+   "id": "tavern-listener-6",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    4040,
+    700,
+    4108,
+    1000
+   ],
+   "feather": 6,
+   "hz": 0.33,
+   "phase": 5.5,
+   "amp": 1.3,
+   "pivot": [
+    4074,
+    1000
+   ]
+  },
+  {
+   "id": "tavern-shop-man",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    4430,
+    872,
+    4480,
+    1010
+   ],
+   "feather": 6,
+   "hz": 0.5,
+   "phase": 2.0,
+   "amp": 2.2,
+   "pivot": [
+    4455,
+    1010
+   ]
+  },
+  {
+   "id": "tavern-walker-3",
+   "scene": "tavern",
+   "type": "gait",
+   "box": [
+    4615,
+    858,
+    4668,
+    1060
+   ],
+   "feather": 6,
+   "hz": 0.85,
+   "phase": 3.9,
+   "move": [
+    0.4,
+    1.4
+   ]
+  },
+  {
+   "id": "tavern-walker-4",
+   "scene": "tavern",
+   "type": "gait",
+   "box": [
+    4668,
+    845,
+    4733,
+    1060
+   ],
+   "feather": 6,
+   "hz": 0.9,
+   "phase": 1.2,
+   "move": [
+    0.4,
+    1.4
+   ]
+  },
+  {
+   "id": "tavern-talker",
+   "scene": "tavern",
+   "type": "rock",
+   "box": [
+    4790,
+    868,
+    4846,
+    970
+   ],
+   "feather": 6,
+   "hz": 0.55,
+   "phase": 4.4,
+   "amp": 2.6,
+   "pivot": [
+    4818,
+    970
+   ]
+  },
+  {
+   "id": "gate-camel-c-head",
+   "scene": "gate",
+   "type": "rock",
+   "box": [
+    7412,
+    1122,
+    7478,
+    1186
+   ],
+   "feather": 5,
+   "hz": 0.38,
+   "phase": 2.2,
+   "amp": 4,
+   "pivot": [
+    7430,
+    1186
+   ],
+   "mask": "shape"
+  }
+ ],
+ "flocks": [
+  {
+   "id": "road-crows",
+   "kind": "crow",
+   "from": [
+    37450,
+    610
+   ],
+   "to": [
+    35500,
+    520
+   ],
+   "speed": 60,
+   "every": 26,
+   "n": 5,
+   "span": 20,
+   "spread": [
+    110,
+    40
+   ],
+   "wave": 22
+  },
+  {
+   "id": "high-crows",
+   "kind": "crow",
+   "from": [
+    38300,
+    250
+   ],
+   "to": [
+    34000,
+    170
+   ],
+   "speed": 85,
+   "every": 38,
+   "n": 7,
+   "span": 12,
+   "spread": [
+    170,
+    60
+   ],
+   "wave": 30
+  },
+  {
+   "id": "bridge-swallows",
+   "kind": "swallow",
+   "center": [
+    19230,
+    790
+   ],
+   "radius": [
+    240,
+    75
+   ],
+   "n": 2,
+   "span": 24,
+   "speed": 0.2
+  },
+  {
+   "id": "willow-swallows",
+   "kind": "swallow",
+   "center": [
+    31150,
+    250
+   ],
+   "radius": [
+    260,
+    60
+   ],
+   "n": 2,
+   "span": 22,
+   "speed": 0.18
+  },
+  {
+   "id": "grain-swallows",
+   "kind": "swallow",
+   "center": [
+    27080,
+    1300
+   ],
+   "radius": [
+    220,
+    90
+   ],
+   "n": 2,
+   "span": 26,
+   "speed": 0.21
+  },
+  {
+   "id": "gate-crows",
+   "kind": "crow",
+   "from": [
+    8500,
+    120
+   ],
+   "to": [
+    5300,
+    60
+   ],
+   "speed": 70,
+   "every": 30,
+   "n": 4,
+   "span": 20,
+   "spread": [
+    120,
+    40
+   ],
+   "wave": 18
+  },
+  {
+   "id": "end-crows",
+   "kind": "crow",
+   "from": [
+    2700,
+    420
+   ],
+   "to": [
+    700,
+    380
+   ],
+   "speed": 55,
+   "every": 34,
+   "n": 3,
+   "span": 18,
+   "spread": [
+    90,
+    30
+   ],
+   "wave": 14
+  }
+ ],
+ "still": [
+  {
+   "id": "rainbow-bridge",
+   "about": "the bridge's front face: railing, arch beam and the posts at its right end. Nothing here moves.",
+   "poly": [
+    [
+     18930,
+     770
+    ],
+    [
+     19050,
+     515
+    ],
+    [
+     19190,
+     375
+    ],
+    [
+     19300,
+     290
+    ],
+    [
+     19400,
+     255
+    ],
+    [
+     19500,
+     240
+    ],
+    [
+     19600,
+     232
+    ],
+    [
+     19700,
+     228
+    ],
+    [
+     19800,
+     245
+    ],
+    [
+     19900,
+     275
+    ],
+    [
+     20000,
+     305
+    ],
+    [
+     20075,
+     315
+    ],
+    [
+     20075,
+     420
+    ],
+    [
+     19990,
+     410
+    ],
+    [
+     19900,
+     390
+    ],
+    [
+     19800,
+     362
+    ],
+    [
+     19700,
+     338
+    ],
+    [
+     19600,
+     342
+    ],
+    [
+     19500,
+     354
+    ],
+    [
+     19400,
+     397
+    ],
+    [
+     19300,
+     432
+    ],
+    [
+     19190,
+     540
+    ],
+    [
+     19100,
+     640
+    ],
+    [
+     19050,
+     770
+    ]
+   ]
+  },
+  {
+   "id": "bridge-underside",
+   "about": "under the arch: the timber underside of the bridge and, through the opening, the far bank with its railing. Nothing here moves either; only the boat below it does.",
+   "poly": [
+    [
+     19120,
+     600
+    ],
+    [
+     19190,
+     540
+    ],
+    [
+     19300,
+     432
+    ],
+    [
+     19400,
+     397
+    ],
+    [
+     19500,
+     354
+    ],
+    [
+     19600,
+     342
+    ],
+    [
+     19700,
+     338
+    ],
+    [
+     19800,
+     362
+    ],
+    [
+     19900,
+     390
+    ],
+    [
+     19990,
+     410
+    ],
+    [
+     20075,
+     420
+    ],
+    [
+     20040,
+     470
+    ],
+    [
+     19950,
+     540
+    ],
+    [
+     19860,
+     552
+    ],
+    [
+     19760,
+     550
+    ],
+    [
+     19640,
+     552
+    ],
+    [
+     19560,
+     563
+    ],
+    [
+     19480,
+     578
+    ],
+    [
+     19300,
+     578
+    ],
+    [
+     19120,
+     600
+    ]
+   ]
+  }
+ ]
+}

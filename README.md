@@ -16,10 +16,10 @@ move in the wind. That movement is the painting's own
 brushwork shifted a few pixels at a time, not redrawn. The crows and swallows are the one addition, drawn for this
 page.
 
-**Step onto the bridge** (`diorama.html`, linked from the Rainbow Bridge scene) is a prototype of a different idea:
-the same scene as a paper theatre. The bridge, its crowd, the big boat and the near bank are cut out of the painting
-and stood up at their own depths, and you walk a porter from elsewhere on the scroll across the deck while the layers
-shift against each other.
+**Walk the bridge in 3D** (`world.html`, linked from the Rainbow Bridge scene) rebuilds that scene as a small world
+you can go all the way round. It opens on the painting, flat, then lifts into 3D: the bridge and the big boat are
+rebuilt as simple models dressed in their own painted timbers, the river and the banks are the painting laid back down
+on the ground it shows, and you walk a porter from elsewhere on the scroll across the deck among a few other walkers.
 
 ## Run it
 
@@ -46,34 +46,45 @@ cross-fades, the slow push-in stops and the water and mist hold still.
 | Moving layer | `life/rigs.json`, `tools/make_life.py`, `src/renderer.js`, `src/birds.js` | A *rig* is a region of the painting that moves in place: `gait` (a bounce on each step, for walkers and pack animals), `rock` (a turn about a pivot, for boats and gesturing figures) or `wind` (a sway that grows with height, for trees). Each rig's outline is cut down to the brushwork inside it, so only the figure or the branches move and the bare silk stays still. Outlines listed under `still` (the Rainbow Bridge) are cut out of every rig, so the boat can rock under the bridge without dragging it along. The masks go into one atlas, and the tile shader adds up the rigs' displacement, at most 32 in view at a time. Movements grow a little when the camera is far out, so they still read. Birds are SVG over the painting, multiplied into it like ink. |
 | Tiles | `src/tiles.js` | A four-level WebP pyramid (1, ½, ¼, ⅛). The two coarse levels (about 1 MB) load at start. The fine levels load where the camera is and where it is going next, and the least recently used are released. |
 
-### The paper-theatre bridge
+### The bridge in 3D
 
-The painting is drawn in an oblique view, looking down at about 38°. A point on the ground at picture row *v* lies at
-depth *z* = (*v* − *c*) / sin θ. A point standing *y* high at that depth shows at row *v* = *c* + *z*·sin θ − *y*·cos θ.
-`tools/make_diorama.py` cuts the scene described in `life/diorama-bridge.json` into layers. Each layer has a *foot line*,
-the row where it meets the ground (or the water). `src/diorama.js` stands each layer up at its foot line using those two
-formulas, so seen from the painting's own direction everything lines up with the scroll exactly. Any other camera
-gives parallax.
+The painting is read as an oblique view of a small world: X along the scroll, Y up, Z away from the painter, the river
+at Y = 0 and the banks raised to Y = 110. A point (X, Y, Z) is painted at *u* = X + 0.7·Z, *v* = 1300 − 0.5·Z − Y
+(master px). That one formula does most of the work:
 
-- **Layers, back to front:** the far bank as a backdrop; the crowded left-bank street in standing strips; the bridge's
-  far side and deck crowd; its underside; the porter; the bridge's front face and the onlookers at the rail; the boat's
-  hull and, cut along its brush lines, its mast and rigging; the near bank; the willow; the rooftops along the bottom.
-- **Filling the gaps:** where a cut-out used to cover the silk, the gap is filled with blank silk. The texture comes
-  from a speck-free stretch of the scan (x 8892–9148, y 452–708) and the tone from the unpainted silk around the gap,
-  so what the camera uncovers looks like the painting's own empty silk.
-- **The porter** comes from the street outside Dr. Zhao's shop (x ≈ 1150–1375, y ≈ 1055–1250). He is cut into his body
-  and two baskets. The body bobs and leans with each step, the baskets swing on the pole like pendulums, and he is
-  mirrored to walk right. A soft shadow behind him and a small cinnabar marker overhead make him easy to find among the
-  painted crowd.
-- **Still alive:** the moving layer's rigs (`life/rigs.json`) play on the cut-outs too, the boat cut-out rocks as a
-  whole, and the river ripples.
-- **Camera:** it opens on the scene as painted, through a nearly orthographic lens. It then steps in to follow the porter
-  from out in front of the stage, over the rooftops, the way you'd watch a paper theatre. Drag turns it up to about 20°.
-  Beyond that the flat cut-outs give themselves away.
+- **The ground is the painting.** The river, the banks and their timber revetments have no texture of their own. Each
+  fragment looks up the painting at its own painted position, so from the painter's direction the ground is the scroll
+  exactly, with no cut edges anywhere, and from any other direction it is still the same continuous silk.
+- **Gaps are filled from the painting.** Where the painting shows something that is rebuilt (the bridge, the boat) or
+  a strip it never shows (the water behind a bank), the ground uses the painting's own blank water or silk instead,
+  in the tone of the painting around it. `tools/make_world.py` writes masks for what is open water and what is land,
+  and those tones.
+- **Standing things fade from the side.** Houses, crowds and trees on the banks are only painted on the ground, so
+  seen from far round the side they would lie flat. There they fade toward blank silk, and everything dissolves into
+  mist beyond the painting's edges and a short way from the bridge.
+- **The bridge** is a designed, symmetric arch between two feet on the river's edge. Its deck lands on both banks. Its
+  faces are the painted bridge, stretched between the painted curves: the railing along the painted rail, the face
+  between the painted deck line and the arch. The far side wears the near side, as a symmetric bridge would. The deck is
+  planks on the silk's weave; the underside is the rafters painted under the arch. The painted right end, hidden
+  behind the boat's mast, takes the left end's timbers.
+- **The boat** stands on its painted waterline with the painted gunwale above it; a deck, a cabin with a rounded roof
+  and a mast with its stays sit on top. Every vertex carries the painting pixel it shows. On the side the painter saw,
+  that is the pixel it is painted at. On the far side, which he never saw, it is the matching pixel on the near side,
+  mirrored. It rocks slowly.
+- **People** are cut-outs that always turn to face you: the porter from the street outside Dr. Zhao's shop (x ≈
+  1150–1375, y ≈ 1055–1250), in three pieces so his baskets swing, and seven walkers traced from other scenes. Their
+  colours are scaled so the silk round them matches the scene's silk, so no pale halo shows.
+- **Camera:** it opens on the painting through a very long lens far off along the painter's own line of sight, with a
+  shear that turns its picture into the scroll's oblique one. Then it lifts into an ordinary perspective camera that
+  orbits the porter. Drag to go round (all the way), wheel or pinch to come closer; ← → or the buttons walk.
 
 ```bash
-python3 tools/make_diorama.py life/diorama-bridge.json source/Alongtheriver_QingMing.jpg assets/diorama/bridge
+python3 tools/make_world.py life/world-bridge.json source/Alongtheriver_QingMing.jpg assets/world/bridge
 ```
+
+The spec, `life/world-bridge.json`, holds the mapping, the river's outline in world coordinates, the painted
+outline of open water, the bridge's design and its painted curves, the boat's painted waterline and gunwale, and the
+people's outlines. The bake also writes `tools/world-masks-preview.png` (blue: open water, orange: land) for checking.
 
 ### Asset build
 

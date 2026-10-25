@@ -5,7 +5,7 @@
 // shot.focus: the rectangle the camera frames [x0, y0, x1, y1]; shot.points: details marked with a numbered seal and a
 // short label whose leader line points at the subject (centre `at`, rough size `r`) and leads off in direction `dir`. side: where the
 // text column sits on wide screens (the subject is framed on the other side). walk: a link into the scene's
-// paper-theatre view, where there is one.
+// 3D view, where there is one.
 export const SCROLL = {
   width: 38414, height: 1800,
   cm: [24.8, 528.7],             // the painting's size; the scan covers all of it (38,414 / 1,800 ≈ 528.7 / 24.8)
@@ -54,7 +54,7 @@ export const CHAPTERS = [
   },
   {
     id: 'bridge', num: '四', zh: '虹桥 · 船过桥', en: 'Under the Rainbow Bridge', side: 'right',
-    walk: { href: 'diorama.html', label: 'Step onto the bridge' },   // the paper-theatre view of this scene
+    walk: { href: 'world.html', label: 'Walk the bridge in 3D' },   // the scene rebuilt in 3D
     body: [
       'The most crowded moment of the scroll, near its middle. A large boat swings toward the arched timber bridge with its mast not yet fully down, and the crew rushes to lower it.',
       'On the bridge, stalls and passers-by fill the deck, and many lean over the rail to watch.',

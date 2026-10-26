@@ -148,6 +148,11 @@ void main() {
     float s = .26 * smoothstep(0., .32, e.x) * smoothstep(0., .32, e.y) * uAlpha * (1. - fogf());
     fragColor = vec4(0., 0., 0., s);
     return;
+  } else if (uMode == 14) {         // where a tap sent him: a thin ring on the ground
+    float r = length((vUV - .5) * 2.);
+    float k = smoothstep(.6, .7, r) * (1. - smoothstep(.84, .94, r)) * uAlpha;
+    fragColor = vec4(uColor.rgb * k, k);
+    return;
   } else if (uMode == 13) {         // an ink line: soft at its sides, its weight wavering along it like a brush
     float k = (1. - smoothstep(.3, 1., abs(vUV.x))) * (.55 + .45 * noise(vec2(vUV.y * .035, 7.))) * uAlpha * (1. - fogf());
     fragColor = vec4(uColor.rgb * k, k);
@@ -552,8 +557,8 @@ function stepCrowd(dt) {
   const L = world.bridge.sh.L, lo = -OFF - 40, hi = L + OFF + 40;
   for (const p of crowd) {
     if (REDUCED) continue;
-    // keep a step's distance from the porter
-    const ds = p.s - P0.s, dw = (p.w - .5) * world.bridge.sh.W;
+    // keep a step's distance from the porter, if he is on the bridge
+    const pb = porterOnBridge(), ds = pb ? p.s - pb.s : 1e9, dw = pb ? p.w * world.bridge.sh.W - pb.off : 1e9;
     const near = Math.abs(ds) < 34 && Math.abs(dw) < 40 && Math.sign(p.v) === -Math.sign(ds || 1);
     const v = near ? p.v * .15 : p.v;
     p.s += v * dt; p.phase += Math.abs(v) * dt / 22;
@@ -678,39 +683,152 @@ async function bitmap(url, opts = {}) {
 }
 
 // --------------------------------------------------------------------------------------------------- the porter
-const P0 = { s: 0, dir: 1, vel: 0, phase: 0, swingL: 0, swingLv: 0, swingR: 0, swingRv: 0 };
-const input = { fwd: 0, keys: new Set(), hold: 0 };
+// He walks anywhere the ground lets him near the bridge: up the deck between its railings, down the ramps and about
+// both banks, but not into the river, through a building or out into the mist past the painting's edge. The arrow
+// keys, the pad and a tap on the ground all steer him; directions are the screen's, whichever way the camera faces.
+const P0 = { x: 0, z: 0, y: 0, vx: 0, vz: 0, hx: 1, hz: 0, flip: 1, phase: 0, swingL: 0, swingLv: 0, swingR: 0, swingRv: 0, target: null, stuck: 0 };
+const input = { keys: new Set(), stick: [0, 0], run: false };
 const SPEED = 80;
-const OFF = 160;               // how far past each end of the bridge he may walk, onto the banks
+const OFF = 160;               // how far past each end of the bridge the strolling crowd walks, onto the banks
+const RAIL = 16;               // how close to a railing he can walk
+const REACH = 1700;            // how far from the bridge's middle he can wander
 
-function porterAt(s) {
-  const sh = world.bridge.sh, y = s > 0 && s < sh.L ? sh.deck(s) : S.bank;
-  return sh.at(s, sh.W / 2, y);
+function inPoly(x, z, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, zi] = poly[i], [xj, zj] = poly[j];
+    if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) inside = !inside;
+  }
+  return inside;
+}
+// the bridge's own coordinates for a point: s along it from the south foot, off across it from the front railing
+function onBridge(x, z) {
+  const sh = world.bridge.sh, [[ax, az]] = S.bridge.feet, dx = x - ax, dz = z - az;
+  return { s: dx * sh.b[0] + dz * sh.b[1], off: -(dx * sh.n[0] + dz * sh.n[1]) };
+}
+let blockers = [];
+function setupGround() {             // what stands in his way: buildings and tables, a little inside their eaves
+  blockers = [];
+  for (const Md of S.models || []) {
+    const f = Md.foot; if (!f || f.kind !== 'box' || Md.open || !['house', 'traced', 'table'].includes(Md.kind)) continue;   // open sheds: walk in
+    const c = f.pts.reduce((m, q) => [m[0] + q[0] / 4, m[1] + q[1] / 4], [0, 0]), k = Md.kind === 'table' ? 4 : 14;
+    blockers.push(f.pts.map(q => { const dx = q[0] - c[0], dz = q[1] - c[1], l = Math.hypot(dx, dz) || 1, m = Math.max(.2, 1 - k / l); return [c[0] + dx * m, c[1] + dz * m]; }));
+  }
+}
+// the height he would stand at here, or null where he cannot go
+function ground(x, z) {
+  const sh = world.bridge.sh, { s, off } = onBridge(x, z);
+  if (s >= 0 && s <= sh.L && off > -4 && off < sh.W + 4) return off >= RAIL && off <= sh.W - RAIL ? sh.deck(s) : null;
+  if (inPoly(x, z, S.river)) return null;
+  const mid = world.bridge.sh.at(sh.L / 2, sh.W / 2, 0);
+  if (Math.hypot(x - mid[0], z - mid[2]) > REACH) return null;
+  const { a, s: sm, c } = S.map, R = S.region, u = x + a * z, v = c - sm * z - S.bank;
+  if (u < R[0] + 80 || u > R[2] - 80 || v < 60 || v > R[3] - 30) return null;
+  for (const poly of blockers) if (inPoly(x, z, poly)) return null;
+  return S.bank;
+}
+function porterAt() { return [P0.x, P0.y, P0.z]; }
+function placePorter(x, z) { const y = ground(x, z); if (y === null) return false; P0.x = x; P0.z = z; P0.y = y; return true; }
+function porterOnBridge() {          // his place along the bridge, if he is on it
+  const sh = world.bridge.sh, b = onBridge(P0.x, P0.z);
+  return b.s >= 0 && b.s <= sh.L && b.off >= 0 && b.off <= sh.W ? b : null;
+}
+
+// which way the input asks him to go, in the world: the screen's right and its "into the picture"
+function walkIntent(view) {
+  const r = [view.right[0], view.right[2]], f = [-Math.sin(view.yaw), Math.cos(view.yaw)];
+  let x = input.stick[0], y = input.stick[1];
+  for (const k of input.keys) { if (k === 'left') x -= 1; if (k === 'right') x += 1; if (k === 'up') y += 1; if (k === 'down') y -= 1; }
+  let dx = x * r[0] + y * f[0], dz = x * r[1] + y * f[1], l = Math.hypot(dx, dz);
+  if (l > .05) { P0.target = null; const k = Math.min(1, l) / l; return [dx * k, dz * k]; }
+  if (P0.target) {                   // walking to where the ground was tapped
+    dx = P0.target[0] - P0.x; dz = P0.target[1] - P0.z; l = Math.hypot(dx, dz);
+    if (l < 10) { P0.target = null; return [0, 0]; }
+    const k = Math.min(1, l / 40) / l; return [dx * k, dz * k];
+  }
+  return [0, 0];
 }
 
 function stepPorter(dt, want) {
-  const acc = (want * SPEED - P0.vel) * (1 - Math.exp(-dt * 7));
-  P0.vel += acc;
-  const L = world.bridge.sh.L, ns = clamp(P0.s + P0.vel * dt, -OFF, L + OFF);
-  if (ns === -OFF || ns === L + OFF) P0.vel *= .5;
-  const moved = ns - P0.s; P0.s = ns;
-  if (Math.abs(P0.vel) > 4) P0.dir = Math.sign(P0.vel);
-  P0.phase += Math.abs(moved) / 30;
-  const kick = acc / Math.max(dt, 1e-3) * .0009, gait = Math.abs(P0.vel) / SPEED * .05 * Math.sin(P0.phase * Math.PI);
-  for (const k of ['L', 'R']) {
-    const a = 'swing' + k, v = a + 'v';
-    P0[v] += (-P0[a] * 26 - P0[v] * 2.6 + (kick + gait * (k === 'L' ? 1 : -1)) * 26) * dt;
-    P0[a] = clamp(P0[a] + P0[v] * dt, -.35, .35);
+  const sp = SPEED * (input.run ? 1.8 : 1);
+  const k = 1 - Math.exp(-dt * 7), ax = (want[0] * sp - P0.vx) * k, az = (want[1] * sp - P0.vz) * k;
+  P0.vx += ax; P0.vz += az;
+  const dx = P0.vx * dt, dz = P0.vz * dt, x0 = P0.x, z0 = P0.z;
+  // move, or slide along whatever is in the way
+  if (dx || dz) {
+    if (!placePorter(P0.x + dx, P0.z + dz)) {
+      const l = Math.hypot(dx, dz), tx = P0.hz, tz = -P0.hx;            // try along each axis, then along the heading's side
+      if (!placePorter(P0.x + dx, P0.z) && !placePorter(P0.x, P0.z + dz)) {
+        const d = dx * tx + dz * tz;
+        if (!placePorter(P0.x + tx * d, P0.z + tz * d)) { P0.vx *= .3; P0.vz *= .3; }
+      }
+      if (Math.hypot(P0.x - x0, P0.z - z0) < l * .2) P0.stuck += dt; else P0.stuck = 0;
+      if (P0.stuck > .35) { P0.target = null; P0.stuck = 0; }
+    } else P0.stuck = 0;
   }
+  const moved = Math.hypot(P0.x - x0, P0.z - z0), v = Math.hypot(P0.vx, P0.vz);
+  if (v > 4) { P0.hx = P0.vx / v; P0.hz = P0.vz / v; }
+  P0.phase += moved / 30;
+  // speeding up forward, the baskets lag behind; each step rocks them a little, one against the other
+  const kick = (ax * P0.hx + az * P0.hz) / Math.max(dt, 1e-3) * .0009, gait = Math.min(1, v / SPEED) * .05 * Math.sin(P0.phase * Math.PI);
+  for (const s of ['L', 'R']) {
+    const a = 'swing' + s, vv = a + 'v';
+    P0[vv] += (-P0[a] * 26 - P0[vv] * 2.6 + (kick + gait * (s === 'L' ? 1 : -1)) * 26) * dt;
+    P0[a] = clamp(P0[a] + P0[vv] * dt, -.35, .35);
+  }
+}
+
+// a tap or click on the ground: where it lands, on the banks or up on the deck
+function invert4(m) {
+  const inv = new Array(16), [a00, a01, a02, a03, a10, a11, a12, a13, a20, a21, a22, a23, a30, a31, a32, a33] = m;
+  const b00 = a00 * a11 - a01 * a10, b01 = a00 * a12 - a02 * a10, b02 = a00 * a13 - a03 * a10, b03 = a01 * a12 - a02 * a11;
+  const b04 = a01 * a13 - a03 * a11, b05 = a02 * a13 - a03 * a12, b06 = a20 * a31 - a21 * a30, b07 = a20 * a32 - a22 * a30;
+  const b08 = a20 * a33 - a23 * a30, b09 = a21 * a32 - a22 * a31, b10 = a21 * a33 - a23 * a31, b11 = a22 * a33 - a23 * a32;
+  const det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06; if (!det) return null;
+  const d = 1 / det;
+  inv[0] = (a11 * b11 - a12 * b10 + a13 * b09) * d; inv[1] = (a02 * b10 - a01 * b11 - a03 * b09) * d; inv[2] = (a31 * b05 - a32 * b04 + a33 * b03) * d; inv[3] = (a22 * b04 - a21 * b05 - a23 * b03) * d;
+  inv[4] = (a12 * b08 - a10 * b11 - a13 * b07) * d; inv[5] = (a00 * b11 - a02 * b08 + a03 * b07) * d; inv[6] = (a32 * b02 - a30 * b05 - a33 * b01) * d; inv[7] = (a20 * b05 - a22 * b02 + a23 * b01) * d;
+  inv[8] = (a10 * b10 - a11 * b08 + a13 * b06) * d; inv[9] = (a01 * b08 - a00 * b10 - a03 * b06) * d; inv[10] = (a30 * b04 - a31 * b02 + a33 * b00) * d; inv[11] = (a21 * b02 - a20 * b04 - a23 * b00) * d;
+  inv[12] = (a11 * b07 - a10 * b09 - a12 * b06) * d; inv[13] = (a00 * b09 - a01 * b07 + a02 * b06) * d; inv[14] = (a31 * b01 - a30 * b03 - a32 * b00) * d; inv[15] = (a20 * b03 - a21 * b01 + a22 * b00) * d;
+  return inv;
+}
+function pickGround(view, cx, cy) {
+  const inv = invert4(view.vp); if (!inv) return null;
+  const nx = cx / innerWidth * 2 - 1, ny = 1 - cy / innerHeight * 2;
+  const un = z => { const x = inv[0] * nx + inv[4] * ny + inv[8] * z + inv[12], y = inv[1] * nx + inv[5] * ny + inv[9] * z + inv[13], zz = inv[2] * nx + inv[6] * ny + inv[10] * z + inv[14], w = inv[3] * nx + inv[7] * ny + inv[11] * z + inv[15]; return [x / w, y / w, zz / w]; };
+  const p0 = un(-1), p1 = un(1), d = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
+  if (d[1] > -1e-6) return null;                 // looking up: no ground
+  // march down the ray from above the bridge's crown to the water, and stop at the first surface under it
+  const sh = world.bridge.sh, top = S.bank + S.bridge.rise + 10, surf = (x, z) => {
+    const b = onBridge(x, z);
+    if (b.s >= 0 && b.s <= sh.L && b.off >= 0 && b.off <= sh.W) return sh.deck(b.s);
+    return inPoly(x, z, S.river) ? 0 : S.bank;
+  };
+  const t0 = (top - p0[1]) / d[1], t1 = (0 - p0[1]) / d[1], n = 240;
+  let prev = null;
+  for (let i = 0; i <= n; i++) {
+    const t = t0 + (t1 - t0) * i / n, x = p0[0] + d[0] * t, y = p0[1] + d[1] * t, z = p0[2] + d[2] * t;
+    if (y <= surf(x, z)) {
+      if (!prev) return [x, z];
+      // halve the last step a few times to land on the edge it crossed
+      let a = prev, b = [x, y, z];
+      for (let k = 0; k < 6; k++) { const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2]; if (m[1] <= surf(m[0], m[2])) b = m; else a = m; }
+      return [b[0], b[2]];
+    }
+    prev = [x, y, z];
+  }
+  return null;
 }
 
 // the porter as three pieces turned to face the camera; drawn walking left, mirrored when he walks to screen right
 function porterQuads(view, t) {
-  const pos = porterAt(P0.s), Wk = S.walker, [fx, fy] = Wk.feet;
+  const pos = porterAt(), Wk = S.walker, [fx, fy] = Wk.feet;
   const sc = Wk.height / (fy - Wk.pieces[0].box[1]);
-  const right = view.bb, along = world.bridge.sh.b;
-  const screenDir = (along[0] * view.right[0] + along[1] * view.right[2]) * P0.dir;
-  const flip = screenDir > 0 ? -1 : 1, speed = Math.abs(P0.vel) / SPEED, s = Math.sin(P0.phase * Math.PI);
+  const right = view.bb, along = [P0.hx, P0.hz];
+  // which way he faces on screen; walking straight toward or away from the camera, he keeps the way he faced
+  const screenDir = along[0] * view.right[0] + along[1] * view.right[2];
+  if (Math.abs(screenDir) > .25) P0.flip = screenDir > 0 ? -1 : 1;
+  const flip = P0.flip, speed = Math.min(1.6, Math.hypot(P0.vx, P0.vz) / SPEED), s = Math.sin(P0.phase * Math.PI);
   const bob = REDUCED ? 0 : Math.abs(s) * 4 * speed + Math.sin(t * 1.7) * .5 * (1 - speed);
   const tilt = rad((REDUCED ? 0 : s * 2.6 * speed) + 3.5 * speed);
   const body = (x, y) => { const c = Math.cos(tilt), sn = Math.sin(tilt); return [x * c - y * sn, x * sn + y * c + bob / sc]; };
@@ -1165,8 +1283,48 @@ function placePois(F, view) {       // project each seal to the screen; hide it 
   }
 }
 
+// ----------------------------------------------------------------------------------------------------- the map
+// A small plan of the ground he can walk: the river, the bridge, the buildings, him, and which way the camera looks
+let map = null;
+function setupMap() {
+  const c = $('#map'), sh = world.bridge.sh, mid = sh.at(sh.L / 2, sh.W / 2, 0);
+  const span = REACH * 1.02, dpr = Math.min(devicePixelRatio || 1, 2);
+  const w = c.clientWidth || 132, h = c.clientHeight || 88;
+  c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+  const k = Math.min(w, h * 1.5) / (2 * span) * dpr;
+  const P = (x, z) => [c.width / 2 + (x - mid[0]) * k, c.height / 2 - (z - mid[2]) * k];
+  // the plan itself, drawn once: land, river, buildings, the bridge
+  const base = document.createElement('canvas'); base.width = c.width; base.height = c.height;
+  const g = base.getContext('2d');
+  g.fillStyle = 'rgba(214, 196, 158, .9)'; g.fillRect(0, 0, c.width, c.height);
+  const poly = (pts, fill, stroke) => { g.beginPath(); pts.forEach(([x, z], i) => { const [px, py] = P(x, z); i ? g.lineTo(px, py) : g.moveTo(px, py); }); g.closePath(); if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.strokeStyle = stroke; g.stroke(); } };
+  poly(S.river, 'rgba(120, 130, 120, .85)');
+  g.lineWidth = dpr * .8; poly(S.river, null, 'rgba(60, 48, 36, .6)');
+  for (const b of blockers) poly(b, 'rgba(70, 52, 38, .75)');
+  const fp = [sh.at(0, 0, 0), sh.at(sh.L, 0, 0), sh.at(sh.L, sh.W, 0), sh.at(0, sh.W, 0)].map(p => [p[0], p[2]]);
+  poly(fp, 'rgba(150, 62, 40, .95)');
+  // the edge of where he can go
+  g.save(); g.globalCompositeOperation = 'destination-in';
+  const r = REACH * k; const grd = g.createRadialGradient(c.width / 2, c.height / 2, r * .82, c.width / 2, c.height / 2, r * 1.02);
+  grd.addColorStop(0, 'rgba(0,0,0,1)'); grd.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = grd; g.fillRect(0, 0, c.width, c.height); g.restore();
+  map = { c, ctx: c.getContext('2d'), base, P, dpr };
+}
+function drawMap(view) {
+  if (!map) return;
+  const { c, ctx, base, P, dpr } = map;
+  ctx.clearRect(0, 0, c.width, c.height); ctx.drawImage(base, 0, 0);
+  const [px, py] = P(P0.x, P0.z);
+  // the camera's view, a faint wedge from him
+  const f = [-Math.sin(view.yaw), Math.cos(view.yaw)], a = Math.atan2(-f[1], f[0]), half = .45;
+  ctx.beginPath(); ctx.moveTo(px, py); ctx.arc(px, py, 26 * dpr, a - half, a + half); ctx.closePath();
+  ctx.fillStyle = 'rgba(247, 236, 216, .35)'; ctx.fill();
+  if (P0.target) { const [tx, ty] = P(...P0.target); ctx.strokeStyle = 'rgba(194, 67, 44, .9)'; ctx.lineWidth = dpr; ctx.beginPath(); ctx.arc(tx, ty, 3 * dpr, 0, 7); ctx.stroke(); }
+  ctx.beginPath(); ctx.arc(px, py, 3.4 * dpr, 0, 7); ctx.fillStyle = '#c2432c'; ctx.fill();
+  ctx.lineWidth = 1.2 * dpr; ctx.strokeStyle = '#f7ecd8'; ctx.stroke();
+}
+
 // ---------------------------------------------------------------------------------------------------------- frame
-let canvas, last = 0, t0 = 0, refl = null;
+let canvas, last = 0, t0 = 0, refl = null, lastView = null, tapMark = null;
 function resize() {
   const dpr = Math.min(devicePixelRatio || 1, 2);
   canvas.width = Math.round(innerWidth * dpr); canvas.height = Math.round(innerHeight * dpr);
@@ -1178,30 +1336,20 @@ function frame(now) {
   if (!window.__world.manual) render(dt, window.__world.time ?? (REDUCED ? 9 : (now - t0) / 1000));
   requestAnimationFrame(frame);
 }
-function walkIntent(view) {
-  // arrow keys and buttons mean directions on the screen; the porter takes whichever way along the bridge is closer
-  const b = world.bridge.sh.b, r = view.right, f = [-Math.sin(view.yaw), Math.cos(view.yaw)];
-  const scr = b[0] * r[0] + b[1] * r[2], fwd = b[0] * f[0] + b[1] * f[1];
-  let x = 0, y = 0;
-  for (const k of input.keys) { if (k === 'left') x -= 1; if (k === 'right') x += 1; if (k === 'up') y += 1; if (k === 'down') y -= 1; }
-  x += input.hold;
-  // looking along the bridge, right and left mean on and back (away from you, toward you); across it, up and down do
-  const sx = Math.abs(scr) > .3 ? scr : Math.sign(fwd || 1) * .8, sy = Math.abs(fwd) > .3 ? fwd : Math.sign(scr || 1) * .8;
-  const v = x * sx + y * sy;
-  return Math.abs(v) < .15 ? 0 : Math.sign(v);
-}
 function render(dt, t) {
   const aspect = canvas.width / canvas.height;
   stepDrama(t);
-  if (!played && cam.p > .9 && P0.s > world.bridge.sh.L * .38 && P0.s < world.bridge.sh.L * .62) { played = true; startDrama(false); }
+  const onb = porterOnBridge();
+  if (!played && cam.p > .9 && onb && onb.s > world.bridge.sh.L * .38 && onb.s < world.bridge.sh.L * .62) { played = true; startDrama(false); }
   if (!REDUCED) cam.p += (cam.pTarget - cam.p) * (1 - Math.exp(-dt * 1.2)) + Math.sign(cam.pTarget - cam.p) * dt * .04;
   else cam.p = cam.pTarget;
   cam.p = clamp(cam.p, 0, 1);
-  const pos = porterAt(P0.s), tgt = cam.focus || [pos[0] + world.bridge.sh.b[0] * P0.dir * 30, pos[1] + 34, pos[2] + world.bridge.sh.b[1] * P0.dir * 30];
+  const pos = porterAt(), tgt = cam.focus || [pos[0] + P0.hx * 30, pos[1] + 34, pos[2] + P0.hz * 30];
   const k = cam.snap ? 1 : 1 - Math.exp(-dt * 4);
   cam.tx += (tgt[0] - cam.tx) * k; cam.ty += (tgt[1] - cam.ty) * k; cam.tz += (tgt[2] - cam.tz) * k; cam.snap = false;
   const view = viewAt(cam.p, aspect, [cam.tx, cam.ty, cam.tz]);
-  stepPorter(dt, cam.p > .6 ? walkIntent(view) : 0);
+  stepPorter(dt, cam.p > .6 ? walkIntent(view) : [0, 0]);
+  lastView = view;
   sound.frame(view);
 
   const { gl, U } = G;
@@ -1241,7 +1389,7 @@ function render(dt, t) {
   }
   if (q_drama && !REDUCED) dramaRopes(q_drama, boats[0].model, view, ropes);
   const sprites = standing.map(q => ({ ...q, d: dist2(q.pos, view.eye) - (q.after ? .5 : 0) }));
-  sprites.push({ porter: true, d: dist2(porterAt(P0.s), view.eye) });
+  sprites.push({ porter: true, d: dist2(porterAt(), view.eye) });
   sprites.sort((a, b) => b.d - a.d);
   const F = { pq, boats, sprites, ropes };
 
@@ -1288,29 +1436,43 @@ function render(dt, t) {
     gl.depthMask(true);
   }
   G.quad(pq.marker, { mode: 6, alpha: e });
+  if (tapMark) {                    // the spot a tap sent him to, a ring that shrinks as it fades; grey if he cannot go there
+    const age = (performance.now() - tapMark.t) / 1000, k = clamp(1 - age / (tapMark.ok ? 1.4 : .7), 0, 1);
+    if (k <= 0 || (tapMark.ok && !P0.target && age > .4)) tapMark = null;
+    else {
+      const [x, z] = tapMark.at, y = (ground(x, z) ?? S.bank) + 1.2, r = 16 + 10 * (1 - k);
+      gl.depthMask(false);
+      G.quad([[x - r, y, z - r], [x + r, y, z - r], [x - r, y, z + r], [x + r, y, z + r]], { mode: 14, alpha: k, color: tapMark.ok ? [.76, .26, .17, 1] : [.55, .5, .42, 1] });
+      gl.depthMask(true);
+    }
+  }
   placePois(F, view);
   // the painting itself, over everything while the scene opens
   const flatA = 1 - clamp((cam.p - .02) / .28, 0, 1);
   if (flatA > 0) { gl.disable(gl.DEPTH_TEST); G.draw(world.sheet, { mode: 8, alpha: flatA }); gl.enable(gl.DEPTH_TEST); }
 
-  window.__world.state = { s: P0.s, dir: P0.dir, vel: P0.vel, p: cam.p, yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist };
-  $('#where').style.setProperty('--at', `${(P0.s + OFF) / (world.bridge.sh.L + 2 * OFF) * 100}%`);
+  window.__world.state = { x: P0.x, z: P0.z, y: P0.y, s: onb?.s ?? null, off: onb?.off ?? null, vel: Math.hypot(P0.vx, P0.vz), p: cam.p, yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist };
+  drawMap(view);
   document.body.classList.toggle('flat', cam.pTarget === 0);
 }
 
 // ---------------------------------------------------------------------------------------------------------- input
 function bindInput() {
   const keys = { ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right', ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down' };
-  addEventListener('keydown', e => { if (keys[e.key]) { input.keys.add(keys[e.key]); e.preventDefault(); stepIn(); } });
-  addEventListener('keyup', e => { if (keys[e.key]) input.keys.delete(keys[e.key]); });
-  addEventListener('blur', () => { input.keys.clear(); input.hold = 0; });
+  const typing = e => e.target.closest?.('input, textarea, select, [contenteditable]');
+  addEventListener('keydown', e => {
+    if (e.key === 'Shift') input.run = true;
+    if (keys[e.key] && !typing(e) && !e.metaKey && !e.ctrlKey && !e.altKey) { input.keys.add(keys[e.key]); e.preventDefault(); stepIn(); }
+  });
+  addEventListener('keyup', e => { if (e.key === 'Shift') input.run = false; if (keys[e.key]) input.keys.delete(keys[e.key]); });
+  addEventListener('blur', () => { input.keys.clear(); input.stick = [0, 0]; input.run = false; });
   addEventListener('wheel', e => { e.preventDefault(); cam.dist = clamp(cam.dist * Math.exp(e.deltaY * (e.ctrlKey ? .01 : .0015)), 240, 2000); stepIn(); }, { passive: false });
   // drag to go round; two fingers to come closer or stand back
   const pts = new Map(); let drag = null, pinch = null;
   canvas.addEventListener('pointerdown', e => {
     pts.set(e.pointerId, [e.clientX, e.clientY]); canvas.setPointerCapture(e.pointerId); stepIn();
     if (q_drama?.cine) { q_drama.cine = false; cam.focus = null; }      // taking the camera back
-    if (pts.size === 1) drag = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch };
+    if (pts.size === 1) drag = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch, t: performance.now(), moved: 0 };
     if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), dist: cam.dist }; drag = null; }
   });
   canvas.addEventListener('pointermove', e => {
@@ -1318,17 +1480,31 @@ function bindInput() {
     pts.set(e.pointerId, [e.clientX, e.clientY]);
     if (pinch && pts.size === 2) { const [a, b] = [...pts.values()]; cam.dist = clamp(pinch.dist * pinch.d / Math.max(20, Math.hypot(a[0] - b[0], a[1] - b[1])), 240, 2000); return; }
     if (!drag) return;
+    drag.moved = Math.max(drag.moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y));
     const kx = 5.5 / Math.max(innerWidth, 600);
     cam.yaw = drag.yaw - (e.clientX - drag.x) * kx;
     cam.pitch = clamp(drag.pitch + (e.clientY - drag.y) * kx * .8, rad(7), rad(72));
   });
-  const end = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) drag = null; };
+  const end = e => {
+    // a tap, not a drag: walk to the spot on the ground
+    if (e.type === 'pointerup' && drag && pts.size === 1 && drag.moved < 7 && performance.now() - drag.t < 450 && cam.p > .85 && lastView) {
+      const hit = pickGround(lastView, e.clientX, e.clientY);
+      if (hit) { P0.target = hit; P0.stuck = 0; tapMark = { at: hit, t: performance.now(), ok: ground(hit[0], hit[1]) !== null }; }
+    }
+    pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) drag = null;
+  };
   canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
-  for (const [sel, k] of [['#walk-left', -1], ['#walk-right', 1]]) {
-    const b = $(sel);
-    b.addEventListener('pointerdown', e => { e.preventDefault(); input.hold = k; b.setPointerCapture(e.pointerId); stepIn(); });
-    for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, () => { input.hold = 0; });
-  }
+  // the walking pad: drag the knob any way round; how far decides how fast
+  const pad = $('#pad'), knob = pad.querySelector('.knob');
+  let padId = null;
+  const padMove = e => {
+    const r = pad.getBoundingClientRect(), R = r.width / 2, dx = e.clientX - (r.left + R), dy = e.clientY - (r.top + R), l = Math.hypot(dx, dy), m = Math.min(1, l / (R * .72)) / (l || 1);
+    input.stick = [dx * m, -dy * m];
+    knob.style.transform = `translate(${(dx * m * R * .5).toFixed(1)}px, ${(dy * m * R * .5).toFixed(1)}px)`;
+  };
+  pad.addEventListener('pointerdown', e => { e.preventDefault(); padId = e.pointerId; pad.setPointerCapture(padId); pad.classList.add('on'); stepIn(); padMove(e); });
+  pad.addEventListener('pointermove', e => { if (e.pointerId === padId) padMove(e); });
+  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) pad.addEventListener(ev, () => { padId = null; input.stick = [0, 0]; knob.style.transform = ''; pad.classList.remove('on'); });
   $('#flat').addEventListener('click', () => {
     cam.held = cam.pTarget === 1; cam.pTarget = cam.held ? 0 : 1;
     $('#flat').textContent = cam.pTarget ? 'See it as painted' : 'Step back in';
@@ -1369,11 +1545,13 @@ async function start() {
   gl.uniform3fv(U.uHome, HOME.dir);
   const mid = world.bridge.sh.at(world.bridge.sh.L / 2, 0, 0);
   gl.uniform2f(U.uCenter, mid[0], mid[2]);
-  P0.s = world.bridge.sh.L * .22;
+  setupGround();
+  { const sh = world.bridge.sh, p = sh.at(sh.L * .22, sh.W / 2, 0); placePorter(p[0], p[2]); P0.hx = sh.b[0]; P0.hz = sh.b[1]; }
   if (S.crowd) setupCrowd();
   setupWalks();
   setupPois();
-  resize(); addEventListener('resize', resize);
+  resize(); addEventListener('resize', () => { resize(); setupMap(); });
+  setupMap();
   bindInput();
   if (params.has('flat')) { cam.held = true; $('#flat').textContent = 'Step back in'; }
   else setTimeout(stepIn, REDUCED ? 0 : 1500);
@@ -1382,11 +1560,18 @@ async function start() {
     // recordings: __world.manual = true stops the clock; tick(dt, t, keys) then draws one frame
     tick: (dt, t, keys = []) => { input.keys = new Set(keys); render(dt, t); },
     set: o => {
-      if ('s' in o) P0.s = o.s; if ('dir' in o) P0.dir = o.dir; if ('p' in o) cam.p = cam.pTarget = o.p;
+      const sh = world.bridge.sh;
+      if ('s' in o) { const q = sh.at(o.s, o.off ?? sh.W / 2, 0); placePorter(q[0], q[2]); }
+      if ('x' in o) placePorter(o.x, o.z);
+      if ('dir' in o) { P0.hx = sh.b[0] * o.dir; P0.hz = sh.b[1] * o.dir; }
+      if ('p' in o) cam.p = cam.pTarget = o.p;
+      if ('stick' in o) input.stick = o.stick; if ('target' in o) P0.target = o.target;
       if ('yaw' in o) cam.yaw = HOME.yaw + rad(o.yaw); if ('pitch' in o) cam.pitch = rad(o.pitch); if ('dist' in o) cam.dist = o.dist;
-      if ('vel' in o) P0.vel = o.vel; if ('phase' in o) P0.phase = o.phase; if ('focus' in o) cam.focus = o.focus; cam.snap = true;
+      if ('phase' in o) P0.phase = o.phase; if ('focus' in o) cam.focus = o.focus; cam.snap = true;
     },
-    sound,
+    sound, ground: (x, z) => ground(x, z), pick: (cx, cy) => lastView && pickGround(lastView, cx, cy),
+    project: p => { const m = lastView.vp, x = m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12], y = m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13], w = m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15]; return [(x / w * .5 + .5) * innerWidth, (.5 - y / w * .5) * innerHeight]; },
+    bridgeAt: (s, off) => { const sh = world.bridge.sh; return sh.at(s, off, sh.deck(s)); },
     drama: (cine = false, at = 0) => { played = true; q_drama = null; startDrama(cine); q_drama.from = at; },
     info: () => ({ L: world.bridge.sh.L, home: { yaw: HOME.yaw * 180 / Math.PI, pitch: HOME.pitch * 180 / Math.PI }, boat: world.boat && { mid: world.boat.mid, n: world.boat.mesh.n, st0: world.boat.st[0], stN: world.boat.st[world.boat.st.length - 1], top: world.boat.top } }),
   });

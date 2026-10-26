@@ -159,6 +159,22 @@ function sample(s, full = true) {
 // ---------------------------------------------------------------------------------------------------------- the DOM
 const canvas = $('#gl'), stage = $('#stage'), ink = $('#ink'), tagsEl = $('#tags'), track = $('#track');
 
+
+// a way into a scene's 3D view, as a lacquered plaque: ruyi-cloud ends, a gilt frame with key-fret corners, a seal
+const CAP = `<path class="fill" d="M20.6 .6C14 .6 8.5 .4 5.2 2.6 2 4.8 2 9.4 4.8 11.3L.8 12l4 .7c-2.8 1.9-2.8 6.5.4 8.7 3.3 2.2 8.8 2 15.4 2z"/>
+  <path class="line" d="M20.6 .6C14 .6 8.5 .4 5.2 2.6 2 4.8 2 9.4 4.8 11.3L.8 12l4 .7c-2.8 1.9-2.8 6.5.4 8.7 3.3 2.2 8.8 2 15.4 2"/>
+  <path class="line" d="M4.8 11.3c2.6.5 4.8-.9 4.4-3.1-.4-1.8-2.4-1.6-2.6-.2M4.8 12.7c2.6-.5 4.8.9 4.4 3.1-.4 1.8-2.4 1.6-2.6.2"/>`;
+function plaque(w) {
+  const cap = side => `<svg class="cap ${side}" viewBox="0 0 20 24" aria-hidden="true" focusable="false">${CAP}</svg>`;
+  return `<a class="plaque" href="${w.href}">${cap('l')}<span class="face">
+    <span class="seal" lang="zh-Hans" aria-hidden="true">${w.seal}</span>
+    <span class="txt"><span class="zh" lang="zh-Hans">${w.zh}</span><span class="en">${w.label}</span></span>
+    <svg class="arch" viewBox="0 0 40 22" aria-hidden="true" focusable="false"><path d="M3 12C11 2 29 2 37 12"/><path d="M2 15C10 5 30 5 38 15"/>
+      <path class="thin" d="M9 6.4v3.3M14.5 4.4v3.4M20 3.7v3.5M25.5 4.4v3.4M31 6.4v3.3"/><path d="M8 19.5C13 10.5 27 10.5 32 19.5"/>
+      <path class="water" d="M0 20.6h40"/></svg>
+  </span>${cap('r')}</a>`;
+}
+
 function buildDom() {
   $('#intro').innerHTML = `
     <h1><span class="zh" lang="zh-Hans">${INTRO.zh}</span><span class="en">${INTRO.en}</span></h1>
@@ -173,7 +189,7 @@ function buildDom() {
       <p class="kicker"><span class="seal" lang="zh-Hans">${ch.num}</span><span>${cmAlong(at)} cm along the scroll</span></p>
       <h2><span class="zh" lang="zh-Hans">${ch.zh}</span><span class="en">${ch.en}</span></h2>
       <div class="body">${ch.body.map(b => `<p>${b}</p>`).join('')}</div>
-      ${ch.walk ? `<p class="walk-in"><a href="${ch.walk.href}">${ch.walk.label} <span aria-hidden="true">→</span></a></p>` : ''}</div>`;
+      ${ch.walk ? `<p class="walk-in">${plaque(ch.walk)}</p>` : ''}</div>`;
     panels.append(p);
   });
   $('#outro').innerHTML = `

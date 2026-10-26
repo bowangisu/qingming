@@ -34,17 +34,17 @@
     ever shows one side of things, so a model’s far side wears its near side, mirrored, and where the painting is hidden
     behind something the gap is filled with its own blank water and silk.</p>
   <p>Your walker is a porter with two baskets on a shoulder pole, borrowed from the street outside Dr. Zhao’s shop near
-    the end of the scroll. He, and everyone else, turns to face you like a paper cut-out.</p>
+    the end of the scroll. He can go anywhere on the bridge and the banks around it, but not into the river or through
+    a building; hold Shift to hurry. He, and everyone else, turns to face you like a paper cut-out.</p>
   <p>The near miss is staged from what the painting shows at its moment; how it got there is imagined. The sounds are
     synthesized, not recorded. The notes quote Meng Yuanlao’s memoir of Kaifeng, 东京梦华录 (1147).</p>
 </section>
 
 <footer id="controls">
-  <div class="where" id="where" aria-hidden="true"><span></span></div>
   <div class="row">
-    <button type="button" class="walk" id="walk-left" aria-label="Walk left">◀</button>
-    <p class="hint"><span class="desk"><span class="keys">← →</span> to walk · drag to go round · wheel to come closer</span><span class="touch">Hold ◀ or ▶ to walk · drag to go round · pinch to come closer</span></p>
-    <button type="button" class="walk" id="walk-right" aria-label="Walk right">▶</button>
+    <div class="pad" id="pad" aria-hidden="true"><span class="ring"></span><span class="knob"></span></div>
+    <p class="hint"><span class="desk"><span class="keys">↑ ↓ ← →</span> to walk anywhere · click the ground to go there · drag to go round · wheel to come closer</span><span class="touch">Drag the pad, or tap the ground, to walk · drag to go round · pinch to come closer</span></p>
+    <canvas id="map" aria-label="Map of where you are" role="img"></canvas>
   </div>
   <div class="links"><button type="button" class="link" id="watch"><span class="long">Watch the near miss</span><span class="short">Near miss</span></button><button type="button" class="link" id="flat">See it as painted</button><button type="button" class="link" id="sound" aria-pressed="false">Sound off</button></div>
 </footer>

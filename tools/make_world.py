@@ -435,7 +435,7 @@ def main(spec_path, master_path, out_dir):
     models = []
     for Md in spec.get('models', []):
         M = BUILD[Md['type']](Wd, Md)
-        models.append(M.export(Wd, Md['id'], kind=Md['type']))
+        models.append(M.export(Wd, Md['id'], kind=Md['type'], **({'open': True} if Md.get('posts') or Md.get('open') else {})))
         rebuilt = np.maximum(rebuilt, grow((M.outline(Wd, (W, H), R) > .5).astype(np.float32), 3))
 
     # the painted people, stood up: what they covered comes off the ground too

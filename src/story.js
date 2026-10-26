@@ -54,7 +54,7 @@ export const CHAPTERS = [
   },
   {
     id: 'bridge', num: '四', zh: '虹桥 · 船过桥', en: 'Under the Rainbow Bridge', side: 'right',
-    walk: { href: 'world.html', label: 'Walk the bridge in 3D' },   // the scene rebuilt in 3D
+    walk: { href: 'world.html', label: 'Walk the bridge in 3D', zh: '步上虹桥', seal: '入画' },   // the scene rebuilt in 3D
     body: [
       'The most crowded moment of the scroll, near its middle. A large boat swings toward the arched timber bridge with its mast not yet fully down, and the crew rushes to lower it.',
       'On the bridge, stalls and passers-by fill the deck, and many lean over the rail to watch.',

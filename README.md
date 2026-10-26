@@ -16,7 +16,7 @@ move in the wind. That movement is the painting's own
 brushwork shifted a few pixels at a time, not redrawn. The crows and swallows are the one addition, drawn for this
 page.
 
-**Walk the bridge in 3D** (`world.html`, linked from the Rainbow Bridge scene) rebuilds that scene as a small world
+**Walk the bridge in 3D** (`world.html`, entered from the lacquered plaque in the Rainbow Bridge scene) rebuilds that scene as a small world
 you can go all the way round. It opens on the painting, flat, then lifts into 3D: the bridge and the big boat are
 rebuilt as simple models dressed in their own painted timbers, and so are the other boats, the houses, halls, sheds,
 stalls, tables and umbrellas along both banks, from the wine shop with its pole gateway west of the bridge to the big
@@ -121,9 +121,16 @@ at Y = 0 and the banks raised to Y = 110. A point (X, Y, Z) is painted at *u* = 
 - **Points of interest:** seals on the bridge, the big boat, the stalls on the deck, the wine shop, the trackers and
   a restaurant open notes. The notes quote Meng Yuanlao's memoir of Kaifeng, 东京梦华录 (1147), where it has
   something to say, describe what the painting shows where it does not, and link back to the scroll's scenes.
+- **Walking:** the porter goes anywhere the ground allows near the bridge: up the deck between its railings, down
+  the ramps and about both banks, within about 1,700 units of the bridge and inside the painting's edges. The river
+  and the enclosed buildings and stall tables stop him (he slides along them); open sheds and teahouses he can walk
+  into. The arrow keys or WASD steer him in the screen's directions whichever way the camera faces, Shift hurries
+  him, the lacquer pad does the same by touch, and a tap or click on the ground walks him there (the tap is traced
+  down the camera's ray to the first surface under it, deck or bank). A small map shows the river, the bridge, the
+  buildings, him and which way the camera looks.
 - **Camera:** it opens on the painting through a very long lens far off along the painter's own line of sight, with a
   shear that turns its picture into the scroll's oblique one. Then it lifts into an ordinary perspective camera that
-  orbits the porter. Drag to go round (all the way), wheel or pinch to come closer; ← → or the buttons walk.
+  follows the porter. Drag to go round (all the way), wheel or pinch to come closer.
 
 ```bash
 python3 tools/make_world.py life/world-bridge.json source/Alongtheriver_QingMing.jpg assets/world/bridge

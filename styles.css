@@ -11,6 +11,11 @@
   --cinnabar: #c2432c;
   --seal-text: #f7ecd8;
   --celadon: #9fb1a7;         /* the mount's blue-grey silk: rules and the map's frame */
+  --gilt: #c9a86a;            /* gold leaf on lacquer: the plaque that leads into the 3D view */
+  --gilt-rgb: 201, 168, 106;
+  --gilt-hi: #e2c383;
+  --lacquer: #3b1812;
+  --lacquer-2: #24100c;
   --f-brush: 'Ma Shan Zheng', 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
   --f-zh: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
   --f-text: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Noto Serif SC', serif;
@@ -110,13 +115,50 @@ body.opened #top .home { opacity: 1; }
 .panel h2 .en { font-style: italic; font-size: 22px; line-height: 1.25; }
 .panel .body p { margin: 0 0 .85em; text-wrap: pretty; }
 .panel .body p:last-child { margin-bottom: 0; }
-.walk-in { margin: 18px 0 0; }
-.walk-in a {
-  pointer-events: auto; display: inline-flex; gap: 10px; align-items: baseline; color: var(--silk); text-decoration: none;
-  font-size: 16px; padding: 8px 14px; border: 1px solid rgba(194, 67, 44, .85); border-radius: 2px; background: rgba(194, 67, 44, .14);
+.walk-in { margin: 22px 0 0 -4px; }
+/* the way into the 3D view: a lacquered plaque (匾) with ruyi-cloud ends, a gilt frame with key-fret corners, a seal */
+.plaque {
+  --h: 58px; position: relative; display: inline-flex; align-items: stretch; height: var(--h); pointer-events: auto;
+  color: var(--silk); text-decoration: none; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .45));
 }
-.walk-in a:hover { background: rgba(194, 67, 44, .32); }
-.walk-in span { color: var(--cinnabar); }
+.plaque .cap { width: calc(var(--h) * 20 / 24); height: var(--h); flex: none; overflow: visible; }
+.plaque .cap.r { transform: scaleX(-1); }
+.plaque .cap .fill { fill: var(--lacquer); transition: fill .3s; }
+.plaque .cap .line { fill: none; stroke: var(--gilt); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: stroke .3s; }
+.plaque .face {
+  position: relative; display: flex; align-items: center; gap: 14px; margin: 0 -1px; padding: 0 16px 0 15px;
+  background: linear-gradient(180deg, #46201a 0, var(--lacquer) 45%, var(--lacquer-2) 100%);
+  border-block: 1.1px solid var(--gilt); transition: background .3s, border-color .3s;
+}
+.plaque .face::before {
+  content: ""; position: absolute; inset: 4px 3px; border: 1px solid rgba(var(--gilt-rgb), .42); pointer-events: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' fill='none' stroke='%23c9a86a' stroke-opacity='.7' stroke-width='.9'%3E%3Cpath d='M.5 8.5V.5h8v5h-5v-2h2'/%3E%3C/svg%3E") left 2px top 2px / 9px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' fill='none' stroke='%23c9a86a' stroke-opacity='.7' stroke-width='.9'%3E%3Cpath d='M8.5 8.5V.5h-8v5h5v-2h-2'/%3E%3C/svg%3E") right 2px top 2px / 9px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' fill='none' stroke='%23c9a86a' stroke-opacity='.7' stroke-width='.9'%3E%3Cpath d='M.5 .5v8h8v-5h-5v2h2'/%3E%3C/svg%3E") left 2px bottom 2px / 9px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' fill='none' stroke='%23c9a86a' stroke-opacity='.7' stroke-width='.9'%3E%3Cpath d='M8.5 .5v8h-8v-5h5v2h-2'/%3E%3C/svg%3E") right 2px bottom 2px / 9px no-repeat;
+}
+.plaque .seal {
+  width: calc(var(--h) * .48); height: calc(var(--h) * .72); writing-mode: vertical-rl; font-size: calc(var(--h) * .29); letter-spacing: .02em;
+  box-shadow: inset 0 0 0 1.5px rgba(247, 236, 216, .55), 0 0 0 1px rgba(0, 0, 0, .25);
+}
+.plaque .txt { display: grid; gap: 3px; line-height: 1.1; }
+.plaque .txt .zh { font-family: var(--f-brush); font-size: calc(var(--h) * .4); letter-spacing: .12em; color: #f3e7cc; }
+.plaque .txt .en { font-style: italic; font-size: calc(var(--h) * .24); color: var(--silk-dim); }
+.plaque .arch {
+  width: 40px; height: 22px; flex: none; margin-left: 4px; fill: none; stroke: var(--gilt); stroke-width: 1.25; stroke-linecap: round;
+  transition: transform .35s ease, stroke .3s;
+}
+.plaque .arch .thin { stroke-width: .9; }
+.plaque .arch .water { stroke-width: .8; stroke-opacity: .5; stroke-dasharray: 3 2.5; }
+.plaque:hover .face, .plaque:focus-visible .face { background: linear-gradient(180deg, #5a271e 0, #4a1f17 45%, #2e130e 100%); border-color: var(--gilt-hi); }
+.plaque:hover .cap .line, .plaque:focus-visible .cap .line { stroke: var(--gilt-hi); }
+.plaque:hover .cap .fill, .plaque:focus-visible .cap .fill { fill: #4a1f17; }
+.plaque:hover .arch, .plaque:focus-visible .arch { transform: translateX(4px); stroke: var(--gilt-hi); }
+.plaque:active .face { background: linear-gradient(180deg, #2e130e, var(--lacquer)); }
+.plaque:focus-visible { outline: none; }
+.plaque:focus-visible .face { box-shadow: 0 0 0 2px var(--celadon); }
+@media (prefers-reduced-motion: reduce) { .plaque .arch { transition: none; } }
 
 /* ------------------------------------------------------------------ the end */
 #outro {
@@ -225,8 +267,8 @@ body.portrait .panel h2 { margin-bottom: 10px; gap: 0; }
 body.portrait .panel h2 .zh { font-size: 25px; }
 body.portrait .panel h2 .en { font-size: 18px; }
 body.portrait .panel .body { font-size: 15.5px; line-height: 1.5; }
-body.portrait .walk-in { margin-top: 10px; }
-body.portrait .walk-in a { font-size: 15px; padding: 6px 12px; }
+body.portrait .walk-in { margin-top: 12px; }
+body.portrait .plaque { --h: 50px; }
 body.portrait .panel[data-stagger="1"] .body { display: grid; }
 body.portrait .panel[data-stagger="1"] .body p { grid-area: 1 / 1; margin: 0; }
 body.portrait #outro h2 .zh { font-size: 30px; }

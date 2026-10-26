@@ -113,6 +113,9 @@ body.opened #top .home { opacity: 1; }
 .credit::before { content: ''; align-self: center; width: 22px; height: 1px; background: var(--cinnabar); }
 .credit .lbl { font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--silk-dim); }
 .credit .name { font-style: italic; color: var(--silk); letter-spacing: .02em; }
+.credit .mail { color: var(--silk-dim); text-decoration: none; border-bottom: 1px solid rgba(194, 67, 44, .6); font-size: .9em; }
+.credit .sep { margin-left: -2px; color: var(--silk-dim); }
+.credit .mail:hover, .credit .mail:focus-visible { color: var(--silk); border-bottom-color: var(--cinnabar); }
 #closing .credit { margin: 18px 0 0; font-size: 15px; }
 #intro .hint { margin: 0; display: flex; gap: 12px; align-items: baseline; max-width: 30em; font-size: 16px; }
 #intro .arrow { color: var(--cinnabar); font-size: 22px; animation: nudge 2.4s ease-in-out infinite; }

@@ -176,11 +176,18 @@ function plaque(w) {
   </span>${cap('r')}</a>`;
 }
 
+// who made the page, with a way to write to him about it
+function credit() {
+  const subject = encodeURIComponent('Along the River (清明上河图)');
+  return `<p class="credit"><span class="lbl">Made by</span> <span class="name">${INTRO.by}</span>${INTRO.contact
+    ? `<span class="sep" aria-hidden="true">·</span><a class="mail" href="mailto:${INTRO.contact}?subject=${subject}">${INTRO.contact}</a>` : ''}</p>`;
+}
+
 function buildDom() {
   $('#intro').innerHTML = `
     <h1><span class="zh" lang="zh-Hans">${INTRO.zh}</span><span class="en">${INTRO.en}</span></h1>
     <ul class="meta">${INTRO.meta.map(m => `<li>${m}</li>`).join('')}</ul>
-    <p class="credit"><span class="lbl">Made by</span> <span class="name">${INTRO.by}</span></p>
+    ${credit()}
     <p class="listen"><button type="button" class="tune" data-music aria-pressed="false"><span class="seal" lang="zh-Hans" aria-hidden="true">乐</span>Music to read by <span class="state">off</span></button></p>
     <p class="hint"><span class="arrow" aria-hidden="true">←</span>${INTRO.hint}</p>`;
   const panels = $('#panels');
@@ -211,7 +218,7 @@ function buildDom() {
       </section>
       <p class="coda">${CLOSING.coda}</p>
       <p class="actions"><button type="button" data-restart>Read it again from the start</button><button type="button" data-open-sources>Sources</button></p>
-      <p class="credit"><span class="lbl">Made by</span> <span class="name">${INTRO.by}</span></p></div></div>`;
+      ${credit()}</div></div>`;
   const marks = $('#marks'), ticks = $('#map .ticks');
   CHAPTERS.forEach((ch, ci) => {
     const at = (ch.shots[0].focus[0] + ch.shots[0].focus[2]) / 2;

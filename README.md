@@ -1,6 +1,6 @@
 # 清明上河图 · Along the River
 
-Made by Bo Wang.
+Made by Bo Wang ([bo@pencel.ai](mailto:bo@pencel.ai)).
 
 Zhang Zeduan's handscroll *Along the River During the Qingming Festival* (Northern Song, early 12th century,
 24.8 × 528.7 cm, Palace Museum, Beijing), unrolled from right to left as you scroll. The camera stops at seven scenes

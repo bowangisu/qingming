@@ -545,9 +545,10 @@ def main(spec_path, master_path, out_dir):
         pieces.append({'id': Pc['id'], 'file': f"walker-{Pc['id']}.png", 'box': box, **({'pivot': Pc['pivot']} if 'pivot' in Pc else {})})
     scene['walker'] = {'height': Wk['height'], 'feet': Wk['feet'], 'pieces': pieces}
 
-    # people from elsewhere on the scroll, to cross the bridge: cut along a traced outline, feet at the bottom
+    # people from elsewhere on the scroll, to cross the bridge or walk the streets: cut along a traced outline, feet
+    # at the bottom
     crowd = []
-    for C in spec.get('crowd', []):
+    for C in spec.get('crowd', []) if 'bridge' in spec or 'strollers' in spec else []:
         col, a, box = cutout(master, C['poly'], 'shape', silk_tone, 1.6)
         save(col, out / f"crowd-{C['id']}.png", alpha=a)
         ys = [p[1] for p in C['poly']]; xs = [p[0] for p in C['poly']]

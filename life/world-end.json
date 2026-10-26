@@ -44,14 +44,18 @@
   {"poly": [[1296, 1106], [1350, 1104], [1370, 1160], [1370, 1218], [1290, 1218], [1294, 1160]]}
  ],
  "models": [
-  {"id": "zhao-shop", "about": "Dr. Zhao's shop, its sign 赵太丞家 under the eaves, the tall remedy boards at its door", "type": "traced", "eaves": [[1440, 600], [1810, 600]], "ridge": [[1500, 400], [1870, 400]], "eave_y": 435, "ridge_y": 550, "walls": 30},
-  {"id": "zhao-west", "about": "the house beside it, west", "type": "traced", "eaves": [[1060, 600], [1435, 600]], "ridge": [[1120, 400], [1495, 400]], "eave_y": 435, "ridge_y": 550, "walls": 30},
-  {"id": "shop-e", "about": "a shop further along the street, east", "type": "traced", "eaves": [[2660, 720], [3060, 715]], "ridge": [[2740, 590], [3140, 585]], "eave_y": 320, "ridge_y": 405, "walls": 30},
+  {"id": "zhao-shop", "about": "Dr. Zhao's shop, its sign 赵太丞家 under the eaves, the tall remedy boards at its door", "type": "traced", "eaves": [[1440, 600], [1810, 600]], "ridge": [[1500, 400], [1870, 400]], "eave_y": 435, "ridge_y": 550, "walls": 30, "style": "shop"},
+  {"id": "zhao-west", "about": "the house beside it, west", "type": "traced", "eaves": [[1060, 600], [1435, 600]], "ridge": [[1120, 400], [1495, 400]], "eave_y": 435, "ridge_y": 550, "walls": 30, "style": "shop"},
+  {"id": "shop-e", "about": "a shop further along the street, east", "type": "traced", "eaves": [[2660, 720], [3060, 715]], "ridge": [[2740, 590], [3140, 585]], "eave_y": 320, "ridge_y": 405, "walls": 30, "style": "shop"},
   {"id": "well", "about": "the square well, its wooden curb", "type": "block", "base": [[1955, 960], [2240, 960], [2290, 860], [2000, 860]], "h": 30},
   {"id": "parasol-1", "about": "parasols over the stalls by the well", "type": "umbrella", "at": [2370, 735], "y": 260, "r": 140},
   {"id": "parasol-2", "type": "umbrella", "at": [2570, 752], "y": 255, "r": 115},
   {"id": "south-hall", "about": "the big hipped roof across the street, a sign 解 at its gable", "type": "traced", "eaves": [[1290, 1610], [1910, 1600], [2000, 1335], [1380, 1345]], "ridge": [[1590, 1290], [1700, 1282]], "eave_y": 290, "ridge_y": 470, "walls": 40},
-  {"id": "market-shed", "about": "the long mat shed beside it, people crowding under it", "type": "awning", "corners": [[1690, 1312], [2300, 1302], [2340, 1268], [1730, 1278]], "y": [240, 250]}
+  {"id": "market-shed", "about": "the long mat shed beside it, people crowding under it", "type": "awning", "corners": [[1690, 1312], [2300, 1302], [2340, 1268], [1730, 1278]], "y": [240, 250]},
+  {"id": "hall-b", "about": "the hall behind Dr. Zhao's shop", "type": "traced", "eaves": [[1260, 440], [1820, 440]], "ridge": [[1300, 335], [1860, 335]], "eave_y": 420, "ridge_y": 520, "walls": 30},
+  {"id": "hall-d", "about": "the gatehouse of the compound behind, west, its sign under the eaves", "type": "traced", "eaves": [[1080, 205], [1450, 205]], "ridge": [[1130, 40], [1500, 40]], "eave_y": 400, "ridge_y": 540, "walls": 30},
+  {"id": "hall-c", "about": "the big roof behind the shop, east, its gable toward the street", "type": "traced", "eaves": [[1470, 330], [1960, 320]], "ridge": [[1640, 60], [1990, 50]], "eave_y": 560, "ridge_y": 760, "walls": 30},
+  {"id": "east-hall", "about": "the great hipped roof over the street's east end", "type": "traced", "eaves": [[2440, 335], [3100, 300]], "ridge": [[2600, 55], [3120, 40]], "eave_y": 430, "ridge_y": 620, "walls": 30}
  ],
  "trees": [
   {"id": "big-pine", "about": "the great pine over the well", "poly": [[1810, 250], [2500, 250], [2500, 620], [2180, 640], [2170, 830], [2120, 830], [2110, 640], [1810, 620]], "foot": [2145, 828], "sway": 3, "kind": "ink"},

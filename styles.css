@@ -81,6 +81,18 @@ button { font: inherit; color: inherit; }
 body.opened #top .home { opacity: 1; }
 #top .home .zh { font-size: 22px; }
 #top .home .en { font-style: italic; color: var(--silk-dim); font-size: 15px; }
+#top .right { display: flex; align-items: center; gap: 22px; }
+#top [data-music].playing::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 8px; border-radius: 50%; background: var(--cinnabar); vertical-align: 2px; animation: breathe 2.2s ease-in-out infinite; }
+/* the music, offered on the title page: a seal and a gilt-edged pill */
+.listen { margin: 0 0 22px; }
+.tune {
+  display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 6px; cursor: pointer; font-size: 15px; color: var(--silk);
+  background: rgba(59, 24, 18, .55); border: 1px solid rgba(201, 168, 106, .6); border-radius: 999px;
+}
+.tune .seal { width: 24px; height: 24px; font-size: 15px; border-radius: 50%; }
+.tune .state { color: var(--silk-dim); font-style: italic; }
+.tune:hover, .tune:focus-visible { border-color: #e2c383; }
+.tune[aria-pressed="true"] .state { color: #e2c383; }
 .link {
   background: none; border: 0; padding: 4px 0; cursor: pointer; font-size: 14px; letter-spacing: .1em; text-transform: uppercase;
   color: var(--silk-dim); border-bottom: 1px solid rgba(159, 177, 167, .45);
@@ -96,6 +108,12 @@ body.opened #top .home { opacity: 1; }
 #intro h1 .zh { font-size: clamp(56px, 7.4vw, 104px); line-height: 1; letter-spacing: .06em; }
 #intro h1 .en { font-style: italic; font-size: clamp(19px, 1.9vw, 25px); line-height: 1.25; color: var(--silk); }
 #intro .meta { list-style: none; margin: 0 0 26px; padding: 14px 0 0; border-top: 1px solid rgba(159, 177, 167, .35); display: grid; gap: 2px; color: var(--silk-dim); font-size: 15.5px; }
+/* who made the page: set apart from the painting's own credits by a short cinnabar rule */
+.credit { margin: 0 0 26px; display: flex; align-items: baseline; gap: 10px; font-size: 17px; }
+.credit::before { content: ''; align-self: center; width: 22px; height: 1px; background: var(--cinnabar); }
+.credit .lbl { font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--silk-dim); }
+.credit .name { font-style: italic; color: var(--silk); letter-spacing: .02em; }
+#closing .credit { margin: 18px 0 0; font-size: 15px; }
 #intro .hint { margin: 0; display: flex; gap: 12px; align-items: baseline; max-width: 30em; font-size: 16px; }
 #intro .arrow { color: var(--cinnabar); font-size: 22px; animation: nudge 2.4s ease-in-out infinite; }
 @keyframes nudge { 50% { translate: -8px 0; } }
@@ -192,7 +210,32 @@ body.opened #top .home { opacity: 1; }
 #closing .note { min-width: 0; padding-top: 12px; border-top: 1px solid rgba(159, 177, 167, .35); }
 #closing .note h3 { margin: 0 0 6px; font-weight: 500; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--silk-dim); }
 #closing .note p { margin: 0; font-size: 15.5px; line-height: 1.55; text-wrap: pretty; }
-#closing .end { margin-top: 24px; }
+/* the notes and, after them, the scenes to walk into share one place: one fades out as the other comes in */
+#closing .wrap { display: grid; grid-template-rows: auto 1fr; }
+#closing .notes, #closing .end { grid-row: 2; grid-column: 1; align-self: start; }
+#closing .end { margin-top: 0; }
+#closing .gallery h3 { margin: 0 0 14px; display: flex; align-items: baseline; gap: 12px; font-weight: 400; }
+#closing .gallery h3 .zh { font-family: var(--f-brush); font-size: 26px; letter-spacing: .08em; }
+#closing .gallery h3 .en { font-style: italic; font-size: 17px; color: var(--silk-dim); }
+#closing .cards { list-style: none; margin: 0 0 20px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.card {
+  display: block; text-decoration: none; color: var(--silk); border-radius: 3px; overflow: hidden;
+  background: rgba(36, 16, 12, .7); box-shadow: 0 0 0 1px rgba(201, 168, 106, .45), 0 4px 14px rgba(0, 0, 0, .4); transition: box-shadow .2s, transform .2s;
+}
+.card img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; filter: saturate(.92); }
+.card .cap { display: flex; align-items: center; gap: 9px; padding: 8px 10px 9px; }
+.card .seal { flex: none; width: 24px; height: 24px; font-size: 14px; }
+.card .t { display: grid; min-width: 0; line-height: 1.2; }
+.card .t .zh { font-family: var(--f-brush); font-size: 17px; letter-spacing: .06em; }
+.card .t .en { font-style: italic; font-size: 13px; color: var(--silk-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card:hover, .card:focus-visible { box-shadow: 0 0 0 1px #e2c383, 0 6px 18px rgba(0, 0, 0, .5); transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) { .card, .card:hover { transition: none; transform: none; } }
+@media (max-height: 820px) {
+  #closing .gallery h3 { margin-bottom: 10px; }
+  #closing .cards { gap: 10px; margin-bottom: 12px; }
+  .card img { aspect-ratio: 16 / 8; }
+  .card .cap { padding: 5px 9px 6px; }
+}
 #closing .coda { margin: 0 0 14px; max-width: 46em; font-style: italic; color: var(--silk-dim); font-size: 15.5px; line-height: 1.5; }
 #closing .actions { display: flex; flex-wrap: wrap; gap: 12px 28px; margin: 0; }
 #closing .actions button { background: none; border: 0; border-bottom: 1px solid rgba(194, 67, 44, .8); padding: 3px 0; cursor: pointer; font-size: 16px; }
@@ -261,6 +304,9 @@ body.portrait #intro h1 .zh { font-size: 46px; }
 body.portrait #intro h1 .en { font-size: 18px; }
 body.portrait #intro .meta { margin-bottom: 14px; padding-top: 10px; font-size: 14px; line-height: 1.45; }
 body.portrait #intro .hint { font-size: 15px; }
+body.portrait .credit { margin-bottom: 12px; font-size: 15.5px; }
+body.portrait .listen { margin-bottom: 14px; }
+body.portrait #closing .credit { margin: 12px 0 0; }
 body.portrait .kicker { margin-bottom: 8px; font-size: 11.5px; gap: 10px; }
 body.portrait .kicker .seal { width: 28px; height: 28px; font-size: 18px; }
 body.portrait .panel h2 { margin-bottom: 10px; gap: 0; }
@@ -277,6 +323,20 @@ body.portrait #outro p { font-size: 15px; }
 body.portrait #closing { top: calc(var(--band-h) + 8px); display: block; }
 body.portrait #closing .wrap { margin: 0; display: grid; grid-template-rows: auto 1fr; align-content: start; }
 body.portrait #closing .notes, body.portrait #closing .end { grid-row: 2; grid-column: 1; align-self: start; }
+body.portrait #closing .gallery h3 { margin-bottom: 10px; }
+body.portrait #closing .gallery h3 .zh { font-size: 22px; }
+body.portrait #closing .gallery h3 .en { font-size: 15px; }
+/* on a phone the scenes sit in a strip that swipes sideways */
+body.portrait #closing .cards {
+  grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 44%; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory; margin: 0 calc(-1 * var(--gut-r)) 14px calc(-1 * var(--gut-l)); padding: 2px var(--gut-r) 8px var(--gut-l); scrollbar-width: none;
+}
+body.portrait #closing .cards li { scroll-snap-align: start; min-width: 0; }
+body.portrait #closing .coda { display: none; }   /* no room under the scenes on a phone: the scenes and the way back matter more */
+body.portrait .card img { aspect-ratio: 16 / 10; }
+body.portrait .card .t .zh { font-size: 15px; }
+body.portrait .card .t .en { font-size: 12px; }
+body.portrait #closing .cards::-webkit-scrollbar { display: none; }
 body.portrait #closing h2 { margin-bottom: 12px; }
 body.portrait #closing h2 .zh { font-size: 34px; }
 body.portrait #closing h2 .en { font-size: 18px; }

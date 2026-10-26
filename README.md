@@ -1,5 +1,7 @@
 # 清明上河图 · Along the River
 
+Made by Bo Wang.
+
 Zhang Zeduan's handscroll *Along the River During the Qingming Festival* (Northern Song, early 12th century,
 24.8 × 528.7 cm, Palace Museum, Beijing), unrolled from right to left as you scroll. The camera stops at seven scenes
 along the 5.3 metres of silk. At each one it zooms in, numbered labels point out the details, and a short text explains
@@ -32,6 +34,17 @@ the scroll among them.
 | Through the city gate | `gate` | the gate's platform with a passage you walk through, the tower on top, the camel caravan, the travellers outside |
 | The Sun family tavern | `tavern` | the tavern and its neighbours, the halls across the street, the storyteller's crowd, sedan chairs and donkeys |
 | Dr. Zhao's shop | `end` | the shop and its remedy boards, the square well, the parasols, the halls across the street; the porter you walk is the one painted here |
+
+When the scroll has rolled up again, after the closing notes, a gallery of the seven scenes (a picture of each in 3D,
+made by `tools/make_thumbs.mjs`) leads back into any of them.
+
+**Music:** 河上春晴 (*Clear Spring Day on the River*), an original piece for a plucked zither like the guzheng and an
+end-blown flute like the xiao, in the pentatonic gong mode on D, about two and a half minutes, looping. It is composed
+and synthesized note by note in `tools/make_music.py` (nothing sampled or recorded): the zither's strings as sums of
+decaying partials with a pick's click, its left-hand bends, shakes, falls and sweeps across the strings; the flute's
+breath, swells, late vibrato and grace notes; a synthesized hall. *Music* on the title page or in the header turns it on
+(browsers only allow sound after a click); the choice is remembered on the device, and the piece carries on from where
+it was between the scroll and the 3D scenes.
 
 ## Run it
 
@@ -146,6 +159,15 @@ at Y = 0 and the land raised to Y = 110. A point (X, Y, Z) is painted at *u* = X
   between it and the porter, it steps in front of it; inside the gate's passage it swings round to look along it, and
   the masonry is drawn see-through from inside.
 - **Sound** away from the river is a breeze with leaves stirring in it, birds in the trees, camel bells and hooves.
+  Everything runs through a compressor and make-up gain so it is clearly audible on laptop speakers; with the music
+  on, the two duck under each other a little.
+- **Buildings where the painting shows nothing:** a face of a building that the painter never saw, or saw only as the
+  thing in front of it, would otherwise wear stretched paint. There the viewer draws the building itself, in the
+  silk's own tones: grey tiles in courses with a dark ridge and eaves, timber posts and lintels over plaster with
+  lattice windows (or plank shop fronts), brick for the gate's platform, rafters under the eaves. The bake writes a
+  depth map of what the painter saw (`depth.png`: how near the nearest rebuilt surface is at each point of the
+  painting, and where a figure or tree was painted over it), so each face shows the painting only where the painting
+  really shows that face. Every roof also has a ridge beam, eaves with a fascia and a soffit, and corner posts.
 
 ```bash
 for s in road willow grain bridge gate tavern end; do

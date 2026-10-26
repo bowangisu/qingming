@@ -43,9 +43,10 @@
  "models": [
   {"id": "gate-platform", "about": "the gate's masonry platform, its walls sloping in; the passage runs through it from the street inside to the road outside, its mouth on the east face where the camel comes out", "type": "block", "base": [[6440, 1300], [7300, 1300], [7650, 1050], [6790, 1050]], "h": 469, "batter": [60, 150, 60, 0], "passage": {"d": [0.14, 0.44], "h": 300}},
   {"id": "gate-tower", "about": "the gate tower on the platform: a hip roof traced off the painted one, its walls standing on the platform's top", "type": "traced", "eaves": [[6425, 282], [7295, 290], [7575, 130], [6705, 122]], "ridge": [[6870, 35], [7150, 30]], "eave_y": 1007, "ridge_y": 1178, "y": 579, "wall_at": [[6640, 690], [7150, 690], [7247, 621], [6737, 621]]},
-  {"id": "shop-a", "about": "the shops on the street's north side, inside the gate", "type": "traced", "eaves": [[5330, 662], [5790, 662]], "ridge": [[5414, 500], [5874, 500]], "eave_y": 388, "ridge_y": 490, "walls": 30},
-  {"id": "shop-b", "type": "traced", "eaves": [[5830, 680], [6450, 680]], "ridge": [[5914, 520], [6534, 520]], "eave_y": 390, "ridge_y": 490, "walls": 30},
-  {"id": "sw-hall", "about": "the big roof across the street, its front beyond the painting's edge", "type": "traced", "eaves": [[5300, 1800], [5880, 1800]], "ridge": [[5300, 1405], [5760, 1405]], "eave_y": 300, "ridge_y": 520, "walls": 30}
+  {"id": "shop-a", "about": "the shops on the street's north side, inside the gate", "type": "traced", "eaves": [[5330, 662], [5790, 662]], "ridge": [[5414, 500], [5874, 500]], "eave_y": 388, "ridge_y": 490, "walls": 30, "style": "shop"},
+  {"id": "shop-b", "type": "traced", "eaves": [[5830, 680], [6450, 680]], "ridge": [[5914, 520], [6534, 520]], "eave_y": 390, "ridge_y": 490, "walls": 30, "style": "shop"},
+  {"id": "sw-hall", "about": "the big roof across the street, its front beyond the painting's edge", "type": "traced", "eaves": [[5300, 1800], [5880, 1800]], "ridge": [[5300, 1405], [5760, 1405]], "eave_y": 300, "ridge_y": 520, "walls": 30},
+  {"id": "back-row", "about": "the roofs behind the shops inside the gate", "type": "traced", "eaves": [[5700, 330], [6250, 330]], "ridge": [[5760, 230], [6300, 230]], "eave_y": 470, "ridge_y": 560, "walls": 30}
  ],
  "trees": [
   {"id": "grove-w", "about": "the pines and bare trees between the gate and the painter, their roots at the painting's foot", "poly": [[6380, 1200], [6720, 1200], [6720, 1790], [6380, 1790]], "foot": [6560, 1785], "sway": 3, "kind": "ink"},

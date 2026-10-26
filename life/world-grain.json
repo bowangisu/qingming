@@ -50,9 +50,12 @@
   "water": [26600, 1250, 26920, 1530]
  },
  "models": [
-  {"id": "tea-shed", "about": "eating places along the bank, their tables under a long sloping roof", "type": "awning", "corners": [[27180, 625], [27700, 590], [27440, 400], [27050, 395]], "y": [230, 320]},
-  {"id": "upper-shed", "about": "an open shed further up the bank", "type": "awning", "corners": [[27690, 365], [28300, 345], [28330, 292], [27720, 306]], "y": [230, 260]},
-  {"id": "hall", "about": "a long open hall, people sitting at tables under it", "type": "traced", "eaves": [[28220, 515], [29010, 515]], "ridge": [[28300, 420], [29090, 420]], "eave_y": 300, "ridge_y": 360, "open": 14}
+  {"id": "tea-shed", "about": "eating places along the bank, their tables under a long open shed", "type": "traced", "eaves": [[27050, 610], [27700, 595]], "ridge": [[27110, 430], [27580, 410]], "eave_y": 230, "ridge_y": 330, "open": 16},
+  {"id": "upper-shed", "about": "an open shed further up the bank", "type": "traced", "eaves": [[27690, 365], [28300, 345]], "ridge": [[27740, 300], [28320, 285]], "eave_y": 230, "ridge_y": 280, "open": 12},
+  {"id": "hall", "about": "a long open hall, people sitting at tables under it", "type": "traced", "eaves": [[28220, 515], [29010, 515]], "ridge": [[28300, 420], [29090, 420]], "eave_y": 300, "ridge_y": 360, "open": 14},
+  {"id": "upper-hall", "about": "a hall further up the bank", "type": "traced", "eaves": [[27720, 175], [28230, 170]], "ridge": [[27780, 110], [28290, 105]], "eave_y": 360, "ridge_y": 420, "walls": 20, "style": "shop"},
+  {"id": "pavilion", "about": "a small pavilion on the bank, a finial on its roof", "type": "traced", "eaves": [[28240, 108], [28470, 108], [28440, 82], [28270, 82]], "ridge": [[28352, 38], [28358, 38]], "eave_y": 300, "ridge_y": 360, "open": 10},
+  {"id": "nw-houses", "about": "houses on the far bank, west", "type": "traced", "eaves": [[26400, 185], [26720, 185]], "ridge": [[26440, 60], [26760, 60]], "eave_y": 330, "ridge_y": 450, "walls": 20}
  ],
  "trees": [
   {"id": "willow-n1", "about": "the willows on the near bank", "poly": [[28420, 700], [29000, 700], [29000, 1795], [28420, 1795]], "foot": [28820, 1790], "sway": 5, "kind": "ink"},

@@ -8,6 +8,8 @@
 // painted bridge, stretched between its curves; the porter is a cut-out that always turns to face you. The scene
 // opens as the painting, flat, and lifts into 3D.
 
+import { music } from './music.js';
+
 const params = new URLSearchParams(location.search);
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches || params.has('still');
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -58,6 +60,11 @@ uniform vec4 uColor;
 uniform sampler2D uRefl;  // the scene mirrored in the water's plane, at half size
 uniform float uReflK;
 uniform vec2 uViewport;
+uniform int uArch;        // how a building is drawn where the painting shows nothing of it: 0 not at all (boats), 1 plaster
+                          // and timber with lattice windows, 2 a shop front, 3 brick, 4 thatch, 5 mat, 6 boards
+uniform vec4 uArchY;      // its ground, eave and ridge heights, its bay width
+uniform sampler2D uDepth; // what the painter saw at each point: how near the nearest rebuilt surface (RG), a cut-out (B)
+uniform vec2 uDepthRange;
 out vec4 fragColor;
 
 float hash(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
@@ -77,6 +84,65 @@ vec3 tone(vec2 uv, float land) {      // the tone texture holds the water's tone
   return texture(uTone, vec2(uv.x, clamp(uv.y, .004, .996) * .5 + land * .5)).rgb;
 }
 vec3 weave(sampler2D t, vec2 q, vec2 size) { return texture(t, q / size).rgb * 2.; }
+
+// lines w units wide every period units along x, antialiased
+float grid(float x, float period, float w) {
+  float d = abs(fract(x / period + .5) - .5) * period, aa = fwidth(x) * .8 + .02;
+  return 1. - smoothstep(w * .5 - aa, w * .5 + aa, d);
+}
+// a building as a painter of the time would build it up, in the tones of the silk round it: grey tiles in courses with
+// their rolls running down the slope, a dark ridge and eave; timber posts and lintels over plaster with lattice
+// windows, or a shop front of plank doors under a lattice; brick in courses; thatch; woven mat; rafters under the eaves
+vec3 archAt(vec3 p, vec3 N, vec3 silk) {
+  float y0 = uArchY.x, ye = uArchY.y, yr = uArchY.z, bay = uArchY.w;
+  vec3 ink = silk * vec3(.3, .25, .21), timber = silk * vec3(.56, .43, .33), plaster = silk * 1.03;
+  if (N.y < -.5) {                                    // under the eaves, or a passage's vault
+    if (uArch == 3) return mix(silk * vec3(.62, .58, .53), ink, max(grid(p.x, 18., 1.3), grid(p.z, 9., 1.3)) * .4);
+    return mix(timber * .62, ink, max(grid(p.x + p.z * .3, 11., 3.5), grid(p.z - p.x * .3, 11., 3.5)) * .5);
+  }
+  if (abs(N.y) > .3) {                                // a roof
+    vec3 ds = normalize(vec3(0., -1., 0.) + N * N.y + vec3(1e-4, 0., 0.)), ac = normalize(cross(N, ds));
+    float a = dot(p, ac), b = dot(p, ds);
+    if (uArch == 3) return mix(silk * vec3(.82, .78, .72), ink, max(grid(p.x, 26., 1.4), grid(p.z, 26., 1.4)) * .35);   // paving
+    if (uArch == 4) {                                 // thatch: straw in long strokes down the slope
+      float s = noise(vec2(a * .45, b * .035)) * .6 + noise(vec2(a * 1.3, b * .08)) * .4;
+      return mix(silk * vec3(.8, .72, .58), ink, smoothstep(.55, .95, s) * .55 + grid(b, 22., 2.) * .2);
+    }
+    if (uArch == 6) return mix(timber * (1.05 + .12 * noise(vec2(floor(a / 12.), 4.))), ink, grid(a, 12., 1.4) * .6);   // planks
+    if (uArch == 5) {                                 // woven mat
+      float w = step(.5, fract((a + b) / 9.)) == step(.5, fract((a - b) / 9.)) ? 1. : 0.;
+      return mix(silk * vec3(.88, .82, .7), ink, w * .16 + grid(a + b, 9., .8) * .18 + grid(a - b, 9., .8) * .18);
+    }
+    float pan = abs(fract(a / 13.) - .5) * 2.;
+    vec3 c = silk * vec3(.64, .62, .6) * (.88 + .14 * pan);
+    c = mix(c, ink, grid(a, 13., 3.4) * .55 + grid(b, 9.5, 1.1) * .3);
+    c = mix(c, ink, (1. - smoothstep(ye + 1., ye + 7., p.y)) * .65 + smoothstep(yr - 8., yr - 2., p.y) * .7);
+    return c;
+  }
+  vec2 tg = normalize(vec2(-N.z, N.x));
+  float a = dot(p.xz, tg), h = p.y - y0, H = ye - y0;
+  if (uArch == 3) {                                   // brick, in staggered courses
+    float row = floor(h / 9.), off = mod(row, 2.) * 9.;
+    vec3 c = silk * vec3(.8, .76, .7) * (.93 + .12 * noise(vec2(floor((a + off) / 18.), row) * 1.7));
+    return mix(c, ink, max(grid(h, 9., 1.4), grid(a + off, 18., 1.4)) * .42);
+  }
+  if (uArch >= 4) return mix(timber, ink, grid(a, 7., 1.) * .3);
+  if (h > H + 1.) return mix(mix(plaster, timber, grid(h - H, 36., 5.)), timber, grid(a, 46., 5.) * .8);   // a gable
+  float u = fract(a / bay) * bay;
+  vec3 c = plaster;
+  if (uArch == 2) {                                   // plank doors below, a lattice over them
+    vec3 boards = mix(plaster * vec3(.86, .82, .77) * (.97 + .06 * noise(vec2(a * .3, 2.))), ink, grid(a, 10., 1.3) * .45);
+    vec3 lat = mix(plaster * .94, ink, max(grid(a, 7., 1.1), grid(h, 7., 1.1)) * .5);
+    c = h < H * .62 ? boards : lat;
+  } else {                                            // a lattice window in each bay
+    float win = step(abs(u - bay * .5), bay * .27) * step(H * .36, h) * step(h, H * .74);
+    c = mix(c, mix(plaster * .9, ink, max(grid(a, 6., 1.), grid(h, 6., 1.)) * .55), win);
+    c = mix(c, timber, step(abs(h - H * .33), 3.) * .9);                             // a rail under the windows
+  }
+  c = mix(c, timber, max(grid(a, bay, 8.), step(H - 14., h)));                       // posts and the lintel
+  c = mix(c, silk * vec3(.72, .7, .66), step(h, 12.));                               // a stone plinth
+  return c * (1. - .24 * smoothstep(H - 70., H - 10., h) - .1 * (1. - smoothstep(0., 30., h)));   // shade under the eaves
+}
 
 float light(vec3 n) {                 // a soft wash: faces turned from the light a little darker, never black
   n = normalize(n);
@@ -175,8 +241,22 @@ void main() {
     vec2 o = max(uRegion.xy - vUV, vUV - uRegion.zw);
     float beyondPx = max(max(o.x, o.y), 0.);
     float past = smoothstep(0., 6., beyondPx);                               // beyond the painting: its blank silk,
-    col = mix(paintAt(uv), weave(uSilk, vUV, uSilkSize) * tone(uv, 1.), past);
-    col *= uShade * light(vNrm) * (1. - .14 * (1. - smoothstep(0., 16., vPos.y)));
+    vec3 silk = weave(uSilk, vUV, uSilkSize) * tone(uv, 1.);
+    col = mix(paintAt(uv), silk, past);
+    vec3 N = normalize(vNrm);
+    if (uArch > 0) {
+      // the painting where it shows something of this face: where its brushwork is dense, the painter could see the
+      // face (nothing rebuilt nearer him there) and no figure or tree, stood up on its own, was painted over it. The
+      // building as drawn above where the painting is blank or shows something else; on a face the painter never saw,
+      // a roof mostly wears its opposite slope, mirrored, a wall only a little of its opposite wall
+      float busy = beyondPx > 0. ? 0. : texture(uMasks, uv).a, seen = step(.02, dot(N, uHome));
+      vec4 D = texture(uDepth, seen > .5 ? inRegion(painted(vPos)) : uv);
+      float stored = D.r * 65280. + D.g * 255.;
+      float front = stored < .5 ? 1. : step(mix(uDepthRange.x, uDepthRange.y, (stored - 1.) / 65534.) - 9., dot(vPos, uHome));
+      float k = clamp(busy * 1.35 - .1, 0., .95) * (seen > .5 ? front : abs(N.y) > .3 ? .75 : .25) * (1. - .7 * D.b) * step(-.5, N.y);
+      col = mix(archAt(vPos, N, silk), col, k);
+      col *= uShade * (.74 + .3 * clamp(dot(N, normalize(vec3(.35, .8, -.55))) * .5 + .5, 0., 1.));
+    } else col *= uShade * light(vNrm) * (1. - .14 * (1. - smoothstep(0., 16., vPos.y)));
     col = mix(col, uMist, smoothstep(0., 160., beyondPx) * .92);              // then mist, as the ground does there
   } else {
     vec2 q = painted(vPos), uv = inRegion(q);
@@ -203,16 +283,17 @@ function createGL(canvas) {
   gl.useProgram(prog);
   const U = {};
   for (let i = 0, n = gl.getProgramParameter(prog, gl.ACTIVE_UNIFORMS); i < n; i++) { const a = gl.getActiveUniform(prog, i); U[a.name] = gl.getUniformLocation(prog, a.name); }
-  ['uPaint', 'uMasks', 'uTone', 'uSilk', 'uWater', 'uTex', 'uPaint2', 'uRefl'].forEach((k, i) => gl.uniform1i(U[k], i));
+  ['uPaint', 'uMasks', 'uTone', 'uSilk', 'uWater', 'uTex', 'uPaint2', 'uRefl', 'uDepth'].forEach((k, i) => gl.uniform1i(U[k], i));
   gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
   gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-  function texture(bmp, { mip = true, repeat = false } = {}) {
+  function texture(bmp, { mip = true, repeat = false, nearest = false } = {}) {
     const t = gl.createTexture(), wrap = repeat ? gl.REPEAT : gl.CLAMP_TO_EDGE;
     gl.bindTexture(gl.TEXTURE_2D, t);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bmp);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    if (mip) { gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); }
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, nearest ? gl.NEAREST : gl.LINEAR);
+    if (nearest) gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    else if (mip) { gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); }
     else gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     const ext = gl.getExtension('EXT_texture_filter_anisotropic');
     if (ext && mip) gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
@@ -370,7 +451,8 @@ function buildStanding() {
   const models = (S.models || []).map(Md => {
     const n = Md.pos.length / 3, v = [];
     for (let i = 0; i < n; i++) v.push(Md.pos[i * 3], Md.pos[i * 3 + 1], Md.pos[i * 3 + 2], Md.uv[i * 2], Md.uv[i * 2 + 1], Md.nrm[i * 3], Md.nrm[i * 3 + 1], Md.nrm[i * 3 + 2]);
-    const out = { id: Md.id, shade: Md.shade, mesh: n ? G.mesh(v, Md.idx) : null, cull: !!Md.cull };
+    const style = { house: 1, shop: 2, brick: 3, thatch: 4, mat: 5, boards: 6 }[Md.arch?.style] || 0;
+    const out = { id: Md.id, shade: Md.shade, mesh: n ? G.mesh(v, Md.idx) : null, cull: !!Md.cull, arch: style, archY: Md.arch ? [...Md.arch.y, Md.arch.bay] : [0, 0, 0, 80] };
     if (Md.plain) {
       const P = Md.plain, m = P.pos.length / 3, w = [];
       for (let i = 0; i < m; i++) w.push(P.pos[i * 3], P.pos[i * 3 + 1], P.pos[i * 3 + 2], P.uv[i * 2], P.uv[i * 2 + 1], P.nrm[i * 3], P.nrm[i * 3 + 1], P.nrm[i * 3 + 2]);
@@ -1033,8 +1115,9 @@ function drawStanding(F, view, mirrored = false) {
     // masonry seen from inside is seen through. The picture is mirrored (FLIP), so its outward faces wind the other
     // way on screen, unless the reflection mirrors it back
     if (Mo.cull) { gl.enable(gl.CULL_FACE); gl.frontFace(mirrored ? gl.CCW : gl.CW); }
-    if (Mo.mesh) G.draw(Mo.mesh, { mode: 9, shade: Mo.shade });
+    if (Mo.mesh) { gl.uniform1i(G.U.uArch, Mo.arch); gl.uniform4fv(G.U.uArchY, Mo.archY); G.draw(Mo.mesh, { mode: 9, shade: Mo.shade }); }
     if (Mo.cull) gl.disable(gl.CULL_FACE);
+    gl.uniform1i(G.U.uArch, 0);
     if (Mo.plain) G.draw(Mo.plain, { mode: 10, color: Mo.color });
   }
   for (const b of F.boats) {
@@ -1067,7 +1150,7 @@ const DRAMA_T = 30;
 // mast's groan, the thud of poles, a rope's whistle and shouts. Each sound sits somewhere in the world and is heard
 // from the camera. Off until the visitor turns it on.
 const sound = (() => {
-  let ctx = null, master = null, on = false, timer = 0, noise = null;
+  let ctx = null, master = null, out = null, on = false, timer = 0, noise = null, duck = 1;
   const voices = [], creakers = [], birds = [], bells = [], hooves = [];
   const SC = .01;                                         // world units to metres, roughly
   const VOWELS = [[730, 1090], [530, 1840], [270, 2290], [570, 840], [300, 870], [660, 1700]];
@@ -1161,7 +1244,12 @@ const sound = (() => {
   }
   function init() {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
-    master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+    // everything through one gain, then evened out and made up, so the scene is clearly audible on a laptop's speakers
+    master = ctx.createGain(); master.gain.value = 0;
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -26; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = .008; comp.release.value = .3;
+    out = ctx.createGain(); out.gain.value = 2.5;
+    master.connect(comp); comp.connect(out); out.connect(ctx.destination);
     noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
     const d = noise.getChannelData(0); let b = 0;
     for (let i = 0; i < d.length; i++) { b = (b + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = b * 3.5 + (Math.random() * 2 - 1) * .06; }  // brown-ish
@@ -1205,7 +1293,7 @@ const sound = (() => {
       on = !on;
       if (on) {
         if (!ctx) init();
-        ctx.resume(); master.gain.setTargetAtTime(.9, ctx.currentTime, .4);
+        ctx.resume(); master.gain.setTargetAtTime(.9 * duck, ctx.currentTime, .4);
         clearInterval(timer); timer = setInterval(schedule, 120); schedule();
       } else if (ctx) { master.gain.setTargetAtTime(0, ctx.currentTime, .15); clearInterval(timer); setTimeout(() => { if (!on) ctx.suspend(); }, 600); }
       return on;
@@ -1231,9 +1319,10 @@ const sound = (() => {
       }
     },
     get on() { return on; },
+    duck(k) { duck = k; if (ctx && on) master.gain.setTargetAtTime(.9 * k, ctx.currentTime, .5); },   // under the music
     probe() {                                              // for tests: how loud the mix is right now (RMS)
       if (!ctx) return null;
-      if (!this.an) { this.an = ctx.createAnalyser(); this.an.fftSize = 2048; master.connect(this.an); }
+      if (!this.an) { this.an = ctx.createAnalyser(); this.an.fftSize = 2048; out.connect(this.an); }
       const b = new Float32Array(this.an.fftSize); this.an.getFloatTimeDomainData(b);
       return { rms: Math.sqrt(b.reduce((m, v) => m + v * v, 0) / b.length), state: ctx.state, voices: voices.length };
     },
@@ -1639,11 +1728,11 @@ function bindInput() {
   for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) pad.addEventListener(ev, () => { padId = null; input.stick = [0, 0]; knob.style.transform = ''; pad.classList.remove('on'); });
   $('#flat').addEventListener('click', () => {
     cam.held = cam.pTarget === 1; cam.pTarget = cam.held ? 0 : 1;
-    $('#flat').textContent = cam.pTarget ? 'See it as painted' : 'Step back in';
+    flatLabel();
   });
   $('#watch').addEventListener('click', () => {
     if (q_drama?.cine) { endDrama(); return; }
-    cam.held = false; cam.pTarget = 1; $('#flat').textContent = 'See it as painted';
+    cam.held = false; cam.pTarget = 1; flatLabel();
     played = true; q_drama = null; startDrama(true); watchLabel(true);
     sound.wake();
   });
@@ -1653,6 +1742,9 @@ function bindInput() {
   $('#about-btn').addEventListener('click', () => { const a = $('#about'); a.hidden = !a.hidden; $('#about-btn').setAttribute('aria-expanded', String(!a.hidden)); });
 }
 function stepIn() { if (!cam.held) cam.pTarget = 1; }
+function flatLabel() {
+  $('#flat').innerHTML = cam.pTarget ? '<span class="long">See it as painted</span><span class="short">As painted</span>' : '<span class="long">Step back in</span><span class="short">Step in</span>';
+}
 
 // ---------------------------------------------------------------------------------------------------------- start
 // where he starts, and which way he faces: at the Rainbow Bridge a little way up the deck, elsewhere where the scene
@@ -1688,6 +1780,7 @@ async function start() {
   const pre = { premultiplyAlpha: 'premultiply' }, raw = { premultiplyAlpha: 'none', colorSpaceConversion: 'none' };
   const jobs = [['paint', S.paint.files[0], pre, {}], ['paint2', S.paint.files[1], pre, {}], ['masks', S.masks.file, raw, {}], ['tone', S.tone.file, raw, { mip: false }],
     ['silk', S.silk.file, pre, { repeat: true }], ['water', (S.water || S.silk).file, pre, { repeat: true }],
+    ...(S.depth ? [['depth', S.depth.file, raw, { nearest: true, mip: false }]] : []),
     ...(S.bridge ? [['face', S.bridge.face.file, pre, {}], ['soffit', S.bridge.soffit_tex.file, pre, { repeat: true }], ['deck', S.bridge.deck_tex.file, pre, { repeat: true }]] : []),
     ...S.walker.pieces.map(P => ['w-' + P.id, P.file, pre, {}]), ...(S.crowd?.people || []).map(C => ['c-' + C.id, C.file, pre, {}]), ...(S.sprites ? [['sprites', S.sprites.file, pre, {}]] : [])];
   const bmps = await Promise.all(jobs.map(([, f, o]) => bitmap(`${BASE}/${f}`, o)));
@@ -1695,6 +1788,7 @@ async function start() {
   const { gl, U } = G;
   ['paint', 'masks', 'tone', 'silk', 'water'].forEach((k, i) => { gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, tex[k]); });
   gl.activeTexture(gl.TEXTURE6); gl.bindTexture(gl.TEXTURE_2D, tex.paint2);
+  if (tex.depth) { gl.activeTexture(gl.TEXTURE8); gl.bindTexture(gl.TEXTURE_2D, tex.depth); gl.uniform2f(U.uDepthRange, ...S.depth.range); }
   gl.uniform3f(U.uMap, S.map.a, S.map.s, S.map.c); gl.uniform4f(U.uRegion, ...S.region);
   gl.uniform2f(U.uSilkSize, ...S.silk.size); gl.uniform2f(U.uWaterSize, ...(S.water || S.silk).size);
   world = buildWorld();
@@ -1709,8 +1803,12 @@ async function start() {
   resize(); addEventListener('resize', () => { resize(); setupMap(); });
   setupMap();
   bindInput();
-  if (params.has('flat')) { cam.held = true; $('#flat').textContent = 'Step back in'; }
+  if (params.has('flat')) { cam.held = true; flatLabel(); }
   else setTimeout(stepIn, REDUCED ? 0 : 1500);
+  // the music and the scene's own sounds: each a little quieter while the other plays
+  const mix = () => { music.level(sound.on ? .6 : .85); sound.duck(music.on ? .75 : 1); };
+  music.onChange(mix); music.setup();
+  $('#sound').addEventListener('click', mix);
   Object.assign(window.__world, {
     ready: true,
     // recordings: __world.manual = true stops the clock; tick(dt, t, keys) then draws one frame

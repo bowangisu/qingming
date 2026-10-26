@@ -40,13 +40,16 @@
  },
  "models": [
   {"id": "sun-tavern", "about": "the Sun family's licensed tavern, its upper floor and balcony over the street, its decorated gateway on the facade; the roof's ridge is past the painting's top", "type": "traced", "eaves": [[4440, 268], [5610, 268]], "ridge": [[4620, 30], [5430, 30]], "eave_y": 752, "ridge_y": 900, "wall_at": [[4470, 900], [5300, 900], [5510, 750], [4680, 750]]},
-  {"id": "restaurant", "about": "the restaurant west of the tavern, a big parasol at its door", "type": "traced", "eaves": [[3700, 612], [4340, 612]], "ridge": [[3870, 410], [4290, 410]], "eave_y": 418, "ridge_y": 545, "walls": 30},
+  {"id": "restaurant", "about": "the restaurant west of the tavern, a big parasol at its door", "type": "traced", "eaves": [[3700, 612], [4340, 612]], "ridge": [[3870, 410], [4290, 410]], "eave_y": 418, "ridge_y": 545, "walls": 30, "style": "shop"},
   {"id": "parasol", "type": "umbrella", "at": [4175, 790], "y": 265, "r": 120},
-  {"id": "inn", "about": "the inn at the corner, its sign 久住王员外家", "type": "traced", "eaves": [[2720, 330], [3330, 330]], "ridge": [[2800, 70], [3250, 70]], "eave_y": 420, "ridge_y": 580, "walls": 30},
+  {"id": "inn", "about": "the inn at the corner, its sign 久住王员外家", "type": "traced", "eaves": [[2720, 330], [3330, 330]], "ridge": [[2800, 70], [3250, 70]], "eave_y": 420, "ridge_y": 580, "walls": 30, "style": "shop"},
   {"id": "south-gable", "about": "the hall across the street, its gable end and lattice door toward the painter, its ridge running back to the street", "type": "traced", "eaves": [[3370, 1440], [3370, 1720], [4280, 1720], [4280, 1430]], "ridge": [[3820, 1265], [3815, 1520]], "eave_y": 300, "ridge_y": 475, "walls": 30},
   {"id": "south-long", "about": "the long roofs across the street, east, their front past the painting's edge", "type": "traced", "eaves": [[4800, 1800], [5900, 1800]], "ridge": [[4800, 1430], [5850, 1430]], "eave_y": 300, "ridge_y": 520, "walls": 30},
-  {"id": "shop-a", "about": "the shops on the street's north side, inside the gate", "type": "traced", "eaves": [[5330, 662], [5790, 662]], "ridge": [[5414, 500], [5874, 500]], "eave_y": 388, "ridge_y": 490, "walls": 30},
-  {"id": "shop-b", "type": "traced", "eaves": [[5830, 680], [6450, 680]], "ridge": [[5914, 520], [6534, 520]], "eave_y": 390, "ridge_y": 490, "walls": 30}
+  {"id": "shop-a", "about": "the shops on the street's north side, inside the gate", "type": "traced", "eaves": [[5330, 662], [5790, 662]], "ridge": [[5414, 500], [5874, 500]], "eave_y": 388, "ridge_y": 490, "walls": 30, "style": "shop"},
+  {"id": "shop-b", "type": "traced", "eaves": [[5830, 680], [6450, 680]], "ridge": [[5914, 520], [6534, 520]], "eave_y": 390, "ridge_y": 490, "walls": 30, "style": "shop"},
+  {"id": "restaurant-upper", "about": "the restaurant's taller hall behind, its roof over the front one", "type": "traced", "eaves": [[3960, 440], [4470, 415]], "ridge": [[4050, 150], [4490, 130]], "eave_y": 560, "ridge_y": 720, "walls": 30},
+  {"id": "sw-parasol-1", "about": "two big parasols at the corner across the street, an ox cart under them", "type": "umbrella", "at": [3075, 1490], "y": 235, "r": 125},
+  {"id": "sw-parasol-2", "type": "umbrella", "at": [3040, 1585], "y": 200, "r": 165}
  ],
  "trees": [
   {"id": "south-trees", "about": "bare trees between the halls across the street", "poly": [[4290, 1430], [4800, 1430], [4800, 1795], [4290, 1795]], "foot": [4550, 1790], "sway": 3, "kind": "ink"},

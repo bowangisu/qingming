@@ -101,11 +101,13 @@ body.ready #loader { opacity: 0; visibility: hidden; }
 
 #controls .links { display: flex; gap: 22px; }
 #controls .links .link { white-space: nowrap; }
-#watch .short { display: none; }
+#watch .short, #flat .short { display: none; }
+#controls [data-music].playing::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%; background: var(--cinnabar); vertical-align: 2px; animation: breathe 2.2s ease-in-out infinite; }
 @media (max-width: 640px) {
   #controls .links { gap: 16px; }
   #controls .links .link { font-size: 12px; letter-spacing: .08em; }
-  #watch .long { display: none; } #watch .short { display: inline; }
+  #watch .long, #flat .long { display: none; } #watch .short, #flat .short { display: inline; }
+  #controls .links { flex-wrap: wrap; justify-content: center; row-gap: 6px; }
 }
 #caption {
   position: fixed; z-index: 2; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);

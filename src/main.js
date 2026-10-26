@@ -3,6 +3,7 @@
 // while the text and the numbered labels appear, pulls out to the whole scroll, and follows it as it rolls back up to
 // where it started, closed, beside the closing notes. renderer.js draws the painting.
 import { SCROLL, INTRO, CHAPTERS, OUTRO, CLOSING, SOURCES } from './story.js';
+import { music } from './music.js';
 import { createRenderer } from './renderer.js';
 import { createTiles } from './tiles.js';
 import { createBirds } from './birds.js';
@@ -103,7 +104,7 @@ function build() {
   push('outro', 1.6, { cam: oc });
   const cc = introCam();                       // closed again, framed as it was at the start
   push('close', 2.6, { from: oc, to: cc });
-  push('closed', 1 + .62 * CLOSING.notes.length, { cam: cc });
+  push('closed', 1.8 + .62 * CLOSING.notes.length, { cam: cc });   // the notes, then the scenes to walk into
   closeSeg = segs[segs.length - 2]; closedSeg = segs[segs.length - 1];
   spans = CHAPTERS.map((ch, ci) => { const h = segs.filter(g => g.kind === 'hold' && g.ci === ci); return { a: h[0].s0, b: h[h.length - 1].s1, first: h[0] }; });
   // How far the scroll is unrolled: it never rolls back up as you read on, and stays just out of sight on the left,
@@ -179,6 +180,8 @@ function buildDom() {
   $('#intro').innerHTML = `
     <h1><span class="zh" lang="zh-Hans">${INTRO.zh}</span><span class="en">${INTRO.en}</span></h1>
     <ul class="meta">${INTRO.meta.map(m => `<li>${m}</li>`).join('')}</ul>
+    <p class="credit"><span class="lbl">Made by</span> <span class="name">${INTRO.by}</span></p>
+    <p class="listen"><button type="button" class="tune" data-music aria-pressed="false"><span class="seal" lang="zh-Hans" aria-hidden="true">乐</span>Music to read by <span class="state">off</span></button></p>
     <p class="hint"><span class="arrow" aria-hidden="true">←</span>${INTRO.hint}</p>`;
   const panels = $('#panels');
   CHAPTERS.forEach((ch, ci) => {
@@ -199,8 +202,16 @@ function buildDom() {
   $('#closing').innerHTML = `<div class="wrap">
     <h2><span class="zh" lang="zh-Hans">${CLOSING.zh}</span><span class="en">${CLOSING.en}</span></h2>
     <div class="notes">${CLOSING.notes.map(n => `<section class="note"><h3>${n.title}</h3><p>${n.body}</p></section>`).join('')}</div>
-    <div class="end"><p class="coda">${CLOSING.coda}</p>
-      <p class="actions"><button type="button" data-restart>Read it again from the start</button><button type="button" data-open-sources>Sources</button></p></div></div>`;
+    <div class="end">
+      <section class="gallery" aria-labelledby="gallery-title">
+        <h3 id="gallery-title"><span class="zh" lang="zh-Hans">步入画中</span><span class="en">Walk into its scenes, in 3D</span></h3>
+        <ul class="cards">${CHAPTERS.filter(ch => ch.walk).map(ch => `<li><a class="card" href="${ch.walk.href}">
+          <img src="assets/world/${ch.id}/thumb.webp" alt="" width="640" height="400" loading="lazy" decoding="async">
+          <span class="cap"><span class="seal" lang="zh-Hans" aria-hidden="true">${ch.num}</span><span class="t"><span class="zh" lang="zh-Hans">${ch.walk.zh}</span><span class="en">${ch.en}</span></span></span></a></li>`).join('')}</ul>
+      </section>
+      <p class="coda">${CLOSING.coda}</p>
+      <p class="actions"><button type="button" data-restart>Read it again from the start</button><button type="button" data-open-sources>Sources</button></p>
+      <p class="credit"><span class="lbl">Made by</span> <span class="name">${INTRO.by}</span></p></div></div>`;
   const marks = $('#marks'), ticks = $('#map .ticks');
   CHAPTERS.forEach((ch, ci) => {
     const at = (ch.shots[0].focus[0] + ch.shots[0].focus[2]) / 2;
@@ -370,13 +381,15 @@ function overlays(st) {
   const notes = closing.querySelectorAll('.note'), N = notes.length, turns = closing.dataset.turns === '1';
   const at = i => .04 + i * (.66 / N), endA = smooth(.74, .84, q);
   notes.forEach((e, i) => {
-    let a = smooth(at(i), at(i) + .07, q);
-    if (turns) a *= 1 - (i < N - 1 ? smooth(at(i + 1) - .02, at(i + 1) + .04, q) : endA);
+    let a = smooth(at(i), at(i) + .07, q) * (1 - endA);                          // the scenes to walk into take their place
+    if (turns && i < N - 1) a *= 1 - smooth(at(i + 1) - .02, at(i + 1) + .04, q);
     e.style.opacity = a;
     e.style.transform = `translateY(${((1 - smooth(at(i), at(i) + .09, q)) * 10).toFixed(1)}px)`;
   });
-  closing.querySelector('.end').style.opacity = endA;
-  closing.querySelectorAll('.end button').forEach(b => { b.tabIndex = endA > .5 ? 0 : -1; });
+  const endEl = closing.querySelector('.end');
+  endEl.style.opacity = endA; endEl.style.pointerEvents = endA > .5 ? 'auto' : 'none';
+  endEl.style.transform = `translateY(${((1 - endA) * 12).toFixed(1)}px)`;
+  closing.querySelectorAll('.end button, .end a').forEach(b => { b.tabIndex = endA > .5 ? 0 : -1; });
 
   // the strip map: what is still rolled up, where the camera is, which section is open
   const v0 = clamp((cam.cx - cam.w / 2) / W, 0, 1), v1 = clamp((cam.cx + cam.w / 2) / W, 0, 1);
@@ -439,6 +452,7 @@ function step(dir) {   // ← reads on (leftward), → goes back
 async function start() {
   window.__qm = { ready: false };
   buildDom();
+  music.setup();
   panelList = panelsEls();
   try {
     renderer = createRenderer(canvas);

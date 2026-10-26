@@ -36,6 +36,7 @@ class Mesh:
         self.plain = {'pos': [], 'nrm': [], 'idx': []}
         self.edges = {}                               # outline edges, for the viewer's ink lines (deduplicated)
         self.foot = None                              # what it stands on: a ground quad, or a disc, for its shadow
+        self.arch = None                              # how the viewer draws it where the painting shows nothing
 
     def edge(self, a, b):
         key = tuple(sorted((tuple(np.round(a, 0)), tuple(np.round(b, 0)))))
@@ -73,6 +74,7 @@ class Mesh:
         out = {'id': id, 'shade': shade, 'pos': r(self.pos), 'uv': r(self.uv), 'nrm': r(self.nrm, 3), 'idx': self.idx, **extra}
         if self.edges: out['edges'] = r([list(a) + list(b) for a, b in self.edges])
         if self.foot: out['foot'] = self.foot
+        if self.arch: out['arch'] = self.arch
         if getattr(self, 'solids', None): out['solids'] = self.solids
         if self.plain['idx']:
             # each post shows the painting along its own axis, so seen as painted it is the painted post
@@ -90,6 +92,26 @@ class Mesh:
             pts = W.paint(np.array([self.plain['pos'][i] for i in tri]))
             d.polygon([(x - origin[0], y - origin[1]) for x, y in pts], fill=255)
         return np.asarray(m, np.float32) / 255
+
+
+def arch(style, y0, ye, yr, bay=80):
+    """the viewer's own drawing of a building, under the painting: style (house: plaster and timber, lattice windows;
+    shop: plank doors below, lattice above; brick; thatch; mat; boards), its ground, eave and ridge heights, its bay width"""
+    return {'style': style, 'y': [round(float(y0), 1), round(float(ye), 1), round(float(yr), 1)], 'bay': round(float(bay), 1)}
+
+
+def eaves_underside(M, W, E, wl, ye, fascia=8):
+    """under a roof's overhang: the soffit between the eaves and the walls' tops, facing down, and a fascia board
+    along the eaves' edge, so the roof has a thickness"""
+    down = np.array([0, -1.0, 0])
+    for i in range(len(E)):
+        a, b = E[i], E[(i + 1) % len(E)]
+        M.face([a, b, wl[(i + 1) % len(E)], wl[i]], [W.paint(q) for q in (a, b, wl[(i + 1) % len(E)], wl[i])], down)
+        n = np.cross(b - a, down); n /= np.linalg.norm(n) or 1
+        if np.dot(n, (a + b) / 2 - np.mean(E, 0)) < 0: n = -n
+        lo = [a + down * fascia, b + down * fascia]
+        M.face([lo[0], lo[1], b, a], [W.paint(q) for q in (lo[0], lo[1], b, a)], n)
+        M.edge(lo[0], lo[1])
 
 
 def painted_face(M, W, pts, mirror=None, n=None, up=False):
@@ -145,6 +167,10 @@ def house(W, H):
     o = R.get('eave', 12); ye = Hw; yr = Hw + R['rise']
     E = [q + up * ye for q in (FL - f * o - n * o, FR + f * o - n * o, BR + f * o + n * o, BL - f * o + n * o)]
     t = R.get('type', 'hip')
+    M.arch = arch(H.get('style', 'shop' if H.get('posts') else 'house'), y0, y0 + Hw, y0 + yr, H.get('bay', max(50, L / max(2, round(L / 90)))))
+    eaves_underside(M, W, E, [q + up * Hw for q in (FL, FR, BR, BL)], ye)
+    if not H.get('posts'):
+        for q in (FL, FR, BR, BL): M.timber(q, q + up * Hw, 3.5)
     if t == 'shed':                                      # one slope, high at the back
         E2 = [E[0], E[1], E[2] + up * R['rise'], E[3] + up * R['rise']]
         painted_face(M, W, E2, mir_d)
@@ -155,6 +181,7 @@ def house(W, H):
         return M
     inset = (L / 2 + o) * R.get('hip', .45) if t == 'hip' else 0
     R1 = C - f * (L / 2 + o - inset) + up * yr; R2 = C + f * (L / 2 + o - inset) + up * yr
+    M.timber(R1 + up * 3, R2 + up * 3, 4.5)                # the ridge
     painted_face(M, W, [E[0], E[1], R2, R1], mir_d)     # the front slope, and the back one wearing it
     painted_face(M, W, [E[2], E[3], R1, R2], mir_d)
     if t == 'hip':
@@ -188,6 +215,9 @@ def traced(W, T):
     def mir_l(p): t, d = local(p); return world(1 - t, d, p[1])
     M = Mesh()
     M.foot = {'kind': 'box', 'y': T.get('y', W.bank), 'pts': [[round(float(e[0]), 1), round(float(e[2]), 1)] for e in E]}
+    span = np.linalg.norm((E[1] - E[0]) * [1, 0, 1])
+    M.arch = arch(T.get('style', 'house'), T.get('y', W.bank), ye, yr, T.get('bay', max(50, span / max(2, round(span / 95)))))
+    M.timber(R[0] + [0, 3, 0], R[1] + [0, 3, 0], 5.0)       # the ridge
     painted_face(M, W, [E[0], E[1], R[1], R[0]], mir_d)
     painted_face(M, W, [E[2], E[3], R[0], R[1]], mir_d)
     painted_face(M, W, [E[1], E[2], R[1]], mir_l)
@@ -200,9 +230,11 @@ def traced(W, T):
         if 'wall_at' in T:
             wl = [W.at(u, v, g) * [1, 0, 1] + [0, ye, 0] for u, v in T['wall_at']]
             M.foot['pts'] = [[round(float(q[0]), 1), round(float(q[2]), 1)] for q in wl]
+        eaves_underside(M, W, E, wl, ye)
         if 'open' in T:                                   # a pavilion: a post at each corner instead of walls
             for e in wl: M.timber(np.array([e[0], g, e[2]]), np.array([e[0], ye, e[2]]), 3.0)
             return M
+        for e in wl: M.timber(np.array([e[0], g, e[2]]), np.array([e[0], ye, e[2]]), 4.0)      # corner posts
         for i in range(4):
             a, b = wl[i], wl[(i + 1) % 4]
             pts = [np.array([a[0], g, a[2]]), np.array([b[0], g, b[2]]), np.array([b[0], ye, b[2]]), np.array([a[0], ye, a[2]])]
@@ -219,8 +251,9 @@ def awning(W, A):
     above the water: front, back)."""
     yf, yb = A['y']
     P = [W.at(*A['corners'][0], yf), W.at(*A['corners'][1], yf), W.at(*A['corners'][2], yb), W.at(*A['corners'][3], yb)]
-    M = Mesh()
-    M.face([P[0], P[1], P[2], P[3]], [W.paint(p) for p in P]); M.outline_face([P[0], P[1], P[3], P[2]])
+    M = Mesh(); M.arch = arch(A.get('style', 'mat'), A.get('ground', W.bank), min(yf, yb), max(yf, yb))
+    nn = np.cross(P[1] - P[0], P[3] - P[0]); nn /= np.linalg.norm(nn) or 1
+    M.face([P[0], P[1], P[2], P[3]], [W.paint(p) for p in P], nn if nn[1] > 0 else -nn); M.outline_face([P[0], P[1], P[3], P[2]])
     M.foot = {'kind': 'box', 'y': A.get('ground', W.bank), 'pts': [[round(float(q[0]), 1), round(float(q[2]), 1)] for q in (P[0], P[1], P[3], P[2])]}
     g = A.get('ground', W.bank)
     for p in P: M.timber(p, np.array([p[0], g, p[2]]), 2.0)
@@ -231,14 +264,15 @@ def umbrella(W, U):
     """A market umbrella: the canopy's centre as painted (u, v) at height y, its radius, and a pole to the ground."""
     C = W.at(*U['at'], U['y']); r = U['r']; g = U.get('ground', W.bank)
     apex = C + np.array([0, r * .22, 0])
-    M = Mesh(); N = 16
+    M = Mesh(); N = 16; M.arch = arch('mat', g, U['y'], U['y'] + r * .22)
     rim = [C + np.array([np.cos(t) * r, -r * .06, np.sin(t) * r]) for t in np.linspace(0, 2 * np.pi, N + 1)]
     M.foot = {'kind': 'disc', 'y': g, 'c': [round(float(C[0]), 1), round(float(C[2]), 1)], 'r': r}
     for k in range(N): M.edge(rim[k], rim[k + 1])
     for k in range(0, N, 4): M.edge(apex, rim[k])
     for k in range(N):
         a, b = rim[k], rim[k + 1]
-        M.face([apex, a, b], [W.paint(apex), W.paint(a), W.paint(b)], np.cross(b - apex, a - apex) / (np.linalg.norm(np.cross(b - apex, a - apex)) or 1) * -1)
+        nn = np.cross(b - apex, a - apex); nn /= np.linalg.norm(nn) or 1
+        M.face([apex, a, b], [W.paint(apex), W.paint(a), W.paint(b)], nn if nn[1] > 0 else -nn)      # facing up and out
     M.timber(np.array([C[0], g, C[2]]), apex, 1.6)
     return M
 
@@ -285,7 +319,7 @@ def block(W, B):
         c = [base[i] + (top[i] - base[i]) * k for i in range(4)]
         a = c[0] + (c[1] - c[0]) * tt; b = c[3] + (c[2] - c[3]) * tt
         return a + (b - a) * d
-    M = Mesh(); M.foot = None
+    M = Mesh(); M.foot = None; M.arch = arch(B.get('style', 'brick'), g, g + H, g + H)
     def quad(corners, src=None, n=None):
         """corners as (tt, d, y); src maps each to the point whose painted px it shows (default: itself)"""
         pts = [Q(*c) for c in corners]

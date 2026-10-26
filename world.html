@@ -6,6 +6,7 @@
 <title>入画 · Walk into the painting</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="A scene from Along the River During the Qingming Festival, rebuilt in 3D from the painting: walk a porter through it and go all the way round.">
+<meta name="author" content="Bo Wang">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Noto+Serif+SC:wght@400;600&display=swap">
@@ -35,7 +36,7 @@
     <p class="hint"><span class="desk"><span class="keys">↑ ↓ ← →</span> to walk anywhere · click the ground to go there · drag to go round · wheel to come closer</span><span class="touch">Drag the pad, or tap the ground, to walk · drag to go round · pinch to come closer</span></p>
     <canvas id="map" aria-label="Map of where you are" role="img"></canvas>
   </div>
-  <div class="links"><button type="button" class="link" id="watch"><span class="long">Watch the near miss</span><span class="short">Near miss</span></button><button type="button" class="link" id="flat">See it as painted</button><button type="button" class="link" id="sound" aria-pressed="false">Sound off</button></div>
+  <div class="links"><button type="button" class="link" id="watch"><span class="long">Watch the near miss</span><span class="short">Near miss</span></button><button type="button" class="link" id="flat"><span class="long">See it as painted</span><span class="short">As painted</span></button><button type="button" class="link" id="sound" aria-pressed="false">Sound off</button><button type="button" class="link" data-music data-music-label="Music" aria-pressed="false">Music off</button></div>
 </footer>
 
 <p id="caption" aria-live="polite"></p>

@@ -16,6 +16,7 @@ export const INTRO = {
   en: 'Along the River During the Qingming Festival',
   meta: ['Zhang Zeduan 张择端', 'Northern Song, early 12th century', 'Ink and colour on silk, 24.8 × 528.7 cm', 'Palace Museum, Beijing'],
   hint: 'A handscroll is read from right to left, a little at a time. Scroll to unroll it.',
+  by: 'Bo Wang',                // who made this page
 };
 
 export const CHAPTERS = [

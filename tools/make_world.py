@@ -29,6 +29,7 @@ MASK = 2            # the masks are kept at 1/2 of the painting
 TONE = 8            # the tone of the painting under the fills, at 1/8
 DENSE = .42         # brushwork density (blurred) above which the painting shows a thing rather than open water
 HALO = 6            # px of silk kept round the brushwork for cut kind "halo"
+DEPTH = 2           # the painter's depth map is kept at 1/2 of the painting
 
 
 def _box(a, k, axis):
@@ -414,6 +415,37 @@ def strip(o):
     return o
 
 
+def painter_depth(meshes, Wd, R, figures):
+    """What the painter saw at each point of the painting (1/DEPTH scale): how near him the nearest rebuilt surface is
+    there, as 16 bits in R and G (0: nothing rebuilt), and in B how much of the painting there is a figure or tree
+    stood up on its own. A face of a building that something else hides from him, or that a cut-out was painted over,
+    is drawn by the viewer as a building rather than wearing that other thing's paint."""
+    H, W = (R[3] - R[1]) // DEPTH, (R[2] - R[0]) // DEPTH
+    near = np.full((H, W), -np.inf, np.float32)
+    for M in meshes:
+        if not M.idx: continue
+        pos = np.array(M.pos, np.float64); uv = (Wd.paint(pos) - [R[0], R[1]]) / DEPTH; nr = pos @ Wd.home
+        for a, b, c in np.reshape(M.idx, (-1, 3)):
+            P = uv[[a, b, c]]; x0, y0 = np.floor(P.min(0)).astype(int); x1, y1 = np.ceil(P.max(0)).astype(int) + 1
+            x0, y0, x1, y1 = max(x0, 0), max(y0, 0), min(x1, W), min(y1, H)
+            if x1 <= x0 or y1 <= y0: continue
+            ys, xs = np.mgrid[y0:y1, x0:x1] + .5
+            (ax, ay), (bx, by), (cx, cy) = P
+            den = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy)
+            if abs(den) < 1e-9: continue
+            l1 = ((by - cy) * (xs - cx) + (cx - bx) * (ys - cy)) / den; l2 = ((cy - ay) * (xs - cx) + (ax - cx) * (ys - cy)) / den; l3 = 1 - l1 - l2
+            ins = (l1 >= -.02) & (l2 >= -.02) & (l3 >= -.02)
+            if not ins.any(): continue
+            d = l1 * nr[a] + l2 * nr[b] + l3 * nr[c]
+            blk = near[y0:y1, x0:x1]; near[y0:y1, x0:x1] = np.where(ins, np.maximum(blk, d), blk)
+    seen = np.isfinite(near)
+    lo, hi = (float(near[seen].min()) - 1, float(near[seen].max()) + 1) if seen.any() else (0., 1.)
+    q = np.where(seen, np.round((near - lo) / (hi - lo) * 65534) + 1, 0).astype(np.uint32)
+    fig = np.clip(blur(shrink(figures, DEPTH)[:H, :W], 3) * 1.4, 0, 1)
+    rgb = np.dstack([(q >> 8).astype(np.uint8), (q & 255).astype(np.uint8), (fig * 255).astype(np.uint8)])
+    return rgb, [round(lo, 2), round(hi, 2)]
+
+
 BUILD = {'traced': WM.traced, 'house': WM.house, 'awning': WM.awning, 'table': WM.awning, 'umbrella': WM.umbrella, 'block': WM.block}
 
 
@@ -459,10 +491,11 @@ def main(spec_path, master_path, out_dir):
 
     # houses, sheds, awnings and umbrellas rebuilt as models: what they covered comes off the ground
     Wd = WM.World(spec['map']['a'], spec['map']['s'], spec['map']['c'], spec['bank'])
-    models = []
+    models, meshes = [], []
     for Md in spec.get('models', []):
         built = BUILD[Md['type']](Wd, Md)
         for k, M in enumerate(built if isinstance(built, list) else [built]):     # a block through which a passage runs is two
+            meshes.append(M)
             models.append(M.export(Wd, Md['id'] + ('-back' if k else ''), kind=Md['type'], **({'open': True} if Md.get('posts') or Md.get('open') else {}),
                                    **({'cull': True} if Md['type'] == 'block' else {})))
             if M.idx: rebuilt = np.maximum(rebuilt, grow((M.outline(Wd, (W, H), R) > .5).astype(np.float32), 3))
@@ -476,6 +509,7 @@ def main(spec_path, master_path, out_dir):
             key = f"{d['group']}-{k}"; sprites[key] = d.pop('rgba')
             placed.append({'sprite': key, **d})
         rebuilt = np.maximum(rebuilt, grow((taken > .2).astype(np.float32), 3))
+    figures = taken.copy() if 'people' in spec else np.zeros((H, W), np.float32)
     # trees, stood up as cut-outs of their brushwork, at their trunk's foot
     trees = []
     for T in spec.get('trees', []) + spec.get('standees', []):
@@ -502,6 +536,7 @@ def main(spec_path, master_path, out_dir):
                       'p': [round(T['foot'][0] - spec['map']['a'] * Z, 1), gy, round(Z, 1)]})
         g = np.zeros((H, W), np.float32); g[box[1] - R[1]:box[3] - R[1], box[0] - R[0]:box[2] - R[0]] = a
         rebuilt = np.maximum(rebuilt, grow((g > .3).astype(np.float32), 3))
+        figures = np.maximum(figures, g)
     thing = grow((dense > DENSE).astype(np.float32), 8)
     water = river * (1 - thing) * (1 - rebuilt)
     land = (1 - river) * (1 - rebuilt) * (np.arange(H)[:, None] > 22)      # not the scan's pale top edge
@@ -533,6 +568,9 @@ def main(spec_path, master_path, out_dir):
     if 'bridge' in spec:
         b = bridge_textures(spec, master, out, silk_tone)
         scene['bridge'] = {k: spec['bridge'][k] for k in ('feet', 'width', 'rise', 'soffit', 'rail', 'deck_power', 'soffit_power')} | b
+    dm, rng = painter_depth(meshes, Wd, R, figures)
+    Image.fromarray(dm, 'RGB').save(out / 'depth.png', optimize=True)
+    scene['depth'] = {'file': 'depth.png', 'scale': DEPTH, 'range': rng}
     # the page round the view, where the view opens, where the porter may go, the notes, the sounds: as written
     for k in ('page', 'home', 'walk', 'pois', 'sound', 'drama', 'decks', 'nogo'):
         if k in spec: scene[k] = strip(spec[k])

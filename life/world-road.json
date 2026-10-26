@@ -42,7 +42,7 @@
   {"about": "the plank bridge, a step up off the ground", "poly": [[36200, 1062], [36560, 1050], [36570, 1005], [36210, 1015]], "y": 140}
  ],
  "models": [
-  {"id": "plank-bridge", "about": "a plank bridge on stilts", "type": "awning", "corners": [[36200, 1062], [36560, 1050], [36570, 1005], [36210, 1015]], "y": [140, 140]}
+  {"id": "plank-bridge", "about": "a plank bridge on stilts", "type": "awning", "corners": [[36200, 1062], [36560, 1050], [36570, 1005], [36210, 1015]], "y": [140, 140], "style": "boards"}
  ],
  "trees": [
   {"id": "trees-w", "about": "the bare trees on the edge of town", "poly": [[35300, 80], [35780, 80], [35780, 1180], [35300, 1180]], "foot": [35560, 1170], "sway": 2, "kind": "ink"},

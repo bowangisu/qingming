@@ -16,14 +16,22 @@ move in the wind. That movement is the painting's own
 brushwork shifted a few pixels at a time, not redrawn. The crows and swallows are the one addition, drawn for this
 page.
 
-**Walk the bridge in 3D** (`world.html`, entered from the lacquered plaque in the Rainbow Bridge scene) rebuilds that scene as a small world
-you can go all the way round. It opens on the painting, flat, then lifts into 3D: the bridge and the big boat are
-rebuilt as simple models dressed in their own painted timbers, and so are the other boats, the houses, halls, sheds,
-stalls, tables and umbrellas along both banks, from the wine shop with its pole gateway west of the bridge to the big
-passenger boat being towed upstream east of it. The painting's own people, carts, horses and donkeys stand up where
-they are painted: the crowd on the bridge, the street at the bridge's foot, the trackers on the far bank. The river
-and the banks are the painting laid back down on the ground it shows, and you walk a porter from elsewhere on the
-scroll across the deck among them.
+**Every scene can be walked in 3D** (`world.html?scene=<id>`, entered from the lacquered plaque in each scene). Each
+view rebuilds its stretch of the scroll as a small world you can go all the way round. It opens on the painting, flat,
+then lifts into 3D: the buildings, boats, sheds, stalls and umbrellas are rebuilt as simple models dressed in their
+own painted timbers and tiles, and the painting's own people, carts, horses, donkeys and camels stand up where they
+are painted. The ground is the painting laid back down on the ground it shows, and you walk a porter from the end of
+the scroll among them.
+
+| scene | `?scene=` | what is rebuilt |
+|---|---|---|
+| The road into town | `road` | the bare trees, the charcoal donkeys on the path, a plank bridge you can step up onto |
+| Willow for Qingming | `willow` | the sedan chair with willow on its roof and its party, riders on the lower road, a farmhouse, the old willows |
+| Grain on the Bian River | `grain` | the river, the grain boats moored at the bank, porters carrying sacks ashore, the eating sheds |
+| Under the Rainbow Bridge | `bridge` (the default) | the bridge, the big boat and the near miss, eleven more boats, about forty buildings and stalls, the trackers |
+| Through the city gate | `gate` | the gate's platform with a passage you walk through, the tower on top, the camel caravan, the travellers outside |
+| The Sun family tavern | `tavern` | the tavern and its neighbours, the halls across the street, the storyteller's crowd, sedan chairs and donkeys |
+| Dr. Zhao's shop | `end` | the shop and its remedy boards, the square well, the parasols, the halls across the street; the porter you walk is the one painted here |
 
 ## Run it
 
@@ -50,10 +58,10 @@ cross-fades, the slow push-in stops and the water and mist hold still.
 | Moving layer | `life/rigs.json`, `tools/make_life.py`, `src/renderer.js`, `src/birds.js` | A *rig* is a region of the painting that moves in place: `gait` (a bounce on each step, for walkers and pack animals), `rock` (a turn about a pivot, for boats and gesturing figures) or `wind` (a sway that grows with height, for trees). Each rig's outline is cut down to the brushwork inside it, so only the figure or the branches move and the bare silk stays still. Outlines listed under `still` (the Rainbow Bridge) are cut out of every rig, so the boat can rock under the bridge without dragging it along. The masks go into one atlas, and the tile shader adds up the rigs' displacement, at most 32 in view at a time. Movements grow a little when the camera is far out, so they still read. Birds are SVG over the painting, multiplied into it like ink. |
 | Tiles | `src/tiles.js` | A four-level WebP pyramid (1, ½, ¼, ⅛). The two coarse levels (about 1 MB) load at start. The fine levels load where the camera is and where it is going next, and the least recently used are released. |
 
-### The bridge in 3D
+### The scenes in 3D
 
-The painting is read as an oblique view of a small world: X along the scroll, Y up, Z away from the painter, the river
-at Y = 0 and the banks raised to Y = 110. A point (X, Y, Z) is painted at *u* = X + 0.7·Z, *v* = 1300 − 0.5·Z − Y
+The painting is read as an oblique view of a small world: X along the scroll, Y up, Z away from the painter, any river
+at Y = 0 and the land raised to Y = 110. A point (X, Y, Z) is painted at *u* = X + 0.7·Z, *v* = 1300 − 0.5·Z − Y
 (master px). That one formula does most of the work:
 
 - **The ground is the painting.** The river, the banks and their timber revetments have no texture of their own. Each
@@ -75,13 +83,16 @@ at Y = 0 and the banks raised to Y = 110. A point (X, Y, Z) is painted at *u* = 
   and a mast with its stays sit on top. Every vertex carries the painting pixel it shows. On the side the painter saw,
   that is the pixel it is painted at. On the far side, which he never saw, it is the matching pixel on the near side,
   mirrored. It rocks slowly.
-- **The scene** covers x 16,400–22,800 of the scroll, its full height, read as the painting in two halves (so each
-  texture stays within what phones hold) with masks for open water and land beside it.
+- **Each scene** covers a stretch of the scroll at its full height (the bridge: x 16,400–22,800), read as the
+  painting in two halves (so each texture stays within what phones hold) with masks for open water and land beside
+  it. A scene without a river (road, willow, gate, tavern, end) is all land.
 - **Houses, sheds, awnings and umbrellas** (`tools/world_models.py`) are simple shapes fitted over the painted ones by
   eye: a house is a front wall's two painted corners, a depth, a wall height and a hip, gable or shed roof; a *traced*
   building is its painted roof's eave corners and ridge ends, at an eave and ridge height, with walls or corner posts
-  under it (the big near-bank halls, the wine shop and its gate); an awning or a table is four painted corners on
-  poles; an umbrella is a painted centre and radius. Every vertex shows the painting where
+  under it (the big near-bank halls, the wine shop and its gate; its walls can also stand on their own painted feet,
+  as the gate tower's do on its platform); an awning or a table is four painted corners on poles; an umbrella is a
+  painted centre and radius; a *block* is masonry with sloping walls, four painted corners at the ground and a
+  height, with a passage through it (the city gate's platform). Every vertex shows the painting where
   the painter could see that face and the opposite face, mirrored, where he could not; posts show the painted post
   they stand in front of. They were placed by drawing each model's edges over the scan and adjusting by eye.
 - **More boats** use the big boat's builder: a painted waterline and gunwale, a beam, an optional cabin, a slow rock.
@@ -121,24 +132,33 @@ at Y = 0 and the banks raised to Y = 110. A point (X, Y, Z) is painted at *u* = 
 - **Points of interest:** seals on the bridge, the big boat, the stalls on the deck, the wine shop, the trackers and
   a restaurant open notes. The notes quote Meng Yuanlao's memoir of Kaifeng, 东京梦华录 (1147), where it has
   something to say, describe what the painting shows where it does not, and link back to the scroll's scenes.
-- **Walking:** the porter goes anywhere the ground allows near the bridge: up the deck between its railings, down
-  the ramps and about both banks, within about 1,700 units of the bridge and inside the painting's edges. The river
-  and the enclosed buildings and stall tables stop him (he slides along them); open sheds and teahouses he can walk
-  into. The arrow keys or WASD steer him in the screen's directions whichever way the camera faces, Shift hurries
+- **Walking:** the porter goes anywhere the ground allows: up the bridge's deck between its railings, down the ramps
+  and about both banks, through the gate's passage, up onto the plank bridge, along the streets, within reach of the
+  scene's centre and inside the painting's edges. Rivers and the enclosed buildings and stall tables stop him (he
+  slides along them); open sheds and teahouses he can walk into. Away from the bridge, strollers from along the
+  scroll walk lanes down the streets and step aside for him. The arrow keys or WASD steer him in the screen's directions whichever way the camera faces, Shift hurries
   him, the lacquer pad does the same by touch, and a tap or click on the ground walks him there (the tap is traced
   down the camera's ray to the first surface under it, deck or bank). A small map shows the river, the bridge, the
   buildings, him and which way the camera looks.
 - **Camera:** it opens on the painting through a very long lens far off along the painter's own line of sight, with a
   shear that turns its picture into the scroll's oblique one. Then it lifts into an ordinary perspective camera that
-  follows the porter. Drag to go round (all the way), wheel or pinch to come closer.
+  follows the porter. Drag to go round (all the way), wheel or pinch to come closer. When a wall or a roof comes
+  between it and the porter, it steps in front of it; inside the gate's passage it swings round to look along it, and
+  the masonry is drawn see-through from inside.
+- **Sound** away from the river is a breeze with leaves stirring in it, birds in the trees, camel bells and hooves.
 
 ```bash
-python3 tools/make_world.py life/world-bridge.json source/Alongtheriver_QingMing.jpg assets/world/bridge
+for s in road willow grain bridge gate tavern end; do
+  python3 tools/make_world.py life/world-$s.json source/Alongtheriver_QingMing.jpg assets/world/$s
+done
 ```
 
-The spec, `life/world-bridge.json`, holds the mapping, the river's outline in world coordinates, the painted
-outline of open water, the bridge's design and its painted curves, the boat's painted waterline and gunwale, and the
-people's outlines. The bake also writes `tools/world-masks-preview.png` (blue: open water, orange: land) for checking.
+Each spec, `life/world-<scene>.json`, is merged over `life/world-common.json` (the porter, the silk swatch, the
+strollers). It holds the region, any river's outline in world coordinates and the painted outline of open water, the
+bridge's design and its painted curves, the boats' painted waterlines and gunwales, the buildings, the people's
+outlines and cut-out boxes (many are the moving layer's rigs), who walks, the sounds, the notes and the page's text.
+The bake also writes `tools/world-masks-preview.png` for the bridge and `tools/world-masks-preview-<scene>.png` for
+the others (blue: open water, orange: land) for checking.
 
 ### Asset build
 

@@ -1,0 +1,106 @@
+{
+ "about": "The last stretch of the scroll rebuilt in 3D (world.html?scene=end): Dr. Zhao's shop and its neighbours, the square well, the stalls under their parasols, the halls across the street, and the willows where the painting stops. Same world as the Rainbow Bridge (see world-bridge.json), all of it land. Build with tools/make_world.py.",
+ "page": {
+  "zh": "赵太丞家",
+  "en": "Walk to Dr. Zhao’s shop",
+  "seal": "七",
+  "back": "index.html#end",
+  "loader": [
+   "医",
+   "Raising Dr. Zhao’s street out of the painting…"
+  ],
+  "label": "The street of Dr. Zhao's shop from Along the River During the Qingming Festival, rebuilt in 3D, with a porter you can walk along it and a camera that goes all the way round",
+  "description": "Dr. Zhao’s shop and the end of Along the River During the Qingming Festival, rebuilt in 3D from the painting: walk the porter who is painted there.",
+  "text": [
+   "The street is the painting itself, laid back down on the ground it shows: from the painter’s own direction it lines up with the scroll exactly. Dr. Zhao’s shop, the houses beside it, the well, the stalls and the halls across the street are rebuilt as simple models dressed in their own painted timbers and tiles, so you can walk round them.",
+   "The people are the painting’s own, each cut out of the scroll and stood up where they are painted, with the willows where the scroll ends. The painting only ever shows one side of things, so a model’s far side wears its near side, mirrored.",
+   "Your walker is the porter painted right here, with two baskets on a shoulder pole: he starts where he stands in the scroll. He can go anywhere along the street, but not through a building or into the well; hold Shift to hurry. He, and everyone else, turns to face you like a paper cut-out.",
+   "The sounds are synthesized, not recorded."
+  ]
+ },
+ "map": {
+  "a": 0.7,
+  "s": 0.5,
+  "c": 1300
+ },
+ "region": [840, 0, 3100, 1800],
+ "bank": 110,
+ "home": {
+  "cu": 1900,
+  "cv": 880,
+  "k": 1.0
+ },
+ "walk": {
+  "centre": [1900, 1100],
+  "reach": 1450,
+  "start": [1253, 1242],
+  "facing": [-1, 0],
+  "dist": 1150,
+  "pitch": 28
+ },
+ "figures": [
+  {"about": "the porter as painted, who is the walker here: taken off the ground", "poly": [[1236, 1060], [1290, 1060], [1294, 1086], [1348, 1090], [1348, 1110], [1298, 1112], [1302, 1168], [1316, 1236], [1290, 1248], [1196, 1248], [1200, 1170], [1208, 1110], [1158, 1104], [1158, 1084], [1212, 1088], [1228, 1072]]},
+  {"poly": [[1158, 1098], [1214, 1100], [1218, 1214], [1140, 1216], [1144, 1168]]},
+  {"poly": [[1296, 1106], [1350, 1104], [1370, 1160], [1370, 1218], [1290, 1218], [1294, 1160]]}
+ ],
+ "models": [
+  {"id": "zhao-shop", "about": "Dr. Zhao's shop, its sign 赵太丞家 under the eaves, the tall remedy boards at its door", "type": "traced", "eaves": [[1440, 600], [1810, 600]], "ridge": [[1500, 400], [1870, 400]], "eave_y": 435, "ridge_y": 550, "walls": 30},
+  {"id": "zhao-west", "about": "the house beside it, west", "type": "traced", "eaves": [[1060, 600], [1435, 600]], "ridge": [[1120, 400], [1495, 400]], "eave_y": 435, "ridge_y": 550, "walls": 30},
+  {"id": "shop-e", "about": "a shop further along the street, east", "type": "traced", "eaves": [[2660, 720], [3060, 715]], "ridge": [[2740, 590], [3140, 585]], "eave_y": 320, "ridge_y": 405, "walls": 30},
+  {"id": "well", "about": "the square well, its wooden curb", "type": "block", "base": [[1955, 960], [2240, 960], [2290, 860], [2000, 860]], "h": 30},
+  {"id": "parasol-1", "about": "parasols over the stalls by the well", "type": "umbrella", "at": [2370, 735], "y": 260, "r": 140},
+  {"id": "parasol-2", "type": "umbrella", "at": [2570, 752], "y": 255, "r": 115},
+  {"id": "south-hall", "about": "the big hipped roof across the street, a sign 解 at its gable", "type": "traced", "eaves": [[1290, 1610], [1910, 1600], [2000, 1335], [1380, 1345]], "ridge": [[1590, 1290], [1700, 1282]], "eave_y": 290, "ridge_y": 470, "walls": 40},
+  {"id": "market-shed", "about": "the long mat shed beside it, people crowding under it", "type": "awning", "corners": [[1690, 1312], [2300, 1302], [2340, 1268], [1730, 1278]], "y": [240, 250]}
+ ],
+ "trees": [
+  {"id": "big-pine", "about": "the great pine over the well", "poly": [[1810, 250], [2500, 250], [2500, 620], [2180, 640], [2170, 830], [2120, 830], [2110, 640], [1810, 620]], "foot": [2145, 828], "sway": 3, "kind": "ink"},
+  {"id": "end-willow-top", "about": "the willows where the painting stops", "poly": [[840, 80], [1080, 80], [1080, 900], [840, 900]], "foot": [960, 895], "sway": 4, "kind": "ink"},
+  {"id": "end-willows", "poly": [[840, 950], [1260, 950], [1260, 1795], [840, 1795]], "foot": [1010, 1790], "sway": 4, "kind": "ink"}
+ ],
+ "standees": [
+  {"id": "walker-shop", "poly": [[1257, 803], [1350, 803], [1350, 977], [1257, 977]], "foot": [1304, 977]},
+  {"id": "pole-pair", "poly": [[1350, 1060], [1560, 1060], [1560, 1175], [1350, 1175]], "foot": [1455, 1175], "about": "two men carrying a load slung from a pole"},
+  {"id": "rider", "poly": [[1560, 980], [1785, 980], [1785, 1285], [1560, 1285]], "foot": [1672, 1285], "bob": 1.2},
+  {"id": "walker-1", "poly": [[1857, 1110], [1910, 1110], [1910, 1257], [1857, 1257]], "foot": [1884, 1257]},
+  {"id": "walker-2", "poly": [[1950, 1097], [2017, 1097], [2017, 1257], [1950, 1257]], "foot": [1984, 1257]},
+  {"id": "walker-3", "poly": [[2043, 1057], [2097, 1057], [2097, 1243], [2043, 1243]], "foot": [2070, 1243]},
+  {"id": "vendor", "poly": [[2003, 990], [2137, 990], [2137, 1150], [2003, 1150]], "foot": [2070, 1150]},
+  {"id": "well-1", "poly": [[2137, 777], [2203, 777], [2203, 910], [2137, 910]], "foot": [2170, 910], "about": "people drawing water at the well"},
+  {"id": "well-2", "poly": [[2003, 750], [2070, 750], [2070, 857], [2003, 857]], "foot": [2036, 857]},
+  {"id": "talkers", "poly": [[2297, 897], [2470, 897], [2470, 1150], [2297, 1150]], "foot": [2384, 1150]},
+  {"id": "basket-porter", "poly": [[2370, 1150], [2500, 1150], [2500, 1295], [2370, 1295]], "foot": [2435, 1295]},
+  {"id": "shed-crowd", "poly": [[1990, 1380], [2400, 1380], [2400, 1720], [1990, 1720]], "foot": [2195, 1720], "about": "the crowd under the mat shed"},
+  {"id": "cart", "poly": [[2680, 1430], [3000, 1430], [3000, 1700], [2680, 1700]], "foot": [2840, 1700], "halo": 5},
+  {"id": "east-group", "poly": [[2600, 840], [2880, 840], [2880, 1060], [2600, 1060]], "foot": [2740, 1060]}
+ ],
+ "walks": {
+  "loops": [
+   {"who": [{"standee": "rider"}], "dir": [-1, 0.03], "dist": 220, "speed": 18, "faces": "left", "phase": 0.6},
+   {"who": [{"standee": "pole-pair"}], "dir": [1, 0.0], "dist": 200, "speed": 18, "faces": "right", "phase": 0.2},
+   {"who": [{"standee": "walker-1"}], "dir": [1, 0.0], "dist": 200, "speed": 20, "faces": "right", "phase": 0.4},
+   {"who": [{"standee": "walker-2"}], "dir": [-1, 0.0], "dist": 200, "speed": 21, "faces": "left", "phase": 0.8},
+   {"who": [{"standee": "basket-porter"}], "dir": [-1, 0.0], "dist": 220, "speed": 22, "faces": "left", "phase": 0.1}
+  ]
+ },
+ "strollers": {
+  "n": 7,
+  "lanes": [
+   {"path": [[980, 1150], [1700, 1130], [2400, 1120], [3050, 1140]], "width": 150}
+  ]
+ },
+ "nogo": [],
+ "sound": {
+  "crowds": [[1600, 900, 160, 3, 0.08], [2150, 1450, 160, 4, 0.08], [2800, 1000, 160, 3, 0.07]],
+  "birds": 3,
+  "hooves": [
+   "rider"
+  ]
+ },
+ "pois": [
+  {"id": "zhao", "title": "Dr. Zhao’s shop", "zh": "赵太丞家", "at": {"model": "zhao-shop", "h": 470}, "body": "Its sign reads 赵太丞家, “the house of Zhao, court physician”. Inside, two women with a child stand at the counter.", "link": ["index.html#end", "This scene on the scroll"]},
+  {"id": "remedy", "title": "The remedy boards", "zh": "集香丸", "at": {"ground": [1400, 905], "h": 270}, "body": "The tall boards by the door advertise 集香丸, pills “truly prescribed for harm done by wine”."},
+  {"id": "well", "title": "A square well", "zh": "井", "at": {"model": "well", "h": 130}, "body": "A square well in the street, with a wooden curb round it and people drawing water."},
+  {"id": "stop", "title": "Where the painting stops", "zh": "卷尾", "at": {"ground": [1000, 1150], "h": 380}, "body": "A few steps past the shop the painting simply stops, among the willows. Several scholars have suspected that the scroll was cut short here."}
+ ]
+}

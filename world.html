@@ -3,41 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>虹桥 · Walk the Rainbow Bridge</title>
+<title>入画 · Walk into the painting</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="The Rainbow Bridge from Along the River During the Qingming Festival, rebuilt in 3D from the painting: walk a porter across it and go all the way round.">
+<meta name="description" content="A scene from Along the River During the Qingming Festival, rebuilt in 3D from the painting: walk a porter through it and go all the way round.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Noto+Serif+SC:wght@400;600&display=swap">
 <link rel="stylesheet" href="world.css">
 </head>
 <body>
-<canvas id="gl" role="img" aria-label="The Rainbow Bridge from Along the River During the Qingming Festival, rebuilt in 3D, with a porter you can walk across it and a camera that goes all the way round"></canvas>
+<canvas id="gl" role="img" aria-label="A scene from Along the River During the Qingming Festival, rebuilt in 3D, with a porter you can walk through it and a camera that goes all the way round"></canvas>
 
 <header id="top">
-  <a class="back" href="index.html#bridge">← Back to the scroll</a>
+  <a class="back" href="index.html">← Back to the scroll</a>
   <div class="title">
-    <span class="seal" lang="zh-Hans">四</span>
-    <h1><span class="zh" lang="zh-Hans">虹桥</span><span class="en">Walk the Rainbow Bridge</span></h1>
+    <span class="seal" lang="zh-Hans"></span>
+    <h1><span class="zh" lang="zh-Hans"></span><span class="en"></span></h1>
   </div>
   <button type="button" class="link" id="about-btn" aria-expanded="false" aria-controls="about">About this view</button>
 </header>
 
+<!-- the scene's own notes (S.page.text) replace these -->
 <section id="about" hidden>
-  <p>The river and its banks are the painting itself, laid back down on the ground it shows: from the painter’s own
-    direction they line up with the scroll exactly. The bridge, the boats, the halls, houses, sheds, stalls, tables and
-    umbrellas along both banks are rebuilt as simple models dressed in their own painted timbers and roofs, so you can
-    walk round them.</p>
-  <p>The people are the painting’s own: the crowd on the bridge, the street at the bridge’s foot, the porters on a boat
-    and the trackers hauling another, each cut out of the scroll and stood up where they are painted, with the carts,
-    horses, donkeys and willows beside them. The painting only
-    ever shows one side of things, so a model’s far side wears its near side, mirrored, and where the painting is hidden
-    behind something the gap is filled with its own blank water and silk.</p>
-  <p>Your walker is a porter with two baskets on a shoulder pole, borrowed from the street outside Dr. Zhao’s shop near
-    the end of the scroll. He can go anywhere on the bridge and the banks around it, but not into the river or through
-    a building; hold Shift to hurry. He, and everyone else, turns to face you like a paper cut-out.</p>
-  <p>The near miss is staged from what the painting shows at its moment; how it got there is imagined. The sounds are
-    synthesized, not recorded. The notes quote Meng Yuanlao’s memoir of Kaifeng, 东京梦华录 (1147).</p>
+  <p>The ground is the painting itself, laid back down on the ground it shows; the buildings, boats, people and trees
+    are rebuilt or stood up out of it, so you can walk round them.</p>
 </section>
 
 <footer id="controls">
@@ -60,7 +49,7 @@
   <div class="act" id="note-act"></div>
 </aside>
 
-<div id="loader" role="status"><span class="seal" lang="zh-Hans">桥</span><p>Raising the bridge out of the painting…</p></div>
+<div id="loader" role="status"><span class="seal" lang="zh-Hans">画</span><p>Raising the scene out of the painting…</p></div>
 <noscript><p class="noscript">This view needs JavaScript and WebGL 2.</p></noscript>
 <script type="module" src="src/world.js"></script>
 </body>

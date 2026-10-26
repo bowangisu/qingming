@@ -1,0 +1,118 @@
+{
+ "about": "The city gate rebuilt in 3D (world.html?scene=gate): the gate tower on its masonry platform, the passage through it, the street inside and the road outside. Same world as the Rainbow Bridge (see world-bridge.json), with no river: all of it is land at the bank height. Build with tools/make_world.py.",
+ "page": {
+  "zh": "城门",
+  "en": "Walk through the city gate",
+  "seal": "五",
+  "back": "index.html#gate",
+  "loader": [
+   "门",
+   "Raising the city gate out of the painting…"
+  ],
+  "label": "The city gate from Along the River During the Qingming Festival, rebuilt in 3D, with a porter you can walk through it and a camera that goes all the way round",
+  "description": "The city gate from Along the River During the Qingming Festival, rebuilt in 3D from the painting: walk a porter through the gateway and round the tower.",
+  "text": [
+   "The road is the painting itself, laid back down on the ground it shows: from the painter’s own direction it lines up with the scroll exactly. The gate’s platform, its tower and the shops along the street are rebuilt as simple models dressed in their own painted brickwork, timbers and tiles, and the passage runs right through the platform, so you can walk in at one side and out at the other.",
+   "The people and animals are the painting’s own: the camels, the travellers resting outside the gate, the rider, the cart and the porters, each cut out of the scroll and stood up where they are painted, with the willows and pines around them. The painting only ever shows one side of things, so a model’s far side wears its near side, mirrored.",
+   "Your walker is a porter with two baskets on a shoulder pole, borrowed from the street outside Dr. Zhao’s shop near the end of the scroll. He can go anywhere on the road and the street, through the gate, but not through a wall; hold Shift to hurry. He, and everyone else, turns to face you like a paper cut-out.",
+   "The sounds are synthesized, not recorded."
+  ]
+ },
+ "map": {
+  "a": 0.7,
+  "s": 0.5,
+  "c": 1300
+ },
+ "region": [5300, 0, 8900, 1800],
+ "bank": 110,
+ "home": {
+  "about": "the stretch of painting the view opens on: its centre (master px) and how much of it fills the screen",
+  "cu": 6950,
+  "cv": 760,
+  "k": 1.05
+ },
+ "walk": {
+  "about": "where the porter can go: within reach of the centre (u, v as painted, on the ground); where he starts, and which way he faces (du, dv)",
+  "centre": [6950, 1250],
+  "reach": 1750,
+  "start": [7880, 1255],
+  "facing": [-1, 0],
+  "dist": 1350,
+  "pitch": 26
+ },
+ "models": [
+  {"id": "gate-platform", "about": "the gate's masonry platform, its walls sloping in; the passage runs through it from the street inside to the road outside, its mouth on the east face where the camel comes out", "type": "block", "base": [[6440, 1300], [7300, 1300], [7650, 1050], [6790, 1050]], "h": 469, "batter": [60, 150, 60, 0], "passage": {"d": [0.14, 0.44], "h": 300}},
+  {"id": "gate-tower", "about": "the gate tower on the platform: a hip roof traced off the painted one, its walls standing on the platform's top", "type": "traced", "eaves": [[6425, 282], [7295, 290], [7575, 130], [6705, 122]], "ridge": [[6870, 35], [7150, 30]], "eave_y": 1007, "ridge_y": 1178, "y": 579, "wall_at": [[6640, 690], [7150, 690], [7247, 621], [6737, 621]]},
+  {"id": "shop-a", "about": "the shops on the street's north side, inside the gate", "type": "traced", "eaves": [[5330, 662], [5790, 662]], "ridge": [[5414, 500], [5874, 500]], "eave_y": 388, "ridge_y": 490, "walls": 30},
+  {"id": "shop-b", "type": "traced", "eaves": [[5830, 680], [6450, 680]], "ridge": [[5914, 520], [6534, 520]], "eave_y": 390, "ridge_y": 490, "walls": 30},
+  {"id": "sw-hall", "about": "the big roof across the street, its front beyond the painting's edge", "type": "traced", "eaves": [[5300, 1800], [5880, 1800]], "ridge": [[5300, 1405], [5760, 1405]], "eave_y": 300, "ridge_y": 520, "walls": 30}
+ ],
+ "trees": [
+  {"id": "grove-w", "about": "the pines and bare trees between the gate and the painter, their roots at the painting's foot", "poly": [[6380, 1200], [6720, 1200], [6720, 1790], [6380, 1790]], "foot": [6560, 1785], "sway": 3, "kind": "ink"},
+  {"id": "grove-m", "poly": [[6720, 1200], [7130, 1200], [7130, 1790], [6720, 1790]], "foot": [6850, 1785], "sway": 3, "kind": "ink"},
+  {"id": "grove-e", "poly": [[7130, 1250], [7680, 1250], [7680, 1790], [7130, 1790]], "foot": [7230, 1785], "sway": 3, "kind": "ink"},
+  {"id": "willow-e1", "about": "the willows along the road outside the gate", "poly": [[7640, 30], [7990, 30], [7990, 1080], [7640, 1080]], "foot": [7900, 1075], "sway": 5, "kind": "ink"},
+  {"id": "willow-e2", "poly": [[7990, 30], [8250, 30], [8250, 1050], [7990, 1050]], "foot": [8080, 1048], "sway": 5, "kind": "ink"},
+  {"id": "willow-e3", "poly": [[8250, 600], [8900, 600], [8900, 1075], [8250, 1075]], "foot": [8350, 1072], "sway": 5, "kind": "ink"},
+  {"id": "city-tree", "about": "the bare tree between the shops", "poly": [[5600, 300], [6050, 300], [6050, 480], [5840, 520], [5835, 930], [5790, 930], [5785, 520], [5600, 480]], "foot": [5812, 928], "sway": 3, "kind": "ink"}
+ ],
+ "standees": [
+  {"id": "camel-a", "poly": [[5884, 1012], [6138, 1012], [6138, 1266], [5884, 1266]], "foot": [6011, 1266], "about": "the camel caravan in the street, heading out through the gate", "bob": 1.2},
+  {"id": "camel-b", "poly": [[6144, 1069], [6423, 1069], [6423, 1300], [6144, 1300]], "foot": [6284, 1300], "bob": 1.2},
+  {"id": "camel-c", "about": "the camel coming out of the gate's passage", "poly": [[7408, 1124], [7472, 1124], [7486, 1178], [7522, 1196], [7524, 1300], [7408, 1300]], "foot": [7466, 1298], "bob": 1.0},
+  {"id": "walker-1", "poly": [[6100, 1212], [6196, 1212], [6196, 1408], [6100, 1408]], "foot": [6148, 1408]},
+  {"id": "walker-2", "poly": [[5798, 1076], [5860, 1076], [5860, 1273], [5798, 1273]], "foot": [5829, 1273]},
+  {"id": "walker-3", "poly": [[6255, 1319], [6331, 1319], [6331, 1452], [6255, 1452]], "foot": [6293, 1452]},
+  {"id": "traveller-1", "poly": [[7698, 1078], [7762, 1078], [7762, 1262], [7698, 1262]], "foot": [7730, 1262], "about": "travellers resting by the road outside the gate"},
+  {"id": "traveller-2", "poly": [[7638, 1178], [7702, 1178], [7702, 1352], [7638, 1352]], "foot": [7670, 1352]},
+  {"id": "traveller-3", "poly": [[7578, 1218], [7642, 1218], [7642, 1402], [7578, 1402]], "foot": [7610, 1402]},
+  {"id": "traveller-4", "poly": [[7798, 1098], [7872, 1098], [7872, 1292], [7798, 1292]], "foot": [7835, 1292]},
+  {"id": "gesture", "poly": [[7648, 998], [7722, 998], [7722, 1102], [7648, 1102]], "foot": [7685, 1102]},
+  {"id": "porter-1", "poly": [[7968, 1288], [8112, 1288], [8112, 1452], [7968, 1452]], "foot": [8040, 1452]},
+  {"id": "porter-2", "poly": [[7758, 1308], [7832, 1308], [7832, 1432], [7758, 1432]], "foot": [7795, 1432]},
+  {"id": "rider", "poly": [[7998, 1050], [8132, 1050], [8132, 1302], [7998, 1302]], "foot": [8065, 1302], "about": "a rider in a broad hat, a groom at his horse's head"},
+  {"id": "cart", "about": "a covered cart, pulled toward the gate", "poly": [[8170, 1060], [8560, 1060], [8560, 1290], [8170, 1290]], "foot": [8400, 1290], "halo": 5, "wheel": {"at": [8405, 1229], "r": 60}},
+  {"id": "basket-porter", "poly": [[8240, 1268], [8425, 1268], [8425, 1470], [8240, 1470]], "foot": [8332, 1470], "about": "a porter with two baskets on a shoulder pole"},
+  {"id": "donkey-e", "poly": [[8560, 1150], [8730, 1150], [8730, 1268], [8560, 1268]], "foot": [8645, 1268], "bob": 1.4},
+  {"id": "moat-railing", "about": "the railing of the little bridge outside the gate, idlers sitting on it; it stays along the road rather than turning", "poly": [[8240, 1380], [8900, 1380], [8900, 1565], [8240, 1565]], "foot": [8570, 1562], "kind": "ink", "fixed": true}
+ ],
+ "walks": {
+  "about": "who walks in the 3D view, and which way (as painted: du, dv on the silk); see world-bridge.json",
+  "loops": [
+   {"who": [{"standee": "camel-a"}, {"standee": "walker-2"}], "dir": [1, 0.02], "dist": 260, "speed": 18, "faces": "right", "phase": 0.2},
+   {"who": [{"standee": "camel-b"}], "dir": [1, 0.04], "dist": 240, "speed": 18, "faces": "right", "phase": 0.6},
+   {"who": [{"standee": "camel-c"}], "dir": [1, 0.0], "dist": 220, "speed": 16, "faces": "right", "phase": 0.45},
+   {"who": [{"standee": "cart"}], "dir": [-1, 0.0], "dist": 220, "speed": 12, "faces": "left", "phase": 0.3},
+   {"who": [{"standee": "rider"}], "dir": [-1, 0.05], "dist": 240, "speed": 20, "faces": "left", "phase": 0.75},
+   {"who": [{"standee": "basket-porter"}], "dir": [-1, 0.0], "dist": 200, "speed": 22, "faces": "left", "phase": 0.1},
+   {"who": [{"standee": "donkey-e"}], "dir": [1, 0.0], "dist": 200, "speed": 20, "faces": "right", "phase": 0.5}
+  ]
+ },
+ "strollers": {
+  "about": "they walk the street through the gate: in from the road, through the passage, along the street inside (u, v as painted)",
+  "n": 8,
+  "lanes": [
+   {"path": [[5400, 1300], [6300, 1240], [6542, 1227], [7402, 1227], [7700, 1240], [8700, 1255]], "width": 100}
+  ]
+ },
+ "sound": {
+  "about": "market talk (u, v as painted, world height, voices, level), birds in the trees, bells on the camels, hooves",
+  "crowds": [[5700, 1000, 160, 4, 0.08], [7740, 1150, 160, 3, 0.07], [8700, 1420, 150, 2, 0.05]],
+  "birds": 4,
+  "bells": [
+   "camel-a",
+   "camel-b",
+   "camel-c"
+  ],
+  "hooves": [
+   "rider",
+   "donkey-e"
+  ]
+ },
+ "pois": [
+  {"id": "tower", "title": "The gate tower", "zh": "城楼", "at": {"model": "gate-tower", "h": 700}, "body": "A tall tower over the gateway, on a platform of brick and rammed earth with walls that slope inward as they rise. Up there, the painting shows only a single figure looking out.", "link": ["index.html#gate", "This scene on the scroll"]},
+  {"id": "passage", "title": "An open gate", "zh": "门洞", "at": {"ground": [7420, 1228], "h": 330}, "body": "No soldiers seem to be on guard. The Palace Museum scholar Yu Hui reads the open, unguarded gate as one of the picture’s quiet warnings; others see simply a city at peace."},
+  {"id": "camels", "title": "A camel caravan", "zh": "驼队", "at": {"tree": "camel-c", "h": 230}, "body": "Laden camels pass through the gateway one after another: one is just coming out of the passage while the others wait in the street behind it."},
+  {"id": "travellers", "title": "Travellers outside", "zh": "行旅", "at": {"tree": "traveller-4", "h": 230}, "body": "Just outside the gate, people stop by the road under the willows: a rider in a broad hat, porters with their loads, a covered cart on its way in."}
+ ]
+}

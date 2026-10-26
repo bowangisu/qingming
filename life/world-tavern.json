@@ -1,0 +1,120 @@
+{
+ "about": "The street of the Sun family tavern rebuilt in 3D (world.html?scene=tavern): the tavern and its neighbours along the street's north side, the halls across it, the crowd round a storyteller, sedan chairs, donkeys and porters. Same world as the Rainbow Bridge (see world-bridge.json), all of it land. Build with tools/make_world.py.",
+ "page": {
+  "zh": "孙羊正店",
+  "en": "Walk the tavern street",
+  "seal": "六",
+  "back": "index.html#tavern",
+  "loader": [
+   "店",
+   "Raising the tavern street out of the painting…"
+  ],
+  "label": "The street of the Sun family tavern from Along the River During the Qingming Festival, rebuilt in 3D, with a porter you can walk along it and a camera that goes all the way round",
+  "description": "The street of the Sun family tavern from Along the River During the Qingming Festival, rebuilt in 3D from the painting: walk a porter through the crowd.",
+  "text": [
+   "The street is the painting itself, laid back down on the ground it shows: from the painter’s own direction it lines up with the scroll exactly. The tavern, the restaurant beside it, the inn at the corner and the halls across the street are rebuilt as simple models dressed in their own painted timbers and tiles, so you can walk round them.",
+   "The people and animals are the painting’s own: the crowd round the storyteller, the sedan chairs and their bearers, the donkeys and porters, each cut out of the scroll and stood up where they are painted. The painting only ever shows one side of things, so a model’s far side wears its near side, mirrored.",
+   "Your walker is a porter with two baskets on a shoulder pole, borrowed from the street outside Dr. Zhao’s shop near the end of the scroll. He can go anywhere along the street, but not through a building; hold Shift to hurry. He, and everyone else, turns to face you like a paper cut-out.",
+   "The sounds are synthesized, not recorded."
+  ]
+ },
+ "map": {
+  "a": 0.7,
+  "s": 0.5,
+  "c": 1300
+ },
+ "region": [2700, 0, 6200, 1800],
+ "bank": 110,
+ "home": {
+  "cu": 4450,
+  "cv": 820,
+  "k": 1.08
+ },
+ "walk": {
+  "centre": [4450, 1120],
+  "reach": 1800,
+  "start": [4720, 1190],
+  "facing": [-1, 0],
+  "dist": 1250,
+  "pitch": 30
+ },
+ "models": [
+  {"id": "sun-tavern", "about": "the Sun family's licensed tavern, its upper floor and balcony over the street, its decorated gateway on the facade; the roof's ridge is past the painting's top", "type": "traced", "eaves": [[4440, 268], [5610, 268]], "ridge": [[4620, 30], [5430, 30]], "eave_y": 752, "ridge_y": 900, "wall_at": [[4470, 900], [5300, 900], [5510, 750], [4680, 750]]},
+  {"id": "restaurant", "about": "the restaurant west of the tavern, a big parasol at its door", "type": "traced", "eaves": [[3700, 612], [4340, 612]], "ridge": [[3870, 410], [4290, 410]], "eave_y": 418, "ridge_y": 545, "walls": 30},
+  {"id": "parasol", "type": "umbrella", "at": [4175, 790], "y": 265, "r": 120},
+  {"id": "inn", "about": "the inn at the corner, its sign 久住王员外家", "type": "traced", "eaves": [[2720, 330], [3330, 330]], "ridge": [[2800, 70], [3250, 70]], "eave_y": 420, "ridge_y": 580, "walls": 30},
+  {"id": "south-gable", "about": "the hall across the street, its gable end and lattice door toward the painter, its ridge running back to the street", "type": "traced", "eaves": [[3370, 1440], [3370, 1720], [4280, 1720], [4280, 1430]], "ridge": [[3820, 1265], [3815, 1520]], "eave_y": 300, "ridge_y": 475, "walls": 30},
+  {"id": "south-long", "about": "the long roofs across the street, east, their front past the painting's edge", "type": "traced", "eaves": [[4800, 1800], [5900, 1800]], "ridge": [[4800, 1430], [5850, 1430]], "eave_y": 300, "ridge_y": 520, "walls": 30},
+  {"id": "shop-a", "about": "the shops on the street's north side, inside the gate", "type": "traced", "eaves": [[5330, 662], [5790, 662]], "ridge": [[5414, 500], [5874, 500]], "eave_y": 388, "ridge_y": 490, "walls": 30},
+  {"id": "shop-b", "type": "traced", "eaves": [[5830, 680], [6450, 680]], "ridge": [[5914, 520], [6534, 520]], "eave_y": 390, "ridge_y": 490, "walls": 30}
+ ],
+ "trees": [
+  {"id": "south-trees", "about": "bare trees between the halls across the street", "poly": [[4290, 1430], [4800, 1430], [4800, 1795], [4290, 1795]], "foot": [4550, 1790], "sway": 3, "kind": "ink"},
+  {"id": "city-tree", "about": "the bare tree between the shops, east", "poly": [[5600, 300], [6050, 300], [6050, 480], [5840, 520], [5835, 930], [5790, 930], [5785, 520], [5600, 480]], "foot": [5812, 928], "sway": 3, "kind": "ink"}
+ ],
+ "standees": [
+  {"id": "storyteller", "poly": [[3800, 737], [3858, 737], [3858, 830], [3800, 830]], "foot": [3829, 830], "about": "a storyteller, a crowd round him"},
+  {"id": "listener-1", "poly": [[3602, 735], [3658, 735], [3658, 990], [3602, 990]], "foot": [3630, 990]},
+  {"id": "listener-2", "poly": [[3658, 727], [3708, 727], [3708, 990], [3658, 990]], "foot": [3683, 990]},
+  {"id": "listener-3", "poly": [[3722, 852], [3780, 852], [3780, 1020], [3722, 1020]], "foot": [3751, 1020]},
+  {"id": "listener-4", "poly": [[3858, 847], [3925, 847], [3925, 1030], [3858, 1030]], "foot": [3892, 1030]},
+  {"id": "listener-5", "poly": [[3912, 737], [3965, 737], [3965, 900], [3912, 900]], "foot": [3938, 900]},
+  {"id": "listener-6", "poly": [[4040, 700], [4108, 700], [4108, 1000], [4040, 1000]], "foot": [4074, 1000]},
+  {"id": "fan", "poly": [[3950, 1025], [4025, 1025], [4025, 1162], [3950, 1162]], "foot": [3988, 1162]},
+  {"id": "porter", "poly": [[3637, 1125], [3800, 1125], [3800, 1287], [3637, 1287]], "foot": [3718, 1287]},
+  {"id": "walker-1", "poly": [[4000, 1137], [4087, 1137], [4087, 1275], [4000, 1275]], "foot": [4044, 1275]},
+  {"id": "walker-2", "poly": [[4548, 1200], [4600, 1200], [4600, 1325], [4548, 1325]], "foot": [4574, 1325]},
+  {"id": "walker-3", "poly": [[4615, 858], [4668, 858], [4668, 1060], [4615, 1060]], "foot": [4642, 1060]},
+  {"id": "walker-4", "poly": [[4668, 845], [4733, 845], [4733, 1060], [4668, 1060]], "foot": [4700, 1060]},
+  {"id": "sedan-1", "poly": [[4170, 1080], [4545, 1080], [4545, 1330], [4170, 1330]], "foot": [4358, 1330], "about": "sedan chairs carried along the street", "bob": 1.0},
+  {"id": "sedan-2", "poly": [[4620, 1095], [4965, 1095], [4965, 1365], [4620, 1365]], "foot": [4792, 1365], "bob": 1.0},
+  {"id": "shop-man", "poly": [[4430, 872], [4480, 872], [4480, 1010], [4430, 1010]], "foot": [4455, 1010]},
+  {"id": "talker", "poly": [[4790, 868], [4846, 868], [4846, 970], [4790, 970]], "foot": [4818, 970]},
+  {"id": "boy", "poly": [[4996, 1168], [5092, 1168], [5092, 1302], [4996, 1302]], "foot": [5044, 1302]},
+  {"id": "donkey-a", "poly": [[5150, 905], [5320, 905], [5320, 1060], [5150, 1060]], "foot": [5235, 1060], "bob": 1.4},
+  {"id": "donkey-b", "poly": [[5255, 985], [5440, 985], [5440, 1112], [5255, 1112]], "foot": [5348, 1112], "bob": 1.4},
+  {"id": "driver", "poly": [[5370, 870], [5455, 870], [5455, 1005], [5370, 1005]], "foot": [5412, 1005]},
+  {"id": "leaning", "poly": [[5310, 1240], [5410, 1240], [5410, 1400], [5310, 1400]], "foot": [5360, 1400]},
+  {"id": "camel-a", "poly": [[5884, 1012], [6138, 1012], [6138, 1266], [5884, 1266]], "foot": [6011, 1266], "bob": 1.2},
+  {"id": "gate-walker", "poly": [[5798, 1076], [5860, 1076], [5860, 1273], [5798, 1273]], "foot": [5829, 1273]},
+  {"id": "ox-cart", "poly": [[2700, 1380], [2970, 1380], [2970, 1640], [2700, 1640]], "foot": [2835, 1640], "about": "an ox cart at the corner across the street", "halo": 5},
+  {"id": "ox", "poly": [[2990, 1280], [3210, 1280], [3210, 1440], [2990, 1440]], "foot": [3100, 1440], "bob": 1.2},
+  {"id": "xroad-cart", "poly": [[3080, 470], [3285, 470], [3285, 665], [3080, 665]], "foot": [3182, 665], "about": "a cart where the side street comes in", "halo": 5},
+  {"id": "xroad-donkeys", "poly": [[3380, 490], [3600, 490], [3600, 665], [3380, 665]], "foot": [3490, 665], "bob": 1.2}
+ ],
+ "walks": {
+  "loops": [
+   {"who": [{"standee": "sedan-1"}], "dir": [-1, 0.02], "dist": 260, "speed": 15, "faces": "left", "phase": 0.3},
+   {"who": [{"standee": "sedan-2"}], "dir": [1, 0.0], "dist": 240, "speed": 15, "faces": "right", "phase": 0.7},
+   {"who": [{"standee": "donkey-a"}, {"standee": "donkey-b"}, {"standee": "driver"}], "dir": [-1, 0.03], "dist": 240, "speed": 18, "faces": "left", "phase": 0.1},
+   {"who": [{"standee": "walker-1"}], "dir": [-1, 0.0], "dist": 220, "speed": 22, "faces": "left", "phase": 0.5},
+   {"who": [{"standee": "walker-2"}], "dir": [1, 0.0], "dist": 220, "speed": 20, "faces": "right", "phase": 0.2},
+   {"who": [{"standee": "porter"}], "dir": [-1, 0.0], "dist": 200, "speed": 22, "faces": "left", "phase": 0.85},
+   {"who": [{"standee": "camel-a"}, {"standee": "gate-walker"}], "dir": [1, 0.02], "dist": 260, "speed": 18, "faces": "right", "phase": 0.4}
+  ]
+ },
+ "strollers": {
+  "n": 10,
+  "lanes": [
+   {"path": [[2750, 1080], [3600, 1100], [4600, 1150], [5500, 1160], [6150, 1180]], "width": 150}
+  ]
+ },
+ "sound": {
+  "crowds": [[3800, 900, 160, 5, 0.1], [4900, 950, 160, 4, 0.09], [3000, 900, 160, 3, 0.07], [5600, 1100, 160, 3, 0.06]],
+  "birds": 2,
+  "hooves": [
+   "donkey-a",
+   "donkey-b"
+  ],
+  "bells": [
+   "camel-a"
+  ]
+ },
+ "pois": [
+  {"id": "tavern", "title": "The Sun family tavern", "zh": "孙羊正店", "at": {"model": "sun-tavern", "h": 700}, "body": "The largest building in the street is the Sun family’s licensed tavern, a 正店 or “main shop”. Licensed taverns brewed their own wine and sold it on to smaller inns.", "link": ["index.html#tavern", "This scene on the scroll"]},
+  {"id": "gateway", "title": "The decorated gateway", "zh": "彩楼欢门", "at": {"ground": [4975, 880], "h": 520}, "body": "Across its front the tavern has tied up a gateway of poles dressed with flowers, the festive entrance Meng Yuanlao says every wine shop in the capital put up at its door."},
+  {"id": "sign", "title": "The lamp-box sign", "zh": "正店", "at": {"ground": [4515, 905], "h": 170}, "body": "A box sign by the door reads 正店. Signs like it held candles, to glow in the street at night."},
+  {"id": "storyteller", "title": "A storyteller", "zh": "说书", "at": {"tree": "storyteller", "h": 150}, "body": "A crowd has gathered in a ring round a man telling a story, some leaning in, some just passing and stopping to listen."},
+  {"id": "inn", "title": "An inn at the corner", "zh": "久住王员外家", "at": {"model": "inn", "h": 520}, "body": "Its sign reads 久住王员外家, roughly “for long stays: Squire Wang’s house”, an inn for travellers, where the side street comes in."}
+ ]
+}

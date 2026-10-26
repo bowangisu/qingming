@@ -1,0 +1,80 @@
+{
+ "about": "The opening of the scroll rebuilt in 3D (world.html?scene=road): bare trees on the quiet edge of the city, the string of donkeys loaded with charcoal on the path toward town, and the plank bridge on stilts. Same world as the Rainbow Bridge (see world-bridge.json), all of it land. Build with tools/make_world.py.",
+ "page": {
+  "zh": "驮炭驴队",
+  "en": "Walk the road into town",
+  "seal": "一",
+  "back": "index.html#road",
+  "loader": [
+   "路",
+   "Raising the road into town out of the painting…"
+  ],
+  "label": "The road into town from Along the River During the Qingming Festival, rebuilt in 3D, with a porter you can walk along it and a camera that goes all the way round",
+  "description": "The opening of Along the River During the Qingming Festival, rebuilt in 3D from the painting: walk a porter among the bare trees beside the charcoal donkeys.",
+  "text": [
+   "The fields are the painting itself, laid back down on the ground they show: from the painter’s own direction they line up with the scroll exactly. The plank bridge is rebuilt as a simple model on its stilts, dressed in its own painted timbers, and you can walk up onto it.",
+   "The donkeys, their drivers and the bare trees are the painting’s own, each cut out of the scroll and stood up where they are painted. The painting only ever shows one side of things, so everything turns to face you like a paper cut-out.",
+   "Your walker is a porter with two baskets on a shoulder pole, borrowed from the street outside Dr. Zhao’s shop near the end of the scroll. He can go anywhere among the trees; hold Shift to hurry.",
+   "The sounds are synthesized, not recorded."
+  ]
+ },
+ "map": {
+  "a": 0.7,
+  "s": 0.5,
+  "c": 1300
+ },
+ "region": [35300, 0, 37300, 1800],
+ "bank": 110,
+ "home": {
+  "cu": 36440,
+  "cv": 820,
+  "k": 1.0
+ },
+ "walk": {
+  "centre": [36450, 980],
+  "reach": 1300,
+  "start": [36700, 1000],
+  "facing": [-1, 0],
+  "dist": 1150,
+  "pitch": 24
+ },
+ "decks": [
+  {"about": "the plank bridge, a step up off the ground", "poly": [[36200, 1062], [36560, 1050], [36570, 1005], [36210, 1015]], "y": 140}
+ ],
+ "models": [
+  {"id": "plank-bridge", "about": "a plank bridge on stilts", "type": "awning", "corners": [[36200, 1062], [36560, 1050], [36570, 1005], [36210, 1015]], "y": [140, 140]}
+ ],
+ "trees": [
+  {"id": "trees-w", "about": "the bare trees on the edge of town", "poly": [[35300, 80], [35780, 80], [35780, 1180], [35300, 1180]], "foot": [35560, 1170], "sway": 2, "kind": "ink"},
+  {"id": "trees-b", "poly": [[35780, 100], [36330, 100], [36330, 695], [36220, 695], [36220, 1250], [35780, 1250]], "foot": [36040, 1240], "sway": 2, "kind": "ink"},
+  {"id": "tree-c", "poly": [[36330, 300], [36700, 300], [36700, 725], [36625, 725], [36625, 1040], [36515, 1040], [36515, 725], [36330, 725]], "foot": [36565, 1032], "sway": 2, "kind": "ink"},
+  {"id": "trees-d", "poly": [[36700, 100], [37300, 100], [37300, 820], [36985, 820], [36985, 895], [36860, 895], [36860, 820], [36700, 820]], "foot": [36920, 890], "sway": 2, "kind": "ink"}
+ ],
+ "standees": [
+  {"id": "herder", "poly": [[36225, 702], [36272, 702], [36272, 792], [36225, 792]], "foot": [36248, 792], "about": "two men drive a string of donkeys loaded with charcoal toward town"},
+  {"id": "donkey-1", "poly": [[36281, 731], [36346, 731], [36346, 823], [36281, 823]], "foot": [36314, 823], "bob": 1.3},
+  {"id": "donkey-2", "poly": [[36342, 754], [36435, 754], [36435, 842], [36342, 842]], "foot": [36388, 842], "bob": 1.3},
+  {"id": "donkey-3", "poly": [[36435, 800], [36515, 800], [36515, 885], [36435, 885]], "foot": [36475, 885], "bob": 1.3},
+  {"id": "donkey-4", "poly": [[36600, 810], [36705, 810], [36705, 900], [36600, 900]], "foot": [36652, 900], "bob": 1.3},
+  {"id": "donkey-5", "poly": [[36698, 850], [36769, 850], [36769, 950], [36698, 950]], "foot": [36734, 950], "bob": 1.3},
+  {"id": "driver", "poly": [[36765, 827], [36850, 827], [36850, 931], [36765, 931]], "foot": [36808, 931]}
+ ],
+ "walks": {
+  "loops": [
+   {"who": [{"standee": "herder"}, {"standee": "donkey-1"}, {"standee": "donkey-2"}, {"standee": "donkey-3"}, {"standee": "donkey-4"}, {"standee": "donkey-5"}, {"standee": "driver"}], "dir": [-1, -0.22], "dist": 260, "speed": 14, "faces": "left", "phase": 0.5}
+  ]
+ },
+ "sound": {
+  "birds": 7,
+  "hooves": [
+   "donkey-1",
+   "donkey-3",
+   "donkey-5"
+  ]
+ },
+ "pois": [
+  {"id": "donkeys", "title": "Charcoal for the city", "zh": "驮炭", "at": {"tree": "donkey-3", "h": 170}, "body": "Two men drive a string of donkeys loaded with charcoal along the path toward town, the same way the whole scroll will travel. The charcoal is one reason Kong Xianyi argued in 1981 that the scroll shows autumn, not spring.", "link": ["index.html#road", "This scene on the scroll"]},
+  {"id": "plank", "title": "A plank bridge", "zh": "板桥", "at": {"model": "plank-bridge", "h": 120}, "body": "A plank bridge on stilts, low over the ground."},
+  {"id": "opening", "title": "Where the scroll opens", "zh": "开卷", "at": {"ground": [37250, 950], "h": 420}, "body": "The scroll opens on the quiet edge of the city: bare trees, mist over the fields. Read from right to left, everything from here on leads into town."}
+ ]
+}

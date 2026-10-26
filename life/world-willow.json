@@ -1,0 +1,86 @@
+{
+ "about": "The Qingming party on the country road rebuilt in 3D (world.html?scene=willow): the sedan chair with willow on its roof, its rider and porters, travellers on donkeys below, a farmhouse, and the great old willows. Same world as the Rainbow Bridge (see world-bridge.json), all of it land. Build with tools/make_world.py.",
+ "page": {
+  "zh": "清明插柳",
+  "en": "Walk with the Qingming party",
+  "seal": "二",
+  "back": "index.html#willow",
+  "loader": [
+   "柳",
+   "Raising the willows out of the painting…"
+  ],
+  "label": "The Qingming party on the country road from Along the River During the Qingming Festival, rebuilt in 3D, with a porter you can walk along it and a camera that goes all the way round",
+  "description": "The sedan chair with willow on its roof from Along the River During the Qingming Festival, rebuilt in 3D from the painting: walk a porter along the country road.",
+  "text": [
+   "The road and the fields are the painting itself, laid back down on the ground they show: from the painter’s own direction they line up with the scroll exactly. The farmhouse is rebuilt as a simple model dressed in its own painted thatch and walls, so you can walk round it.",
+   "The people, the horse, the donkeys and the willows are the painting’s own, each cut out of the scroll and stood up where they are painted. The painting only ever shows one side of things, so everything turns to face you like a paper cut-out.",
+   "Your walker is a porter with two baskets on a shoulder pole, borrowed from the street outside Dr. Zhao’s shop near the end of the scroll. He can go anywhere along the road and under the willows; hold Shift to hurry.",
+   "The sounds are synthesized, not recorded."
+  ]
+ },
+ "map": {
+  "a": 0.7,
+  "s": 0.5,
+  "c": 1300
+ },
+ "region": [29700, 0, 32200, 1800],
+ "bank": 110,
+ "home": {
+  "cu": 30950,
+  "cv": 820,
+  "k": 1.0
+ },
+ "walk": {
+  "centre": [30900, 900],
+  "reach": 1450,
+  "start": [30560, 720],
+  "facing": [1, -0.5],
+  "dist": 1300,
+  "pitch": 26
+ },
+ "models": [
+  {"id": "cottage", "about": "a farmhouse at the edge of the fields", "type": "traced", "eaves": [[29975, 1060], [30250, 1065]], "ridge": [[30030, 965], [30300, 965]], "eave_y": 280, "ridge_y": 345, "walls": 20}
+ ],
+ "trees": [
+  {"id": "willow-r1", "about": "the great old willows by the road", "poly": [[31350, 60], [31780, 60], [31780, 1500], [31350, 1500]], "foot": [31640, 1495], "sway": 5, "kind": "ink"},
+  {"id": "willow-r2", "poly": [[31780, 60], [32200, 60], [32200, 1520], [31780, 1520]], "foot": [31980, 1515], "sway": 5, "kind": "ink"},
+  {"id": "willow-mid", "about": "willows and a wattle fence below the road", "poly": [[30380, 620], [31350, 620], [31350, 1290], [30380, 1290]], "foot": [30880, 1285], "sway": 4, "kind": "ink"},
+  {"id": "willow-tl", "poly": [[29700, 60], [30420, 60], [30420, 660], [29700, 660]], "foot": [30060, 640], "sway": 4, "kind": "ink"},
+  {"id": "willow-top", "poly": [[30550, 80], [30830, 80], [30830, 470], [30550, 470]], "foot": [30700, 465], "sway": 3, "kind": "ink"}
+ ],
+ "standees": [
+  {"id": "sedan", "poly": [[30836, 406], [30944, 406], [30944, 584], [30836, 584]], "foot": [30890, 584], "about": "the sedan chair, willow branches and flowers tied to its roof", "bob": 1.0},
+  {"id": "bearer-front", "poly": [[30946, 452], [31014, 452], [31014, 584], [30946, 584]], "foot": [30980, 584]},
+  {"id": "bearer-rear", "poly": [[30796, 520], [30852, 520], [30852, 594], [30796, 594]], "foot": [30824, 594]},
+  {"id": "horse", "poly": [[30945, 236], [31035, 236], [31035, 356], [30945, 356]], "foot": [30990, 356], "about": "a rider leads the party", "bob": 1.2},
+  {"id": "porter", "poly": [[30866, 246], [30912, 246], [30912, 332], [30866, 332]], "foot": [30889, 332]},
+  {"id": "walker-1", "poly": [[31048, 306], [31094, 306], [31094, 402], [31048, 402]], "foot": [31071, 402]},
+  {"id": "walker-2", "poly": [[31042, 420], [31118, 420], [31118, 548], [31042, 548]], "foot": [31080, 548]},
+  {"id": "walker-3", "poly": [[30602, 566], [30704, 566], [30704, 694], [30602, 694]], "foot": [30653, 694]},
+  {"id": "pole-porter", "poly": [[31102, 346], [31164, 346], [31164, 442], [31102, 442]], "foot": [31133, 442]},
+  {"id": "rider-1", "poly": [[30200, 1270], [30345, 1270], [30345, 1475], [30200, 1475]], "foot": [30272, 1475], "about": "travellers on donkeys on the lower road", "bob": 1.2},
+  {"id": "walker-b1", "poly": [[30345, 1320], [30420, 1320], [30420, 1490], [30345, 1490]], "foot": [30382, 1490]},
+  {"id": "rider-2", "poly": [[30440, 1350], [30570, 1350], [30570, 1570], [30440, 1570]], "foot": [30505, 1570], "bob": 1.2},
+  {"id": "walker-b2", "poly": [[30560, 1430], [30640, 1430], [30640, 1570], [30560, 1570]], "foot": [30600, 1570]}
+ ],
+ "walks": {
+  "loops": [
+   {"who": [{"standee": "sedan"}, {"standee": "bearer-front"}, {"standee": "bearer-rear"}, {"standee": "horse"}, {"standee": "porter"}, {"standee": "walker-1"}, {"standee": "walker-2"}, {"standee": "pole-porter"}], "dir": [1, -0.97], "dist": 220, "speed": 14, "faces": "right", "phase": 0.5},
+   {"who": [{"standee": "rider-1"}, {"standee": "walker-b1"}, {"standee": "rider-2"}, {"standee": "walker-b2"}], "dir": [1, 0.08], "dist": 240, "speed": 17, "faces": "right", "phase": 0.2}
+  ]
+ },
+ "sound": {
+  "crowds": [[30950, 450, 150, 2, 0.05]],
+  "birds": 8,
+  "hooves": [
+   "horse",
+   "rider-1",
+   "rider-2"
+  ]
+ },
+ "pois": [
+  {"id": "sedan", "title": "Willow for Qingming", "zh": "插柳", "at": {"tree": "sedan", "h": 200}, "body": "Willow branches and flowers are tied to the sedan chair’s roof. Putting up willow was a Qingming custom, and many readers take this party to be returning from sweeping the family graves: one of the clearest links to the festival in the title.", "link": ["index.html#willow", "This scene on the scroll"]},
+  {"id": "rider", "title": "The party on the road", "zh": "踏青", "at": {"tree": "horse", "h": 170}, "body": "A rider leads the party, and porters follow with their loads, along the road between the willows."},
+  {"id": "cottage", "title": "A farmhouse", "zh": "农舍", "at": {"model": "cottage", "h": 260}, "body": "A farmhouse on the edge of the fields, below the road."}
+ ]
+}

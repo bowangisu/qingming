@@ -144,7 +144,7 @@ body.opened #top .home { opacity: 1; }
 }
 .plaque .txt { display: grid; gap: 3px; line-height: 1.1; }
 .plaque .txt .zh { font-family: var(--f-brush); font-size: calc(var(--h) * .4); letter-spacing: .12em; color: #f3e7cc; }
-.plaque .txt .en { font-style: italic; font-size: calc(var(--h) * .24); color: var(--silk-dim); }
+.plaque .txt .en { font-style: italic; font-size: calc(var(--h) * .24); color: var(--silk-dim); white-space: nowrap; }
 .plaque .arch {
   width: 40px; height: 22px; flex: none; margin-left: 4px; fill: none; stroke: var(--gilt); stroke-width: 1.25; stroke-linecap: round;
   transition: transform .35s ease, stroke .3s;

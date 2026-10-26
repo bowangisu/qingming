@@ -1,11 +1,12 @@
-// The Rainbow Bridge rebuilt in 3D, as a small world you can walk round. The painting is read as an oblique view of
-// that world (tools/make_world.py): a point (X, Y, Z) is painted at u = X + a·Z, v = c − s·Z − Y, with the river at
-// Y = 0 and the banks raised to Y = bank. So the river and the banks need no texture of their own: every fragment of
-// them looks up the painting at its own painted position, and seen from the painter's direction the ground is the
-// scroll exactly. Where the painting shows something that is rebuilt here (the bridge) or a strip it never shows
-// (the water behind a bank), the ground is filled with the painting's blank water or silk in the tone around it.
-// The bridge is a designed arch whose faces are the painted bridge, stretched between its curves; the porter is a
-// cut-out that always turns to face you. The scene opens as the painting, flat, and lifts into 3D.
+// A scene of the scroll rebuilt in 3D, as a small world you can walk round (world.html?scene=<id>, the Rainbow Bridge
+// by default). The painting is read as an oblique view of that world (tools/make_world.py): a point (X, Y, Z) is
+// painted at u = X + a·Z, v = c − s·Z − Y, with any river at Y = 0 and the land raised to Y = bank. So the ground needs
+// no texture of its own: every fragment of it looks up the painting at its own painted position, and seen from the
+// painter's direction the ground is the scroll exactly. Where the painting shows something that is rebuilt here (a
+// building, a boat, the bridge) or a strip it never shows (the water behind a bank), the ground is filled with the
+// painting's blank water or silk in the tone around it. The Rainbow Bridge is a designed arch whose faces are the
+// painted bridge, stretched between its curves; the porter is a cut-out that always turns to face you. The scene
+// opens as the painting, flat, and lifts into 3D.
 
 const params = new URLSearchParams(location.search);
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches || params.has('still');
@@ -14,7 +15,8 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const ease = t => t * t * t * (t * (t * 6 - 15) + 10);
 const rad = d => d * Math.PI / 180;
 const $ = s => document.querySelector(s);
-const BASE = 'assets/world/bridge';
+const SCENE = /^[a-z]{1,20}$/.test(params.get('scene') || '') ? params.get('scene') : 'bridge';
+const BASE = `assets/world/${SCENE}`;
 
 // ------------------------------------------------------------------------------------------------------- shaders
 const VS = `#version 300 es
@@ -333,16 +335,18 @@ function triangulate(pts) {
 let S, G, tex = {}, world;
 
 function buildWorld() {
-  const B = S.bank, riv = S.river;
+  const B = S.bank, riv = S.river, X0 = S.region[0] - 4400, X1 = S.region[2] + 4200;
+  const far = 7000, flat = (pts, y, nrm = [0, 1, 0]) => pts.flatMap(([x, z]) => [x, y, z, 0, 0, ...nrm]);
+  const all = [[X0, -far], [X1, -far], [X1, 2000 + far], [X0, 2000 + far]];
+  if (!riv) return { water: null, walls: null, banks: [G.mesh(flat(all, B), [0, 1, 2, 0, 2, 3])], ...buildStanding() };
   // the river's two edges, carried on straight past the outline so the banks reach the mist
   // the outline runs east along the near (south) edge to its easternmost point, then back west along the far edge
   const k = riv.reduce((m, p, i) => (p[0] > riv[m][0] ? i : m), 0) + 1, last = riv.length - 1;
-  const south = [[12000, riv[0][1] + 60], ...riv.slice(0, k), [27000, riv[k - 1][1] + 10]];
-  const north = [[27000, riv[k][1]], ...riv.slice(k), [12000, riv[last][1] + 40]];
-  const far = 7000, flat = (pts, y, nrm = [0, 1, 0]) => pts.flatMap(([x, z]) => [x, y, z, 0, 0, ...nrm]);
-  const southLand = [[12000, -far], [27000, -far], ...south.slice().reverse()];
-  const northLand = [[27000, 2000 + far], [12000, 2000 + far], ...north.slice().reverse()];
-  const water = G.mesh(flat([[12000, -far], [27000, -far], [27000, 2000 + far], [12000, 2000 + far]], 0), [0, 1, 2, 0, 2, 3]);
+  const south = [[X0, riv[0][1] + 60], ...riv.slice(0, k), [X1, riv[k - 1][1] + 10]];
+  const north = [[X1, riv[k][1]], ...riv.slice(k), [X0, riv[last][1] + 40]];
+  const southLand = [[X0, -far], [X1, -far], ...south.slice().reverse()];
+  const northLand = [[X1, 2000 + far], [X0, 2000 + far], ...north.slice().reverse()];
+  const water = G.mesh(flat(all, 0), [0, 1, 2, 0, 2, 3]);
   const banks = [southLand, northLand].map(p => G.mesh(flat(p, B), triangulate(p)));
   // the revetments: from the water up to the bank, facing the river
   const wv = [], wi = [];
@@ -355,15 +359,18 @@ function buildWorld() {
       wi.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); run += l;
     }
   }
-  const walls = G.mesh(wv, wi);
-  const bridge = buildBridge();
+  return { water, banks, walls: G.mesh(wv, wi), ...buildStanding() };
+}
+// what stands on the ground: the bridge, boats, buildings and stalls, their shadows, and the painting laid flat
+function buildStanding() {
+  const bridge = S.bridge ? buildBridge() : null;
   const boat = S.boat ? buildBoat(S.boat) : null;
   const boats = (S.boats || []).map((Bt, i) => ({ ...buildBoat(Bt), spec: Bt, phase: i * 2.1 + 1 }));
   // houses, sheds, awnings, umbrellas: painted meshes from the bake, and their plain timbers
   const models = (S.models || []).map(Md => {
     const n = Md.pos.length / 3, v = [];
     for (let i = 0; i < n; i++) v.push(Md.pos[i * 3], Md.pos[i * 3 + 1], Md.pos[i * 3 + 2], Md.uv[i * 2], Md.uv[i * 2 + 1], Md.nrm[i * 3], Md.nrm[i * 3 + 1], Md.nrm[i * 3 + 2]);
-    const out = { id: Md.id, shade: Md.shade, mesh: n ? G.mesh(v, Md.idx) : null };
+    const out = { id: Md.id, shade: Md.shade, mesh: n ? G.mesh(v, Md.idx) : null, cull: !!Md.cull };
     if (Md.plain) {
       const P = Md.plain, m = P.pos.length / 3, w = [];
       for (let i = 0; i < m; i++) w.push(P.pos[i * 3], P.pos[i * 3 + 1], P.pos[i * 3 + 2], P.uv[i * 2], P.uv[i * 2 + 1], P.nrm[i * 3], P.nrm[i * 3 + 1], P.nrm[i * 3 + 2]);
@@ -388,7 +395,15 @@ function buildWorld() {
   // the painting, lying on the water: what the scene opens on, and fades from
   const R = S.region, { a, s, c } = S.map, ground = (u, v) => { const z = (c - v) / s; return [u - a * z, 0, z]; };
   const sheet = G.mesh([ground(R[0], R[1]), ground(R[2], R[1]), ground(R[0], R[3]), ground(R[2], R[3])].flatMap(p => [...p, 0, 0, 0, 1, 0]), [0, 2, 1, 1, 2, 3]);
-  return { water, banks, walls, bridge, boat, boats, models, sheet, modelLines, boxShades, discShades };
+  // what the camera keeps out of: every building's footprint up to its roof, and a gate's masonry round its passage
+  const solids = [];
+  for (const Md of S.models || []) {
+    if (Md.solids) { for (const s of Md.solids) solids.push({ pts: s.pts, lo: s.y[0], hi: s.y[1], cull: true, axis: s.axis }); continue; }   // masonry: see-through from inside
+    if (Md.foot?.kind !== 'box' || !Md.pos.length || !['house', 'traced'].includes(Md.kind)) continue;
+    let hi = -1e9; for (let i = 1; i < Md.pos.length; i += 3) hi = Math.max(hi, Md.pos[i]);
+    solids.push({ pts: Md.foot.pts, lo: Md.foot.y, hi });
+  }
+  return { bridge, boat, boats, models, sheet, modelLines, boxShades, discShades, solids };
 }
 
 // the bridge: an arch between two feet on the river's edge. Stations run along the chord from the south foot; the
@@ -534,7 +549,8 @@ function rotAxis(ax, th) {           // a 4×4 rotation about the unit axis ax
   return [t * x * x + c, t * x * y + s * z, t * x * z - s * y, 0, t * x * y - s * z, t * y * y + c, t * y * z + s * x, 0, t * x * z + s * y, t * y * z - s * x, t * z * z + c, 0, 0, 0, 0, 1];
 }
 function translate(v) { return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, v[0], v[1], v[2], 1]; }
-function boatModel(t, b = world.boat, R = S.boat.rock, phase = 0) {
+const ROCK = { roll: .6, pitch: .3, heave: 1, hz: .13 };
+function boatModel(t, b = world.boat, R = S.boat?.rock || ROCK, phase = 0) {
   const w = 6.2832 * R.hz * t + phase;
   if (REDUCED) return null;
   const roll = rad(R.roll) * Math.sin(w), pitch = rad(R.pitch) * Math.sin(w * .73 + 1.3), heave = R.heave * Math.sin(w * .61 + .4);
@@ -542,24 +558,45 @@ function boatModel(t, b = world.boat, R = S.boat.rock, phase = 0) {
   return mul(translate([c[0], c[1] + heave, c[2]]), mul(rotAxis([b.perp[0], 0, b.perp[1]], pitch), mul(rotAxis([b.axis[0], 0, b.axis[1]], roll), translate([-c[0], -c[1], -c[2]]))));
 }
 
-// people crossing the bridge: cut-outs from elsewhere on the scroll, strolling one way or the other
+// strollers: cut-outs from elsewhere on the scroll, walking one way or the other along a lane: across the bridge and
+// onto the banks at either end, or along a street. A lane gives the point s along it and w across it (0..1 of its
+// width), and which way it runs there
 const crowd = [];
+function setupLanes() {
+  if (!S.crowd.lanes) {
+    if (!world.bridge) return [];
+    const sh = world.bridge.sh;
+    return [{ L: sh.L, ext: OFF, W: sh.W, at: (s, w) => sh.at(s, sh.W * w, s > 0 && s < sh.L ? sh.deck(s) : S.bank), dir: () => sh.b }];
+  }
+  return S.crowd.lanes.map(({ path, width }) => {
+    const d = [0]; for (let i = 1; i < path.length; i++) d.push(d[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
+    const seg = s => { let i = 1; while (i < path.length - 1 && d[i] < s) i++; return i; };
+    const dir = s => { const i = seg(s), l = d[i] - d[i - 1] || 1; return [(path[i][0] - path[i - 1][0]) / l, (path[i][1] - path[i - 1][1]) / l]; };
+    return { L: d[d.length - 1], ext: 0, W: width, dir, at(s, w) {               // past either end, carried on straight
+      const i = seg(s), k = (s - d[i - 1]) / (d[i] - d[i - 1] || 1), b = dir(s), o = (w - .5) * width;
+      return [lerp(path[i - 1][0], path[i][0], k) + b[1] * o, S.bank, lerp(path[i - 1][1], path[i][1], k) - b[0] * o];
+    } };
+  });
+}
 function setupCrowd() {
-  const people = S.crowd.people, L = world.bridge.sh.L, rnd = mulberry(11);
-  for (let i = 0; i < 11; i++) {
-    const fig = people[i % people.length];
-    crowd.push({ fig, s: lerp(-OFF, L + OFF, (i + rnd() * .6) / 11), w: lerp(.18, .82, rnd()), v: (14 + rnd() * 12) * (rnd() < .5 ? -1 : 1),
-      phase: rnd() * 10, h: S.crowd.height * (.9 + rnd() * .16), pause: 0 });
+  const people = S.crowd.people, lanes = setupLanes(), rnd = mulberry(11), n = lanes.length ? S.crowd.n ?? 11 : 0;
+  const total = lanes.reduce((m, l) => m + l.L + 2 * l.ext, 0);
+  for (let i = 0; i < n; i++) {
+    // spread along all the lanes end to end, so a longer lane has more of them
+    let at = (i + rnd() * .6) / n * total, lane = lanes[0];
+    for (const l of lanes) { lane = l; if (at <= l.L + 2 * l.ext) break; at -= l.L + 2 * l.ext; }
+    crowd.push({ fig: people[i % people.length], lane, s: at - lane.ext, w: lerp(.18, .82, rnd()), v: (14 + rnd() * 12) * (rnd() < .5 ? -1 : 1),
+      phase: rnd() * 10, h: S.crowd.height * (.9 + rnd() * .16) });
   }
 }
 function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function stepCrowd(dt) {
-  const L = world.bridge.sh.L, lo = -OFF - 40, hi = L + OFF + 40;
   for (const p of crowd) {
     if (REDUCED) continue;
-    // keep a step's distance from the porter, if he is on the bridge
-    const pb = porterOnBridge(), ds = pb ? p.s - pb.s : 1e9, dw = pb ? p.w * world.bridge.sh.W - pb.off : 1e9;
-    const near = Math.abs(ds) < 34 && Math.abs(dw) < 40 && Math.sign(p.v) === -Math.sign(ds || 1);
+    // keep a step's distance from the porter when he is in the way
+    const L = p.lane, lo = -L.ext - 40, hi = L.L + L.ext + 40, q = L.at(p.s, p.w), b = L.dir(p.s);
+    const dx = P0.x - q[0], dz = P0.z - q[2], ahead = (dx * b[0] + dz * b[1]) * Math.sign(p.v), side = Math.abs(dx * b[1] - dz * b[0]);
+    const near = ahead > 0 && ahead < 34 && side < 40 && Math.abs(P0.y - q[1]) < 30;
     const v = near ? p.v * .15 : p.v;
     p.s += v * dt; p.phase += Math.abs(v) * dt / 22;
     if (p.s > hi) p.s = lo; if (p.s < lo) p.s = hi;
@@ -606,7 +643,7 @@ function haulNow(t, e) {
 // the painting's own people, stood up (tools/make_world.py): on the deck behind the front railing, as far back
 // across it as each is painted above the rail, or on a bank at their painted feet. Each idles a little.
 function peopleQuads(view, t, e) {
-  const sh = world.bridge.sh, A = S.sprites, out = [], right = view.bb, hl = haulNow(t, e);
+  const sh = world.bridge?.sh, A = S.sprites, out = [], right = view.bb, hl = haulNow(t, e);
   for (const [i, p] of (S.people || []).entries()) {
     const [x0, y0, x1, y1] = A.rects[p.sprite], w = x1 - x0, h = y1 - y0;
     let pos = p.on === 'deck' ? sh.at(p.s, sh.W * p.w, sh.deck(p.s)) : p.p;
@@ -629,15 +666,16 @@ function peopleQuads(view, t, e) {
   }
   return out;
 }
-// trees: cut-outs of their brushwork at the trunk's foot, the crown swaying
+// trees: cut-outs of their brushwork at the trunk's foot, the crown swaying. A fixed one (a railing) stays along the
+// world's X as painted instead of turning to face the camera
 function treeQuads(view, t, e) {
-  const A = S.sprites, out = [], right = view.bb, uvOf = ([x0, y0, x1, y1]) => [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => [x / A.size[0], y / A.size[1]]);
+  const A = S.sprites, out = [], uvOf = ([x0, y0, x1, y1]) => [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => [x / A.size[0], y / A.size[1]]);
   for (const [i, T] of (S.trees || []).entries()) {
     const [x0, y0, x1, y1] = A.rects[T.sprite], h = y1 - y0, [ax, ay] = T.anchor;
     const sway = REDUCED ? 0 : T.sway * (Math.sin(t * .9 + i * 2) + .4 * Math.sin(t * 2.3 + i));
     let bob = REDUCED ? 0 : (T.bob || 0) * Math.max(0, Math.sin(t * (.8 + (i % 4) * .15) + i * 1.3));
     let pos = T.p, flip = 1, alpha = 1, walked = 0;
-    const loop = walking.trees.get(i);
+    const right = T.fixed ? [1, 0, 0] : view.bb, loop = walking.trees.get(i);
     if (loop) {
       const W = walkNow(loop, t, e); pos = pos.map((v, j) => v + W.off[j]); alpha = W.alpha; walked = W.walked; flip = facing(loop, view);
       if (!T.wheel && !REDUCED) bob += Math.abs(Math.sin(W.gait * Math.PI)) * 1.8 * e;
@@ -658,11 +696,11 @@ function treeQuads(view, t, e) {
   return out;
 }
 function crowdQuads(view) {
-  const sh = world.bridge.sh, right = view.bb, out = [];
+  const right = view.bb, out = [];
   for (const p of crowd) {
-    const F = p.fig, y = p.s > 0 && p.s < sh.L ? sh.deck(p.s) : S.bank, pos = sh.at(p.s, sh.W * p.w, y);
+    const F = p.fig, Ln = p.lane, pos = Ln.at(p.s, p.w), b = Ln.dir(p.s);
     const sc = p.h / (F.feet[1] - F.top);
-    const screenDir = (sh.b[0] * view.right[0] + sh.b[1] * view.right[2]) * Math.sign(p.v);
+    const screenDir = (b[0] * view.right[0] + b[1] * view.right[2]) * Math.sign(p.v);
     const facesRight = F.faces === 'right', flip = (screenDir > 0) === facesRight ? 1 : -1;
     const bob = REDUCED ? 0 : Math.abs(Math.sin(p.phase * Math.PI)) * 1.6;
     const [x0, y0, x1, y1] = F.box, fx = F.feet[0], fy = F.feet[1];
@@ -671,7 +709,7 @@ function crowdQuads(view) {
       return [pos[0] + right[0] * dx, pos[1] + dy, pos[2] + right[2] * dx];
     });
     // fade in and out at the ends of the walk, where they come and go
-    const L = sh.L, edge = Math.min(p.s + OFF + 40, L + OFF + 40 - p.s);
+    const edge = Math.min(p.s + Ln.ext + 40, Ln.L + Ln.ext + 40 - p.s);
     out.push({ tex: 'c-' + F.id, corners, alpha: clamp(edge / 60, 0, 1), pos, sw: (x1 - x0) * sc * .62 });
   }
   return out;
@@ -683,15 +721,19 @@ async function bitmap(url, opts = {}) {
 }
 
 // --------------------------------------------------------------------------------------------------- the porter
-// He walks anywhere the ground lets him near the bridge: up the deck between its railings, down the ramps and about
-// both banks, but not into the river, through a building or out into the mist past the painting's edge. The arrow
-// keys, the pad and a tap on the ground all steer him; directions are the screen's, whichever way the camera faces.
+// He walks anywhere the ground lets him within reach of the scene's centre: up the Rainbow Bridge's deck between its
+// railings and down its ramps, over plank bridges, about the banks and the streets, but not into a river, through a
+// building or out into the mist past the painting's edge. The arrow keys, the pad and a tap on the ground all steer
+// him; directions are the screen's, whichever way the camera faces.
 const P0 = { x: 0, z: 0, y: 0, vx: 0, vz: 0, hx: 1, hz: 0, flip: 1, phase: 0, swingL: 0, swingLv: 0, swingR: 0, swingRv: 0, target: null, stuck: 0 };
 const input = { keys: new Set(), stick: [0, 0], run: false };
 const SPEED = 80;
 const OFF = 160;               // how far past each end of the bridge the strolling crowd walks, onto the banks
 const RAIL = 16;               // how close to a railing he can walk
-const REACH = 1700;            // how far from the bridge's middle he can wander
+let REACH = 1700;              // how far from the scene's centre he can wander
+let CENTRE = [0, 0];           // that centre, in the world (X, Z)
+// the world (X, Z) of the ground point painted at (u, v)
+function groundAt(u, v, y = S.bank) { const { a, s, c } = S.map, z = (c - v - y) / s; return [u - a * z, z]; }
 
 function inPoly(x, z, poly) {
   let inside = false;
@@ -706,30 +748,43 @@ function onBridge(x, z) {
   const sh = world.bridge.sh, [[ax, az]] = S.bridge.feet, dx = x - ax, dz = z - az;
   return { s: dx * sh.b[0] + dz * sh.b[1], off: -(dx * sh.n[0] + dz * sh.n[1]) };
 }
-let blockers = [];
-function setupGround() {             // what stands in his way: buildings and tables, a little inside their eaves
+let blockers = [], decks = [];
+function setupGround() {
+  // what stands in his way: buildings and tables, a little inside their eaves, and whatever else the scene rules out
+  // (a wall, a well); and the plank bridges that carry him over the water
   blockers = [];
   for (const Md of S.models || []) {
-    const f = Md.foot; if (!f || f.kind !== 'box' || Md.open || !['house', 'traced', 'table'].includes(Md.kind)) continue;   // open sheds: walk in
+    const f = Md.foot; if (!f || f.kind !== 'box' || Md.open || !['house', 'traced', 'table', 'block'].includes(Md.kind)) continue;   // open sheds: walk in
+    if (Math.abs(f.y - S.bank) > 5) continue;                       // up on something else: a gate tower on its platform
     const c = f.pts.reduce((m, q) => [m[0] + q[0] / 4, m[1] + q[1] / 4], [0, 0]), k = Md.kind === 'table' ? 4 : 14;
     blockers.push(f.pts.map(q => { const dx = q[0] - c[0], dz = q[1] - c[1], l = Math.hypot(dx, dz) || 1, m = Math.max(.2, 1 - k / l); return [c[0] + dx * m, c[1] + dz * m]; }));
   }
+  for (const poly of S.nogo || []) blockers.push(poly.map(([u, v]) => groundAt(u, v)));
+  decks = (S.decks || []).map(D => { const y = D.y ?? S.bank; return { y, poly: D.poly.map(([u, v]) => groundAt(u, v, y)) }; });
+  const W = S.walk || {};
+  REACH = W.reach ?? 1700;
+  if (Array.isArray(W.centre)) CENTRE = groundAt(...W.centre);
+  else { const sh = world.bridge.sh, m = sh.at(sh.L / 2, sh.W / 2, 0); CENTRE = [m[0], m[2]]; }
 }
 // the height he would stand at here, or null where he cannot go
 function ground(x, z) {
-  const sh = world.bridge.sh, { s, off } = onBridge(x, z);
-  if (s >= 0 && s <= sh.L && off > -4 && off < sh.W + 4) return off >= RAIL && off <= sh.W - RAIL ? sh.deck(s) : null;
-  if (inPoly(x, z, S.river)) return null;
-  const mid = world.bridge.sh.at(sh.L / 2, sh.W / 2, 0);
-  if (Math.hypot(x - mid[0], z - mid[2]) > REACH) return null;
+  if (world.bridge) {
+    const sh = world.bridge.sh, { s, off } = onBridge(x, z);
+    if (s >= 0 && s <= sh.L && off > -4 && off < sh.W + 4) return off >= RAIL && off <= sh.W - RAIL ? sh.deck(s) : null;
+  }
+  const deck = decks.find(d => inPoly(x, z, d.poly));    // a plank bridge: over the water, or up off the ground
+  if (S.river && inPoly(x, z, S.river) && !deck) return null;
+  if (Math.hypot(x - CENTRE[0], z - CENTRE[1]) > REACH) return null;
   const { a, s: sm, c } = S.map, R = S.region, u = x + a * z, v = c - sm * z - S.bank;
   if (u < R[0] + 80 || u > R[2] - 80 || v < 60 || v > R[3] - 30) return null;
+  if (deck) return deck.y;
   for (const poly of blockers) if (inPoly(x, z, poly)) return null;
   return S.bank;
 }
 function porterAt() { return [P0.x, P0.y, P0.z]; }
 function placePorter(x, z) { const y = ground(x, z); if (y === null) return false; P0.x = x; P0.z = z; P0.y = y; return true; }
-function porterOnBridge() {          // his place along the bridge, if he is on it
+function porterOnBridge() {          // his place along the bridge, if there is one and he is on it
+  if (!world.bridge) return null;
   const sh = world.bridge.sh, b = onBridge(P0.x, P0.z);
   return b.s >= 0 && b.s <= sh.L && b.off >= 0 && b.off <= sh.W ? b : null;
 }
@@ -798,11 +853,11 @@ function pickGround(view, cx, cy) {
   const un = z => { const x = inv[0] * nx + inv[4] * ny + inv[8] * z + inv[12], y = inv[1] * nx + inv[5] * ny + inv[9] * z + inv[13], zz = inv[2] * nx + inv[6] * ny + inv[10] * z + inv[14], w = inv[3] * nx + inv[7] * ny + inv[11] * z + inv[15]; return [x / w, y / w, zz / w]; };
   const p0 = un(-1), p1 = un(1), d = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
   if (d[1] > -1e-6) return null;                 // looking up: no ground
-  // march down the ray from above the bridge's crown to the water, and stop at the first surface under it
-  const sh = world.bridge.sh, top = S.bank + S.bridge.rise + 10, surf = (x, z) => {
-    const b = onBridge(x, z);
-    if (b.s >= 0 && b.s <= sh.L && b.off >= 0 && b.off <= sh.W) return sh.deck(b.s);
-    return inPoly(x, z, S.river) ? 0 : S.bank;
+  // march down the ray from above the bridge's crown (or the ground) to the water, and stop at the first surface under it
+  const sh = world.bridge?.sh, top = S.bank + (S.bridge ? S.bridge.rise : 0) + 10, surf = (x, z) => {
+    if (sh) { const b = onBridge(x, z); if (b.s >= 0 && b.s <= sh.L && b.off >= 0 && b.off <= sh.W) return sh.deck(b.s); }
+    const deck = decks.find(d => inPoly(x, z, d.poly));
+    return deck ? deck.y : S.river && inPoly(x, z, S.river) ? 0 : S.bank;
   };
   const t0 = (top - p0[1]) / d[1], t1 = (0 - p0[1]) / d[1], n = 240;
   let prev = null;
@@ -859,11 +914,13 @@ function porterQuads(view, t) {
 const cam = { p: 0, pTarget: 0, yaw: 0, pitch: rad(30), dist: 720, tx: 0, ty: 0, tz: 0, snap: true, held: false };
 let HOME;
 function homeFrame(aspect) {
-  // the stretch of painting that fills the screen when it opens: the bridge and the boat, a little of each bank
-  const cu = 19560, cv = 560, hh = aspect < 1 ? 760 / aspect : Math.max(560, 1150 / aspect);
+  // the stretch of painting that fills the screen when it opens: at the bridge, the bridge and the boat and a little of
+  // each bank; k frames more of it, or less
+  const H = S.home || {}, k = H.k ?? 1, cu = H.cu ?? 19560, cv = H.cv ?? 560;
+  const hh = (aspect < 1 ? 760 / aspect : Math.max(560, 1150 / aspect)) * k;
   return { cu, cv, hh, hw: hh * aspect };
 }
-function viewAt(p, aspect, target) {
+function viewAt(p, aspect, target, dist = cam.dist) {
   const e = ease(clamp(p, 0, 1)), H = HOME;
   const fovOrbit = rad(aspect < 1 ? 50 : 38);
   const fov = Math.exp(lerp(Math.log(rad(.5)), Math.log(fovOrbit), e));
@@ -871,7 +928,7 @@ function viewAt(p, aspect, target) {
   const yaw = H.yaw + dy * e, pitch = lerp(H.pitch, cam.pitch, e);
   // what's in frame at the target: from the painting's framing to the orbit's
   const hf = homeFrame(aspect), frameHome = 2 * hf.hh * Math.cos(H.pitch);
-  const frame = Math.exp(lerp(Math.log(frameHome), Math.log(2 * cam.dist * Math.tan(fovOrbit / 2)), e));
+  const frame = Math.exp(lerp(Math.log(frameHome), Math.log(2 * dist * Math.tan(fovOrbit / 2)), e));
   const D = frame / 2 / Math.tan(fov / 2);
   const tgt = [0, 1, 2].map(i => lerp(H.target(target)[i], target[i], e));
   const dir = [Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)];
@@ -901,6 +958,35 @@ function shear(vp, tgt, hf) {
   const r0 = row(0), r1 = row(1);
   return [r0[0], r0[1], r0[2], r1[0], r1[1], r1[2]];
 }
+// how far back the orbiting camera can stand before a wall or a roof comes between it and the porter: it comes in
+// at once when something is in the way, and eases back out when it clears. Masonry (a gate's platform) is drawn
+// see-through from inside, so when the porter is in its passage the camera steps just inside the wall instead
+function clearance(tgt, dt) {
+  const D = cam.dist, dir = [Math.sin(cam.yaw) * Math.cos(cam.pitch), Math.sin(cam.pitch), -Math.cos(cam.yaw) * Math.cos(cam.pitch)];
+  let free = D, inside = false, entered = false, exit = 0;
+  const hit = (s, x, y, z) => y > s.lo && y < s.hi + 4 && inPoly(x, z, s.pts);
+  if (world.solids.length) for (let d = 12; d <= D; d += 12) {
+    const x = tgt[0] + dir[0] * d, y = tgt[1] + dir[1] * d, z = tgt[2] + dir[2] * d;
+    if (world.solids.some(s => !s.cull && hit(s, x, y, z))) { free = Math.max(36, d - 28); break; }
+    const soft = world.solids.some(s => s.cull && hit(s, x, y, z));
+    if (soft) entered = true; else if (inside) exit = d;
+    inside = soft;
+  }
+  if (free === D && entered && !inside && exit) free = Math.max(36, exit - 14);
+  if (free === D && inside) free = Math.max(36, exit ? exit - 14 : D);
+  cam.eff = free < (cam.eff ?? D) ? free : lerp(cam.eff ?? D, free, 1 - Math.exp(-dt * 2.5));
+  return cam.eff;
+}
+// in a passage through masonry, the camera swings round to look along it, from behind him or ahead, whichever is
+// nearer, and comes down under the vault, so it can stand back in the tunnel instead of in the wall
+function tunnel(dt) {
+  const T = world.solids.find(s => s.axis && inPoly(P0.x, P0.z, s.pts));
+  if (!T || cam.focus || cam.p < .9) return;
+  const [fx, fz] = T.axis, turn = a => Math.atan2(Math.sin(a - cam.yaw), Math.cos(a - cam.yaw));
+  const along = [Math.atan2(fx, -fz), Math.atan2(-fx, fz)].reduce((m, a) => (Math.abs(turn(a)) < Math.abs(turn(m)) ? a : m));
+  const k = 1 - Math.exp(-dt * 2.4);
+  cam.yaw += turn(along) * k; cam.pitch += (Math.min(cam.pitch, rad(11)) - cam.pitch) * k;
+}
 function setupHome() {
   const { a, s } = S.map, d = [a, s, -1], l = Math.hypot(...d), h = d.map(v => v / l);
   HOME = {
@@ -912,7 +998,8 @@ function setupHome() {
       return p0.map((v, i) => v + h[i] * k);
     },
   };
-  cam.yaw = HOME.yaw; cam.pitch = rad(28);
+  // where the camera stands once the scene has lifted: as far back and as high as the scene asks, or close by the porter
+  cam.yaw = HOME.yaw + rad(S.walk?.yaw ?? 0); cam.pitch = rad(S.walk?.pitch ?? 28); cam.dist = S.walk?.dist ?? 720;
 }
 
 const dist2 = (a, b) => (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
@@ -935,13 +1022,19 @@ const MIRROR = [1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];   // the scene
 const INK = [.2, .16, .12, 1];
 
 // everything that stands up, drawn the same way for the scene and for its reflection
-function drawStanding(F, view) {
+function drawStanding(F, view, mirrored = false) {
   const { gl } = G, Bm = world.bridge;
-  G.draw(Bm.front, { tex: tex.face, shade: 1 }); G.draw(Bm.back, { tex: tex.face, shade: .9 });
-  G.draw(Bm.deckTop, { tex: tex.deck, shade: 1 }); G.draw(Bm.under, { tex: tex.soffit, shade: .78 });
-  for (const c of Bm.caps) G.draw(c, { mode: 7, color: [.22, .17, .12, 1] });
+  if (Bm) {
+    G.draw(Bm.front, { tex: tex.face, shade: 1 }); G.draw(Bm.back, { tex: tex.face, shade: .9 });
+    G.draw(Bm.deckTop, { tex: tex.deck, shade: 1 }); G.draw(Bm.under, { tex: tex.soffit, shade: .78 });
+    for (const c of Bm.caps) G.draw(c, { mode: 7, color: [.22, .17, .12, 1] });
+  }
   for (const Mo of world.models) {
+    // masonry seen from inside is seen through. The picture is mirrored (FLIP), so its outward faces wind the other
+    // way on screen, unless the reflection mirrors it back
+    if (Mo.cull) { gl.enable(gl.CULL_FACE); gl.frontFace(mirrored ? gl.CCW : gl.CW); }
     if (Mo.mesh) G.draw(Mo.mesh, { mode: 9, shade: Mo.shade });
+    if (Mo.cull) gl.disable(gl.CULL_FACE);
     if (Mo.plain) G.draw(Mo.plain, { mode: 10, color: Mo.color });
   }
   for (const b of F.boats) {
@@ -969,12 +1062,13 @@ function drawStanding(F, view) {
 const DRAMA_T = 30;
 
 // ---------------------------------------------------------------------------------------------------------- sound
-// All synthesized in the browser, nothing recorded: the river as filtered noise, market talk as murmuring formant
-// voices, creaking oars, and in the near miss the mast's groan, the thud of poles, a rope's whistle and shouts. Each
-// sound sits somewhere in the world and is heard from the camera. Off until the visitor turns it on.
+// All synthesized in the browser, nothing recorded: the river as filtered noise (a breeze where there is none), market
+// talk as murmuring formant voices, creaking oars, birds in the trees, camel bells and hooves, and in the near miss the
+// mast's groan, the thud of poles, a rope's whistle and shouts. Each sound sits somewhere in the world and is heard
+// from the camera. Off until the visitor turns it on.
 const sound = (() => {
   let ctx = null, master = null, on = false, timer = 0, noise = null;
-  const voices = [], creakers = [];
+  const voices = [], creakers = [], birds = [], bells = [], hooves = [];
   const SC = .01;                                         // world units to metres, roughly
   const VOWELS = [[730, 1090], [530, 1840], [270, 2290], [570, 840], [300, 870], [660, 1700]];
   const at = (u, v, y) => { const { a, s, c } = S.map, z = (c - v - y) / s; return [u - a * z, y, z]; };
@@ -1010,6 +1104,34 @@ const sound = (() => {
       v.next = t0 + dur + .02 + Math.random() * .07;
     }
     for (const c of creakers) if (now > c.next) { creak(c.p, now + .05, .25 + Math.random() * .3, c.level); c.next = now + 2.5 + Math.random() * 4; }
+    for (const b of birds) if (now > b.next) { chirp(b, now + .05); b.next = now + 1.5 + Math.random() * 7; }
+    for (const b of bells) if (now > b.next) { bell(b.p, now + .05, b.f, .05); b.next = now + 1.1 + Math.random() * .8; }
+    for (const h of hooves) if (now > h.next) { const t0 = now + .05; clop(h.p, t0, .05); clop(h.p, t0 + .13, .035); h.next = now + .5 + Math.random() * .12; }
+  }
+  // a small bird: a few quick whistles, each sweeping up and down
+  function chirp(b, t0) {
+    const n = 2 + (Math.random() * 3 | 0), out = panner(b.p, 3);
+    for (let i = 0; i < n; i++) {
+      const o = ctx.createOscillator(), g = ctx.createGain(), s = t0 + i * (.09 + Math.random() * .05), f = b.f * (.9 + Math.random() * .2);
+      o.type = 'sine'; o.frequency.setValueAtTime(f * .8, s); o.frequency.exponentialRampToValueAtTime(f * 1.35, s + .03); o.frequency.exponentialRampToValueAtTime(f * .9, s + .07);
+      g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(.035, s + .01); g.gain.exponentialRampToValueAtTime(.0005, s + .08);
+      o.connect(g); g.connect(out); o.start(s); o.stop(s + .1);
+    }
+  }
+  // a camel's bell: a dull clank of inharmonic partials, dying away
+  function bell(p, t0, f, level) {
+    const out = panner(p, 3);
+    for (const [k, a, d] of [[1, 1, .9], [2.76, .5, .5], [5.4, .25, .3], [8.9, .12, .2]]) {
+      const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = f * k;
+      g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(level * a, t0 + .004); g.gain.exponentialRampToValueAtTime(.0003, t0 + d);
+      o.connect(g); g.connect(out); o.start(t0); o.stop(t0 + d + .05);
+    }
+  }
+  // a hoof on a beaten-earth road: a soft knock
+  function clop(p, t0, level) {
+    const n = noiseSource(), bp = bandpass(900 + Math.random() * 500, 3), g = ctx.createGain();
+    g.gain.setValueAtTime(level, t0); g.gain.exponentialRampToValueAtTime(.0005, t0 + .06);
+    n.connect(bp); bp.connect(g); g.connect(panner(p, 3)); n.stop(t0 + .08);
   }
   // wood under strain: a stuttering buzz through a narrow band
   function creak(p, t0, dur, level, low = 1) {
@@ -1043,23 +1165,39 @@ const sound = (() => {
     noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
     const d = noise.getChannelData(0); let b = 0;
     for (let i = 0; i < d.length; i++) { b = (b + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = b * 3.5 + (Math.random() * 2 - 1) * .06; }  // brown-ish
-    // the river: a bed under everything, and lapping that swells and falls
-    const river = noiseSource(), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 520;
-    const rg = ctx.createGain(); rg.gain.value = .18; river.connect(lp); lp.connect(rg); rg.connect(master);
-    const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = .13; lg.gain.value = .07; lfo.connect(lg); lg.connect(rg.gain); lfo.start();
-    const lap = noiseSource(), lb = bandpass(900, 1.2), lapg = ctx.createGain(); lapg.gain.value = .05;
-    const lfo2 = ctx.createOscillator(), lg2 = ctx.createGain(); lfo2.frequency.value = .37; lg2.gain.value = .05; lfo2.connect(lg2); lg2.connect(lapg.gain); lfo2.start();
-    lap.connect(lb); lb.connect(lapg); lapg.connect(panner(world.bridge.sh.at(world.bridge.sh.L / 2, 0, 0), 8));
-    // market talk where the crowds are: the bridge, the street at its foot, the street by the wine shop, the far bank
-    const sh = world.bridge.sh;
-    const crowds = [[sh.at(sh.L * .45, sh.W / 2, sh.deck(sh.L * .45) + 40), 5, .1], [at(18650, 700, 150), 4, .09], [at(17700, 1450, 150), 4, .08], [at(19300, 80, 150), 3, .06]];
+    const Sd = S.sound || {}, sh = world.bridge?.sh, lfoInto = (param, hz, depth) => {
+      const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = hz; g.gain.value = depth; o.connect(g); g.connect(param); o.start();
+    };
+    if (S.river) {
+      // the river: a bed under everything, and lapping that swells and falls
+      const river = noiseSource(), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 520;
+      const rg = ctx.createGain(); rg.gain.value = .18; river.connect(lp); lp.connect(rg); rg.connect(master); lfoInto(rg.gain, .13, .07);
+      const lap = noiseSource(), lb = bandpass(900, 1.2), lapg = ctx.createGain(); lapg.gain.value = .05; lfoInto(lapg.gain, .37, .05);
+      const w = Sd.water ? at(...Sd.water, 0) : sh ? sh.at(sh.L / 2, 0, 0) : [CENTRE[0], 0, CENTRE[1]];
+      lap.connect(lb); lb.connect(lapg); lapg.connect(panner(w, 8));
+    } else {
+      // no river here: a breeze that rises and falls, and leaves stirring in it
+      const air = noiseSource(), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 330;
+      const ag = ctx.createGain(); ag.gain.value = .1; air.connect(lp); lp.connect(ag); ag.connect(master); lfoInto(ag.gain, .07, .06);
+      const leaves = noiseSource(), lb = bandpass(2400, .8), lg = ctx.createGain(); lg.gain.value = .012; lfoInto(lg.gain, .19, .01);
+      leaves.connect(lb); lb.connect(lg); lg.connect(master);
+    }
+    // market talk where the crowds are: on the bridge, and wherever the scene lists them
+    const crowds = (Sd.crowds || []).map(([u, v, y, n, level]) => [at(u, v, y), n, level]);
+    if (sh) crowds.unshift([sh.at(sh.L * .45, sh.W / 2, sh.deck(sh.L * .45) + 40), 5, .1]);
     for (const [p, n, level] of crowds) {
       const out = ctx.createGain(); out.gain.value = 1;
       const lp2 = ctx.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 2600; out.connect(lp2); lp2.connect(panner(p, 4));
       for (let i = 0; i < n; i++) voices.push(voice(out, 105 + Math.random() * 130, level * (.7 + Math.random() * .5)));
     }
     // oars and hulls creaking now and then
-    for (const B of [world.boat, ...world.boats.slice(0, 4)]) creakers.push({ p: B.mid, next: Math.random() * 4, level: B === world.boat ? .14 : .08 });
+    for (const B of [world.boat, ...world.boats.slice(0, 4)].filter(Boolean)) creakers.push({ p: B.mid, next: Math.random() * 4, level: B === world.boat ? .14 : .08 });
+    // birds in the trees, bells on the camels, hooves under the donkeys
+    const trees = (S.trees || []).filter(T => T.sway), standee = id => (S.trees || []).find(T => T.id === id);
+    for (let i = 0; i < (Sd.birds || 0) && trees.length; i++) { const T = trees[i % trees.length]; birds.push({ p: [T.p[0], T.p[1] + 220, T.p[2]], f: 2600 + Math.random() * 2200, next: Math.random() * 5 }); }
+    for (const id of Sd.bells || []) { const T = standee(id); if (T) bells.push({ p: [T.p[0], T.p[1] + 120, T.p[2]], f: 480 + Math.random() * 260, next: Math.random() * 2 }); }
+    for (const id of Sd.hooves || []) { const T = standee(id); if (T) hooves.push({ p: T.p, next: Math.random() }); }
+    for (const id of Sd.creaks || []) { const T = standee(id); if (T) creakers.push({ p: T.p, next: Math.random() * 4, level: .09 }); }
   }
   return {
     wake() { if (on) { if (!ctx) init(); ctx.resume(); } },
@@ -1207,38 +1345,27 @@ function watchLabel(playing) {
 }
 
 // ------------------------------------------------------------------------------------------- points of interest
-// Seals on things worth a closer look; each opens a short note, with a way back to the scroll or into the near miss.
+// Seals on things worth a closer look (the scene's pois); each opens a short note, with a way back to the scroll or
+// into the near miss. A seal sits over a tree or standee, a group of people, a model, or a spot on the ground (u, v
+// as painted), h above it; on the Rainbow Bridge, also over the bridge, its stalls, or the big boat's masthead.
 const NUM = '一二三四五六七八九';
-const POIS = [
-  { id: 'bridge', title: 'The Rainbow Bridge', zh: '虹桥',
-    body: 'Meng Yuanlao’s memoir of Kaifeng, written in 1147 after the city was lost, describes it: no piers, only great timbers spanning the river, painted red, “like a flying rainbow”. With nothing standing in the water, boats could pass right under it.',
-    link: ['index.html#bridge', 'This scene on the scroll'] },
-  { id: 'boat', title: 'The big boat', zh: '客船',
-    body: 'The largest boat in this stretch, swinging toward the arch with its mast still coming down. Readers have long felt the danger here, and Yu Hui of the Palace Museum counts the near collision among the scroll’s quiet warnings.',
-    action: ['watch', 'Watch the near miss'] },
-  { id: 'stalls', title: 'Stalls on the deck', zh: '桥市',
-    body: 'Peddlers have set up on the bridge itself, under awnings and umbrellas, and everyone else squeezes past them. In the painting the deck is as crowded as any street.' },
-  { id: 'wine', title: 'The wine shop', zh: '十千脚店',
-    body: 'Its signs read 十千脚店: “ten thousand”, probably from an old line of verse praising wine at ten thousand cash a measure, and jiaodian, a smaller shop that bought its wine from one of the city’s great licensed taverns. Meng Yuanlao wrote that every wine shop in the capital tied a festive gateway of poles like this one at its door.',
-    link: ['index.html#tavern', 'A great licensed tavern, on the scroll'] },
-  { id: 'trackers', title: 'Trackers', zh: '纤夫',
-    body: 'A team hauls a boat upstream on a towline made fast high on its mast, leaning into it a step at a time.',
-    link: ['index.html#grain', 'Boats on the Bian River, on the scroll'] },
-  { id: 'restaurant', title: 'An open restaurant', zh: '食店',
-    body: 'On the near bank, diners sit at tables under a broad tiled roof, open to the street and the river.' },
-];
-function poiAt(id, F) {             // where each seal sits in the world this frame
-  const sh = world.bridge.sh, Bo = world.boat;
-  if (id === 'bridge') return sh.at(sh.L * .5, sh.W / 2, sh.deck(sh.L * .5) + 150);
-  if (id === 'boat') return xf(F.boats[0].mastModel || F.boats[0].model, [Bo.top[0], Bo.top[1] + 40, Bo.top[2]]);
-  if (id === 'stalls') return sh.at(sh.L * .28, sh.W * .6, sh.deck(sh.L * .28) + 110);
-  if (id === 'wine') { const T = (S.trees || []).find(x => x.id === 'wine-gateway'); return T ? [T.p[0], T.p[1] + 620, T.p[2]] : null; }
-  if (id === 'trackers') { const team = (S.people || []).filter(p => p.group === 'trackers'); if (!team.length) return null; return team.reduce((m, p) => [m[0] + p.p[0] / team.length, m[1] + p.p[1] / team.length + 90 / team.length, m[2] + p.p[2] / team.length], [0, 0, 0]); }
-  if (id === 'restaurant') { const M = (S.models || []).find(m => m.id === 'near-restaurant'); if (!M?.foot) return null; const c = M.foot.pts.reduce((m, q) => [m[0] + q[0] / 4, m[1] + q[1] / 4], [0, 0]); return [c[0], M.foot.y + 330, c[1]]; }
+let POIS = [];
+const mean = pts => pts.reduce((m, q) => m.map((v, i) => v + q[i] / pts.length), pts[0].map(() => 0));
+function poiAt(P, F) {             // where a seal sits in the world this frame
+  const A = P.at || {}, h = A.h ?? 0, sh = world.bridge?.sh, Bo = world.boat;
+  if (A.anchor === 'bridge' && sh) return sh.at(sh.L * .5, sh.W / 2, sh.deck(sh.L * .5) + 150);
+  if (A.anchor === 'stalls' && sh) return sh.at(sh.L * .28, sh.W * .6, sh.deck(sh.L * .28) + 110);
+  if (A.anchor === 'boat' && Bo?.top) return xf(F.boats[0].mastModel || F.boats[0].model, [Bo.top[0], Bo.top[1] + 40, Bo.top[2]]);
+  if (A.tree) { const T = (S.trees || []).find(x => x.id === A.tree); return T ? [T.p[0], T.p[1] + h, T.p[2]] : null; }
+  if (A.group) { const team = (S.people || []).filter(p => p.group === A.group && p.p); if (!team.length) return null; const m = mean(team.map(p => p.p)); return [m[0], m[1] + h, m[2]]; }
+  if (A.model) { const M = (S.models || []).find(m => m.id === A.model); if (!M?.foot) return null; const c = M.foot.kind === 'disc' ? M.foot.c : mean(M.foot.pts); return [c[0], M.foot.y + h, c[1]]; }
+  if (A.boat) { const b = F.boats.find(x => x.Bo.spec?.id === A.boat); return b ? xf(b.model, [b.Bo.mid[0], b.Bo.mid[1] + h, b.Bo.mid[2]]) : null; }
+  if (A.ground) { const [x, z] = groundAt(...A.ground); return [x, S.bank + h, z]; }
   return null;
 }
 function setupPois() {
   const box = $('#pois');
+  POIS = (S.pois || []).filter(P => !P.action || S.drama);
   POIS.forEach((P, i) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'poi'; b.dataset.id = P.id; b.setAttribute('aria-label', `${P.title}: open the note`);
@@ -1268,7 +1395,7 @@ function placePois(F, view) {       // project each seal to the screen; hide it 
   const show = cam.p > .85 && !(q_drama?.cine);
   const W = innerWidth, H = innerHeight, far = 3800 + cam.dist * 1.2;
   for (const P of POIS) {
-    const p = show ? poiAt(P.id, F) : null;
+    const p = show ? poiAt(P, F) : null;
     let vis = false;
     if (p) {
       const m = view.vp, x = m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12], y = m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13], w = m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15];
@@ -1284,10 +1411,10 @@ function placePois(F, view) {       // project each seal to the screen; hide it 
 }
 
 // ----------------------------------------------------------------------------------------------------- the map
-// A small plan of the ground he can walk: the river, the bridge, the buildings, him, and which way the camera looks
+// A small plan of the ground he can walk: the river, the bridges, the buildings, him, and which way the camera looks
 let map = null;
 function setupMap() {
-  const c = $('#map'), sh = world.bridge.sh, mid = sh.at(sh.L / 2, sh.W / 2, 0);
+  const c = $('#map'), mid = [CENTRE[0], 0, CENTRE[1]];
   const span = REACH * 1.02, dpr = Math.min(devicePixelRatio || 1, 2);
   const w = c.clientWidth || 132, h = c.clientHeight || 88;
   c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
@@ -1298,11 +1425,13 @@ function setupMap() {
   const g = base.getContext('2d');
   g.fillStyle = 'rgba(214, 196, 158, .9)'; g.fillRect(0, 0, c.width, c.height);
   const poly = (pts, fill, stroke) => { g.beginPath(); pts.forEach(([x, z], i) => { const [px, py] = P(x, z); i ? g.lineTo(px, py) : g.moveTo(px, py); }); g.closePath(); if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.strokeStyle = stroke; g.stroke(); } };
-  poly(S.river, 'rgba(120, 130, 120, .85)');
-  g.lineWidth = dpr * .8; poly(S.river, null, 'rgba(60, 48, 36, .6)');
+  if (S.river) { poly(S.river, 'rgba(120, 130, 120, .85)'); g.lineWidth = dpr * .8; poly(S.river, null, 'rgba(60, 48, 36, .6)'); }
   for (const b of blockers) poly(b, 'rgba(70, 52, 38, .75)');
-  const fp = [sh.at(0, 0, 0), sh.at(sh.L, 0, 0), sh.at(sh.L, sh.W, 0), sh.at(0, sh.W, 0)].map(p => [p[0], p[2]]);
-  poly(fp, 'rgba(150, 62, 40, .95)');
+  for (const d of decks) poly(d.poly, 'rgba(150, 62, 40, .95)');
+  if (world.bridge) {
+    const sh = world.bridge.sh, fp = [sh.at(0, 0, 0), sh.at(sh.L, 0, 0), sh.at(sh.L, sh.W, 0), sh.at(0, sh.W, 0)].map(p => [p[0], p[2]]);
+    poly(fp, 'rgba(150, 62, 40, .95)');
+  }
   // the edge of where he can go
   g.save(); g.globalCompositeOperation = 'destination-in';
   const r = REACH * k; const grd = g.createRadialGradient(c.width / 2, c.height / 2, r * .82, c.width / 2, c.height / 2, r * 1.02);
@@ -1340,14 +1469,15 @@ function render(dt, t) {
   const aspect = canvas.width / canvas.height;
   stepDrama(t);
   const onb = porterOnBridge();
-  if (!played && cam.p > .9 && onb && onb.s > world.bridge.sh.L * .38 && onb.s < world.bridge.sh.L * .62) { played = true; startDrama(false); }
+  if (S.drama && !played && cam.p > .9 && onb && onb.s > world.bridge.sh.L * .38 && onb.s < world.bridge.sh.L * .62) { played = true; startDrama(false); }
   if (!REDUCED) cam.p += (cam.pTarget - cam.p) * (1 - Math.exp(-dt * 1.2)) + Math.sign(cam.pTarget - cam.p) * dt * .04;
   else cam.p = cam.pTarget;
   cam.p = clamp(cam.p, 0, 1);
   const pos = porterAt(), tgt = cam.focus || [pos[0] + P0.hx * 30, pos[1] + 34, pos[2] + P0.hz * 30];
   const k = cam.snap ? 1 : 1 - Math.exp(-dt * 4);
   cam.tx += (tgt[0] - cam.tx) * k; cam.ty += (tgt[1] - cam.ty) * k; cam.tz += (tgt[2] - cam.tz) * k; cam.snap = false;
-  const view = viewAt(cam.p, aspect, [cam.tx, cam.ty, cam.tz]);
+  if (world.solids.length) tunnel(dt);
+  const view = viewAt(cam.p, aspect, [cam.tx, cam.ty, cam.tz], cam.p > .5 && !cam.focus ? clearance([cam.tx, cam.ty, cam.tz], dt) : cam.dist);
   stepPorter(dt, cam.p > .6 ? walkIntent(view) : [0, 0]);
   lastView = view;
   sound.frame(view);
@@ -1361,7 +1491,7 @@ function render(dt, t) {
   gl.uniform2f(U.uViewport, canvas.width / 2, canvas.height / 2);
 
   // what moves this frame: the walkers, the boats, the people, sorted far to near
-  stepCrowd(dt);
+  if (crowd.length) stepCrowd(dt);
   const pq = porterQuads(view, t);
   const boats = [];
   if (world.boat) {
@@ -1371,7 +1501,7 @@ function render(dt, t) {
   }
   const hl = haulNow(t, e), ropes = [];
   for (const Bo of world.boats) {
-    let model = boatModel(t, Bo, Bo.spec.rock || S.boat.rock, Bo.phase);
+    let model = boatModel(t, Bo, Bo.spec.rock || S.boat?.rock || ROCK, Bo.phase);
     if (walking.haul?.boat === Bo) {               // surging upstream against the towline
       const g = walking.haul.surge * hl.pull, m = translate([-Bo.axis[0] * g, 0, -Bo.axis[1] * g]);
       model = model ? mul(m, model) : m;
@@ -1395,13 +1525,13 @@ function render(dt, t) {
 
   // the reflection: everything standing, mirrored in the water's plane, drawn at half size for the water to sample
   const reflK = +(params.get('refl') ?? (REDUCED ? .35 : .5));
-  if (e > .02) {
+  if (e > .02 && world.water) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, refl.fb); gl.viewport(0, 0, refl.w, refl.h);
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.activeTexture(gl.TEXTURE7); gl.bindTexture(gl.TEXTURE_2D, tex.silk);      // never sample the picture being drawn
     gl.uniformMatrix4fv(U.uVP, false, new Float32Array(mul(view.vp, MIRROR)));
-    G.draw(world.walls, { mode: 2 });
-    drawStanding(F, view);
+    if (world.walls) G.draw(world.walls, { mode: 2 });
+    drawStanding(F, view, true);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
@@ -1410,14 +1540,16 @@ function render(dt, t) {
   gl.uniformMatrix4fv(U.uVP, false, new Float32Array(view.vp));
   gl.activeTexture(gl.TEXTURE7); gl.bindTexture(gl.TEXTURE_2D, refl.t);
   // the ground
-  gl.uniform1f(U.uReflK, e > .02 ? reflK * e : 0);
-  G.draw(world.water, { mode: 0 });
-  gl.uniform1f(U.uReflK, 0);
+  if (world.water) {
+    gl.uniform1f(U.uReflK, e > .02 ? reflK * e : 0);
+    G.draw(world.water, { mode: 0 });
+    gl.uniform1f(U.uReflK, 0);
+  }
   for (const m of world.banks) G.draw(m, { mode: 1 });
-  G.draw(world.walls, { mode: 2 });
+  if (world.walls) G.draw(world.walls, { mode: 2 });
   // soft shadows on it: under the bridge, the boats, the buildings and stalls, and everyone's feet
   gl.depthMask(false);
-  G.batch([world.bridge.shade], { mode: 12, alpha: e * .6 });
+  if (world.bridge) G.batch([world.bridge.shade], { mode: 12, alpha: e * .6 });
   G.batch(world.boxShades, { mode: 12, alpha: e });
   const round = [...world.discShades, ...boats.map(b => ({ corners: b.Bo.shade.corners.map(p => xf(b.model, p)).map(p => [p[0], .5, p[2]]) })),
     ...standing.filter(q => q.sw).map(q => footShade(q.pos, q.sw, view))];
@@ -1430,7 +1562,7 @@ function render(dt, t) {
   if (e > .02) {
     gl.depthMask(false);
     const k = .7 * e;
-    G.draw(world.bridge.lines, { mode: 13, line: true, color: INK, alpha: k });
+    if (world.bridge) G.draw(world.bridge.lines, { mode: 13, line: true, color: INK, alpha: k });
     if (world.modelLines) G.draw(world.modelLines, { mode: 13, line: true, color: INK, alpha: k * .85 });
     for (const b of boats) G.draw(b.Bo.lines, { mode: 13, line: true, model: b.model, color: INK, alpha: k });
     gl.depthMask(true);
@@ -1523,15 +1655,40 @@ function bindInput() {
 function stepIn() { if (!cam.held) cam.pTarget = 1; }
 
 // ---------------------------------------------------------------------------------------------------------- start
+// where he starts, and which way he faces: at the Rainbow Bridge a little way up the deck, elsewhere where the scene
+// says (u, v as painted), facing the way the scroll reads unless it says otherwise
+function setupPorter() {
+  const W = S.walk || {}, sh = world.bridge?.sh;
+  if (Array.isArray(W.start)) placePorter(...groundAt(...W.start));
+  else if (sh) { const p = sh.at(sh.L * .22, sh.W / 2, 0); placePorter(p[0], p[2]); }
+  const d = W.facing ? (([du, dv]) => { const dz = -dv / S.map.s; return [du - S.map.a * dz, dz]; })(W.facing) : sh && !Array.isArray(W.start) ? sh.b : [-1, 0];
+  const l = Math.hypot(...d); P0.hx = d[0] / l; P0.hz = d[1] / l;
+}
+// the page round the view: its title, seal, way back, notes; and the Watch button only where there is something to watch
+function setupPage() {
+  const Pg = S.page || {};
+  if (Pg.en) document.title = `${Pg.zh} · ${Pg.en}`;
+  if (Pg.description) document.querySelector('meta[name="description"]')?.setAttribute('content', Pg.description);
+  if (Pg.label) canvas.setAttribute('aria-label', Pg.label);
+  if (Pg.back) $('#top .back').href = Pg.back;
+  if (Pg.seal) $('#top .title .seal').textContent = Pg.seal;
+  if (Pg.zh) $('#top h1 .zh').textContent = Pg.zh;
+  if (Pg.en) $('#top h1 .en').textContent = Pg.en;
+  if (Pg.loader) { $('#loader .seal').textContent = Pg.loader[0]; $('#loader p').textContent = Pg.loader[1]; }
+  if (Pg.text) { const a = $('#about'); a.replaceChildren(...Pg.text.map(s => { const p = document.createElement('p'); p.textContent = s; return p; })); }
+  if (!S.drama) $('#watch').hidden = true;
+}
 async function start() {
   window.__world = { ready: false };
   canvas = $('#gl');
   try { G = createGL(canvas); } catch (e) { $('#loader p').textContent = 'This needs WebGL 2, which this browser does not provide. A recent Chrome, Edge, Firefox or Safari will show it.'; console.error(e); return; }
-  S = await (await fetch(`${BASE}/scene.json`)).json();
+  try { const r = await fetch(`${BASE}/scene.json`); if (!r.ok) throw new Error(r.status); S = await r.json(); }
+  catch (e) { $('#loader p').innerHTML = 'There is no 3D view of that scene. <a href="index.html">Back to the scroll</a>'; console.error(e); return; }
+  setupPage();
   const pre = { premultiplyAlpha: 'premultiply' }, raw = { premultiplyAlpha: 'none', colorSpaceConversion: 'none' };
   const jobs = [['paint', S.paint.files[0], pre, {}], ['paint2', S.paint.files[1], pre, {}], ['masks', S.masks.file, raw, {}], ['tone', S.tone.file, raw, { mip: false }],
-    ['silk', S.silk.file, pre, { repeat: true }], ['water', S.water.file, pre, { repeat: true }],
-    ['face', S.bridge.face.file, pre, {}], ['soffit', S.bridge.soffit_tex.file, pre, { repeat: true }], ['deck', S.bridge.deck_tex.file, pre, { repeat: true }],
+    ['silk', S.silk.file, pre, { repeat: true }], ['water', (S.water || S.silk).file, pre, { repeat: true }],
+    ...(S.bridge ? [['face', S.bridge.face.file, pre, {}], ['soffit', S.bridge.soffit_tex.file, pre, { repeat: true }], ['deck', S.bridge.deck_tex.file, pre, { repeat: true }]] : []),
     ...S.walker.pieces.map(P => ['w-' + P.id, P.file, pre, {}]), ...(S.crowd?.people || []).map(C => ['c-' + C.id, C.file, pre, {}]), ...(S.sprites ? [['sprites', S.sprites.file, pre, {}]] : [])];
   const bmps = await Promise.all(jobs.map(([, f, o]) => bitmap(`${BASE}/${f}`, o)));
   jobs.forEach(([k, , , o], i) => { tex[k] = G.texture(bmps[i], o); });
@@ -1539,14 +1696,13 @@ async function start() {
   ['paint', 'masks', 'tone', 'silk', 'water'].forEach((k, i) => { gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, tex[k]); });
   gl.activeTexture(gl.TEXTURE6); gl.bindTexture(gl.TEXTURE_2D, tex.paint2);
   gl.uniform3f(U.uMap, S.map.a, S.map.s, S.map.c); gl.uniform4f(U.uRegion, ...S.region);
-  gl.uniform2f(U.uSilkSize, ...S.silk.size); gl.uniform2f(U.uWaterSize, ...S.water.size);
+  gl.uniform2f(U.uSilkSize, ...S.silk.size); gl.uniform2f(U.uWaterSize, ...(S.water || S.silk).size);
   world = buildWorld();
   setupHome();
   gl.uniform3fv(U.uHome, HOME.dir);
-  const mid = world.bridge.sh.at(world.bridge.sh.L / 2, 0, 0);
-  gl.uniform2f(U.uCenter, mid[0], mid[2]);
   setupGround();
-  { const sh = world.bridge.sh, p = sh.at(sh.L * .22, sh.W / 2, 0); placePorter(p[0], p[2]); P0.hx = sh.b[0]; P0.hz = sh.b[1]; }
+  gl.uniform2f(U.uCenter, ...(world.bridge ? (m => [m[0], m[2]])(world.bridge.sh.at(world.bridge.sh.L / 2, 0, 0)) : CENTRE));
+  setupPorter();
   if (S.crowd) setupCrowd();
   setupWalks();
   setupPois();
@@ -1560,20 +1716,21 @@ async function start() {
     // recordings: __world.manual = true stops the clock; tick(dt, t, keys) then draws one frame
     tick: (dt, t, keys = []) => { input.keys = new Set(keys); render(dt, t); },
     set: o => {
-      const sh = world.bridge.sh;
-      if ('s' in o) { const q = sh.at(o.s, o.off ?? sh.W / 2, 0); placePorter(q[0], q[2]); }
+      const sh = world.bridge?.sh;
+      if ('s' in o && sh) { const q = sh.at(o.s, o.off ?? sh.W / 2, 0); placePorter(q[0], q[2]); }
       if ('x' in o) placePorter(o.x, o.z);
-      if ('dir' in o) { P0.hx = sh.b[0] * o.dir; P0.hz = sh.b[1] * o.dir; }
+      if ('u' in o) placePorter(...groundAt(o.u, o.v));
+      if ('dir' in o) { const b = sh ? sh.b : [-1, 0]; P0.hx = b[0] * o.dir; P0.hz = b[1] * o.dir; }
       if ('p' in o) cam.p = cam.pTarget = o.p;
       if ('stick' in o) input.stick = o.stick; if ('target' in o) P0.target = o.target;
       if ('yaw' in o) cam.yaw = HOME.yaw + rad(o.yaw); if ('pitch' in o) cam.pitch = rad(o.pitch); if ('dist' in o) cam.dist = o.dist;
-      if ('phase' in o) P0.phase = o.phase; if ('focus' in o) cam.focus = o.focus; cam.snap = true;
+      if ('phase' in o) P0.phase = o.phase; if ('focus' in o) cam.focus = o.focus; cam.snap = true; cam.eff = undefined;
     },
     sound, ground: (x, z) => ground(x, z), pick: (cx, cy) => lastView && pickGround(lastView, cx, cy),
     project: p => { const m = lastView.vp, x = m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12], y = m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13], w = m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15]; return [(x / w * .5 + .5) * innerWidth, (.5 - y / w * .5) * innerHeight]; },
-    bridgeAt: (s, off) => { const sh = world.bridge.sh; return sh.at(s, off, sh.deck(s)); },
+    bridgeAt: (s, off) => { const sh = world.bridge.sh; return sh.at(s, off, sh.deck(s)); }, groundAt: (u, v) => groundAt(u, v),
     drama: (cine = false, at = 0) => { played = true; q_drama = null; startDrama(cine); q_drama.from = at; },
-    info: () => ({ L: world.bridge.sh.L, home: { yaw: HOME.yaw * 180 / Math.PI, pitch: HOME.pitch * 180 / Math.PI }, boat: world.boat && { mid: world.boat.mid, n: world.boat.mesh.n, st0: world.boat.st[0], stN: world.boat.st[world.boat.st.length - 1], top: world.boat.top } }),
+    info: () => ({ scene: SCENE, L: world.bridge?.sh.L, centre: CENTRE, reach: REACH, home: { yaw: HOME.yaw * 180 / Math.PI, pitch: HOME.pitch * 180 / Math.PI }, boat: world.boat && { mid: world.boat.mid, n: world.boat.mesh.n, st0: world.boat.st[0], stN: world.boat.st[world.boat.st.length - 1], top: world.boat.top } }),
   });
   requestAnimationFrame(now => { last = t0 = now; document.body.classList.add('ready'); frame(now); });
 }

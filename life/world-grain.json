@@ -1,0 +1,106 @@
+{
+ "about": "The grain boats on the Bian River rebuilt in 3D (world.html?scene=grain): the north bank with its eating sheds and the landing where porters carry sacks ashore, the river with the big grain boats moored at the bank, the willows on the near bank. Same world as the Rainbow Bridge (see world-bridge.json). The boats are seen nearly bow-on, so they stand as cut-outs on the water rather than rebuilt hulls. Build with tools/make_world.py.",
+ "page": {
+  "zh": "汴河卸粮",
+  "en": "Walk the grain landing",
+  "seal": "三",
+  "back": "index.html#grain",
+  "loader": [
+   "粮",
+   "Raising the grain boats out of the painting…"
+  ],
+  "label": "The grain boats on the Bian River from Along the River During the Qingming Festival, rebuilt in 3D, with a porter you can walk along the bank and a camera that goes all the way round",
+  "description": "The grain boats on the Bian River from Along the River During the Qingming Festival, rebuilt in 3D from the painting: walk a porter along the landing.",
+  "text": [
+   "The river and its banks are the painting itself, laid back down on the ground they show: from the painter’s own direction they line up with the scroll exactly. The sheds along the bank are rebuilt as simple models dressed in their own painted timbers and mats, so you can walk round them.",
+   "The people, the boats and the willows are the painting’s own, each cut out of the scroll and stood up where they are painted: the porters carrying sacks ashore, the people at the sheds, and the big grain boats, which the painting shows nearly end-on, standing on the water as cut-outs.",
+   "Your walker is a porter with two baskets on a shoulder pole, borrowed from the street outside Dr. Zhao’s shop near the end of the scroll. He can go anywhere on the banks, but not into the river or through a shed’s wall; hold Shift to hurry. He, and everyone else, turns to face you like a paper cut-out.",
+   "The sounds are synthesized, not recorded."
+  ]
+ },
+ "map": {
+  "a": 0.7,
+  "s": 0.5,
+  "c": 1300
+ },
+ "region": [26400, 0, 29600, 1800],
+ "bank": 110,
+ "home": {
+  "cu": 27950,
+  "cv": 900,
+  "k": 1.05
+ },
+ "walk": {
+  "centre": [28000, 860],
+  "reach": 1800,
+  "start": [28120, 900],
+  "facing": [-1, 0],
+  "dist": 1350,
+  "pitch": 26
+ },
+ "river": {
+  "about": "the water's edge in world (X, Z): its south edge is far past the painting's foot; the north edge runs along the far bank and turns down the near bank's shore, east",
+  "poly": [[25000, -5000], [31500, -5000], [30800, -3000], [29954, -1220], [29064, -520], [28394, 80], [27964, 480], [26928, 460], [26064, 480], [25000, 480]]
+ },
+ "water_paint": {
+  "about": "where the painting shows open water (master px)",
+  "poly": [[26400, 940], [27250, 960], [28300, 960], [28450, 1150], [28700, 1450], [29100, 1800], [26400, 1800]]
+ },
+ "swatch": {
+  "water": [26600, 1250, 26920, 1530]
+ },
+ "models": [
+  {"id": "tea-shed", "about": "eating places along the bank, their tables under a long sloping roof", "type": "awning", "corners": [[27180, 625], [27700, 590], [27440, 400], [27050, 395]], "y": [230, 320]},
+  {"id": "upper-shed", "about": "an open shed further up the bank", "type": "awning", "corners": [[27690, 365], [28300, 345], [28330, 292], [27720, 306]], "y": [230, 260]},
+  {"id": "hall", "about": "a long open hall, people sitting at tables under it", "type": "traced", "eaves": [[28220, 515], [29010, 515]], "ridge": [[28300, 420], [29090, 420]], "eave_y": 300, "ridge_y": 360, "open": 14}
+ ],
+ "trees": [
+  {"id": "willow-n1", "about": "the willows on the near bank", "poly": [[28420, 700], [29000, 700], [29000, 1795], [28420, 1795]], "foot": [28820, 1790], "sway": 5, "kind": "ink"},
+  {"id": "willow-n2", "poly": [[29000, 650], [29600, 650], [29600, 1795], [29000, 1795]], "foot": [29150, 1790], "sway": 5, "kind": "ink"},
+  {"id": "willow-w", "about": "willows on the far bank", "poly": [[26400, 50], [27000, 50], [27000, 640], [26400, 640]], "foot": [26760, 636], "sway": 4, "kind": "ink"},
+  {"id": "willow-ne", "poly": [[29000, 0], [29600, 0], [29600, 640], [29000, 640]], "foot": [29250, 636], "sway": 4, "kind": "ink"}
+ ],
+ "standees": [
+  {"id": "grain-boat", "poly": [[27264, 969], [28036, 969], [28036, 1555], [27264, 1555]], "foot": [27650, 1555], "about": "the big grain boat moored at the bank, deep-laden, seen from its bow", "y": 8, "bob": 0.8},
+  {"id": "boat-2", "poly": [[27900, 1130], [28420, 1130], [28420, 1520], [27900, 1520]], "foot": [28160, 1520], "y": 8, "bob": 0.9},
+  {"id": "boat-3", "poly": [[28300, 1340], [28950, 1340], [28950, 1720], [28300, 1720]], "foot": [28625, 1720], "y": 8, "bob": 1.0},
+  {"id": "boat-left", "poly": [[26400, 560], [26850, 560], [26850, 1000], [26400, 1000]], "foot": [26625, 1000], "about": "a covered boat moored at the far bank", "y": 8, "bob": 0.7},
+  {"id": "porter-1", "poly": [[28024, 786], [28094, 786], [28094, 902], [28024, 902]], "foot": [28059, 902]},
+  {"id": "porter-2", "poly": [[28240, 805], [28350, 805], [28350, 930], [28240, 930]], "foot": [28295, 930]},
+  {"id": "porter-3", "poly": [[28352, 770], [28420, 770], [28420, 905], [28352, 905]], "foot": [28386, 905]},
+  {"id": "talker-1", "poly": [[28052, 615], [28112, 615], [28112, 758], [28052, 758]], "foot": [28082, 758]},
+  {"id": "talker-2", "poly": [[28124, 650], [28186, 650], [28186, 792], [28124, 792]], "foot": [28155, 792]},
+  {"id": "talker-3", "poly": [[28198, 632], [28286, 632], [28286, 776], [28198, 776]], "foot": [28242, 776]},
+  {"id": "boatman", "poly": [[28345, 1098], [28402, 1098], [28402, 1157], [28345, 1157]], "foot": [28374, 1157], "y": 40},
+  {"id": "seated", "poly": [[28150, 800], [28240, 800], [28240, 902], [28150, 902]], "foot": [28195, 902], "about": "the man seated on the pile of sacks"},
+  {"id": "landing-crowd", "poly": [[27680, 600], [28000, 600], [28000, 790], [27680, 790]], "foot": [27840, 790]}
+ ],
+ "walks": {
+  "loops": [
+   {"who": [{"standee": "porter-1"}], "dir": [-1, -0.2], "dist": 140, "speed": 20, "faces": "left", "phase": 0.2},
+   {"who": [{"standee": "porter-2"}], "dir": [-1, -0.25], "dist": 150, "speed": 20, "faces": "left", "phase": 0.55},
+   {"who": [{"standee": "porter-3"}], "dir": [-1, -0.2], "dist": 140, "speed": 22, "faces": "left", "phase": 0.85}
+  ]
+ },
+ "strollers": {
+  "n": 6,
+  "lanes": [
+   {"path": [[26600, 770], [27400, 800], [28200, 770], [29400, 720]], "width": 120}
+  ]
+ },
+ "sound": {
+  "water": [27400, 1350],
+  "crowds": [[28100, 800, 160, 4, 0.09], [28600, 600, 160, 3, 0.07], [27400, 700, 160, 3, 0.06]],
+  "birds": 5,
+  "creaks": [
+   "grain-boat",
+   "boat-2",
+   "boat-3"
+  ]
+ },
+ "pois": [
+  {"id": "boats", "title": "Grain boats", "zh": "粮船", "at": {"tree": "grain-boat", "h": 470}, "body": "In the Northern Song the Bian River was the main route carrying grain from the south to the capital, Kaifeng. Here two deep-laden boats are moored at the bank.", "link": ["index.html#grain", "This scene on the scroll"]},
+  {"id": "porters", "title": "Porters with sacks", "zh": "卸粮", "at": {"tree": "porter-2", "h": 170}, "body": "Porters carry the sacks ashore on their backs, one after another, to a man seated on the pile."},
+  {"id": "sheds", "title": "Sheds on the bank", "zh": "食棚", "at": {"model": "tea-shed", "h": 320}, "body": "Along the bank, people eat and drink at tables under open sheds, looking out over the boats."}
+ ]
+}

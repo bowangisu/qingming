@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-"""Bake the Rainbow Bridge scene for the 3D view (world.html) from a spec in life/.
+"""Bake one of the scroll's scenes for the 3D view (world.html?scene=<name>) from a spec in life/world-<name>.json,
+merged over life/world-common.json (the porter, the silk swatch, the strollers).
 
-The painting is read as an oblique view of a small world: water at Y = 0, both banks raised to the bank height, and a
+The painting is read as an oblique view of a small world: water at Y = 0, the land raised to the bank height, and a
 point (X, Y, Z) painted at u = X + a*Z, v = c - s*Z - Y. The viewer projects the painting itself back onto the river
 and the banks, so the ground needs no texture of its own, only masks saying where the painting shows open water and
 where it shows land, and blank water and blank silk for the rest: the swatches here, in the tone of the painting
-around them. The bridge is designed rather than traced, and its faces are painted by stretching the painted bridge
-between its own curves: the railing along the painted rail, the face between the painted deck line and the arch.
-Writes assets/world/<name>/: paint-0.webp and paint-1.webp (the region's two halves), masks.webp, tone.png, silk.webp, water.webp, bridge-face.webp,
-bridge-soffit.webp, bridge-deck.webp, the porter's pieces, scene.json; and a preview of the masks in tools/.
+around them. A scene without a river is all land. The Rainbow Bridge is designed rather than traced, and its faces
+are painted by stretching the painted bridge between its own curves: the railing along the painted rail, the face
+between the painted deck line and the arch.
+Writes assets/world/<name>/: paint-0.webp and paint-1.webp (the region's two halves), masks.webp, tone.png, silk.webp,
+water.webp (with a river), bridge-face.webp, bridge-soffit.webp, bridge-deck.webp (with the bridge), the porter's
+pieces, the strollers, sprites.webp, scene.json; and a preview of the masks in tools/.
 Usage: python3 tools/make_world.py life/world-bridge.json source/Alongtheriver_QingMing.jpg assets/world/bridge
 """
 import json, math, sys
@@ -335,13 +338,15 @@ def stand_people(spec, master, silk_tone, br):
     its robes are carried down to its feet where the painting hides them. On the deck, a figure stands behind the
     front railing, as far back across the deck as it is painted above the rail; on a bank, at its painted feet.
     Returns sprites, where each stands, and a mask (region px) of what was taken off the ground."""
-    R = spec['region']; Bd = spec['bridge']; m = spec['map']
-    rail = smooth_line(Bd['paint']['rail'], 800)
-    total = np.r_[0, np.cumsum(np.hypot(*np.diff(rail, axis=0).T))]; total /= total[-1]
-    (ax, az), (bx, bz) = Bd['feet']; L = math.hypot(bx - ax, bz - az)
-    nx, nz = (bz - az) / L, -(bx - ax) / L
-    # how the painting shows a step back across the deck (to the far railing): up and to the left
-    du, dv = -nx * Bd['width'] + m['a'] * -nz * Bd['width'], -m['s'] * -nz * Bd['width']
+    R = spec['region']; m = spec['map']
+    if br is not None:
+        Bd = spec['bridge']
+        rail = smooth_line(Bd['paint']['rail'], 800)
+        total = np.r_[0, np.cumsum(np.hypot(*np.diff(rail, axis=0).T))]; total /= total[-1]
+        (ax, az), (bx, bz) = Bd['feet']; L = math.hypot(bx - ax, bz - az)
+        nx, nz = (bz - az) / L, -(bx - ax) / L
+        # how the painting shows a step back across the deck (to the far railing): up and to the left
+        du, dv = -nx * Bd['width'] + m['a'] * -nz * Bd['width'], -m['s'] * -nz * Bd['width']
     ratio = flat_ratio(master, spec['swatch']['silk'])
     rng = np.random.default_rng(3)
     taken = np.zeros((R[3] - R[1], R[2] - R[0]), np.float32)
@@ -402,11 +407,33 @@ def stand_people(spec, master, silk_tone, br):
     return out, taken
 
 
-BUILD = {'traced': WM.traced, 'house': WM.house, 'awning': WM.awning, 'table': WM.awning, 'umbrella': WM.umbrella}
+def strip(o):
+    """a spec's value without its notes"""
+    if isinstance(o, dict): return {k: strip(v) for k, v in o.items() if k != 'about'}
+    if isinstance(o, list): return [strip(v) for v in o]
+    return o
+
+
+BUILD = {'traced': WM.traced, 'house': WM.house, 'awning': WM.awning, 'table': WM.awning, 'umbrella': WM.umbrella, 'block': WM.block}
+
+
+def load_spec(path):
+    """a scene's spec over the common one: its own keys win, its swatches join the common ones"""
+    spec = json.loads(Path(path).read_text())
+    common = json.loads((Path(path).parent / 'world-common.json').read_text())
+    out = {**{k: v for k, v in common.items() if k != 'about'}, **spec}
+    out['swatch'] = {**common.get('swatch', {}), **spec.get('swatch', {})}
+    return out
+
+
+def ground_at(m, bank, u, v):
+    """the world (X, Z) of the ground point painted at (u, v)"""
+    z = (m['c'] - v - bank) / m['s']
+    return [round(u - m['a'] * z, 1), round(z, 1)]
 
 
 def main(spec_path, master_path, out_dir):
-    spec = json.loads(Path(spec_path).read_text())
+    spec = load_spec(spec_path)
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
     master = Image.open(master_path)
     R = spec['region']; W, H = R[2] - R[0], R[3] - R[1]
@@ -418,7 +445,7 @@ def main(spec_path, master_path, out_dir):
     # anything rebuilt in 3D; where it shows land: outside the outline and not under anything rebuilt
     ink = np.asarray(brushwork(master, tuple(R), 'ink'), np.float32) / 255
     dense = blur(ink, 14)
-    river = poly_mask((W, H), spec['water_paint']['poly'], R)
+    river = poly_mask((W, H), spec['water_paint']['poly'], R) if 'water_paint' in spec else np.zeros((H, W), np.float32)
     rebuilt = np.zeros((H, W), np.float32)
     for key in ('bridge', 'boat'):
         if key in spec and 'poly' in spec[key]: rebuilt = np.maximum(rebuilt, poly_mask((W, H), spec[key]['poly'], R))
@@ -434,15 +461,17 @@ def main(spec_path, master_path, out_dir):
     Wd = WM.World(spec['map']['a'], spec['map']['s'], spec['map']['c'], spec['bank'])
     models = []
     for Md in spec.get('models', []):
-        M = BUILD[Md['type']](Wd, Md)
-        models.append(M.export(Wd, Md['id'], kind=Md['type'], **({'open': True} if Md.get('posts') or Md.get('open') else {})))
-        rebuilt = np.maximum(rebuilt, grow((M.outline(Wd, (W, H), R) > .5).astype(np.float32), 3))
+        built = BUILD[Md['type']](Wd, Md)
+        for k, M in enumerate(built if isinstance(built, list) else [built]):     # a block through which a passage runs is two
+            models.append(M.export(Wd, Md['id'] + ('-back' if k else ''), kind=Md['type'], **({'open': True} if Md.get('posts') or Md.get('open') else {}),
+                                   **({'cull': True} if Md['type'] == 'block' else {})))
+            if M.idx: rebuilt = np.maximum(rebuilt, grow((M.outline(Wd, (W, H), R) > .5).astype(np.float32), 3))
 
     # the painted people, stood up: what they covered comes off the ground too
     silk_tone = np.median(rgb[((1 - river) * (dense < .15) * (np.arange(H)[:, None] > 22)) > .5], 0)
     sprites, placed = {}, []
     if 'people' in spec:
-        people, taken = stand_people(spec, master, silk_tone, Bridge(spec['bridge'], spec['bank']))
+        people, taken = stand_people(spec, master, silk_tone, Bridge(spec['bridge'], spec['bank']) if 'bridge' in spec else None)
         for k, d in enumerate(people):
             key = f"{d['group']}-{k}"; sprites[key] = d.pop('rgba')
             placed.append({'sprite': key, **d})
@@ -468,6 +497,7 @@ def main(spec_path, master_path, out_dir):
             wc = retone(np.asarray(master.crop(wb).convert('RGB'), np.float32), wa, silk_tone)
             sprites[f"wheel-{T['id']}"] = np.dstack([np.clip(wc, 0, 255), wa * 255]).astype(np.uint8)
         trees.append({'id': T['id'], 'sprite': key, 'anchor': [T['foot'][0] - box[0], T['foot'][1] - box[1]], 'sway': T.get('sway', 0), 'bob': T.get('bob', 0),
+                      **({'fixed': True} if T.get('fixed') else {}),
                       **({'wheel': {'sprite': f"wheel-{T['id']}", 'at': [T['wheel']['at'][0] - T['foot'][0], T['foot'][1] - T['wheel']['at'][1]], 'r': T['wheel']['r']}} if 'wheel' in T else {}),
                       'p': [round(T['foot'][0] - spec['map']['a'] * Z, 1), gy, round(Z, 1)]})
         g = np.zeros((H, W), np.float32); g[box[1] - R[1]:box[3] - R[1], box[0] - R[0]:box[2] - R[0]] = a
@@ -483,23 +513,29 @@ def main(spec_path, master_path, out_dir):
 
     # the tone under the fills: the painting's own colour, carried in from the water and the land nearby
     small = shrink(rgb, TONE)
-    tw = fill_from(small, shrink(water, TONE) > .9)
     tl = fill_from(small, shrink(land * (1 - busy), TONE) > .9)
+    tw = fill_from(small, shrink(water, TONE) > .9) if water.sum() > 100 else tl
     soft = lambda t: np.stack([blur(t[..., i], 2.5) for i in range(3)], -1)    # tone only: no brushwork in it
     save(np.concatenate([soft(tw), soft(tl)], 0), out / 'tone.png')
 
     silk = flat_ratio(master, spec['swatch']['silk'])
-    wat = flat_ratio(master, spec['swatch']['water'])
     # ratios around 1 are stored around 128 (x 0.5), so the shader reads them back with a * 2
-    save(silk * 128, out / 'silk.webp'); save(wat * 128, out / 'water.webp')
-    water_tone = np.median(rgb[water > .5], 0)
-
-    scene = {'map': spec['map'], 'region': R, 'bank': spec['bank'], 'river': spec['river']['poly'],
+    save(silk * 128, out / 'silk.webp')
+    scene = {'map': spec['map'], 'region': R, 'bank': spec['bank'],
              'paint': {'files': ['paint-0.webp', 'paint-1.webp'], 'size': [W, H]}, 'masks': {'file': 'masks.webp', 'scale': MASK},
-             'tone': {'file': 'tone.png', 'scale': TONE}, 'silk': {'file': 'silk.webp', 'size': list(silk.shape[1::-1]), 'tone': [round(float(v), 1) for v in silk_tone]},
-             'water': {'file': 'water.webp', 'size': list(wat.shape[1::-1]), 'tone': [round(float(v), 1) for v in water_tone]}}
-    b = bridge_textures(spec, master, out, silk_tone)
-    scene['bridge'] = {k: spec['bridge'][k] for k in ('feet', 'width', 'rise', 'soffit', 'rail', 'deck_power', 'soffit_power')} | b
+             'tone': {'file': 'tone.png', 'scale': TONE}, 'silk': {'file': 'silk.webp', 'size': list(silk.shape[1::-1]), 'tone': [round(float(v), 1) for v in silk_tone]}}
+    if 'river' in spec:
+        wat = flat_ratio(master, spec['swatch']['water']); save(wat * 128, out / 'water.webp')
+        water_tone = np.median(rgb[water > .5], 0)
+        scene['river'] = spec['river']['poly']
+        scene['water'] = {'file': 'water.webp', 'size': list(wat.shape[1::-1]), 'tone': [round(float(v), 1) for v in water_tone]}
+    b = None
+    if 'bridge' in spec:
+        b = bridge_textures(spec, master, out, silk_tone)
+        scene['bridge'] = {k: spec['bridge'][k] for k in ('feet', 'width', 'rise', 'soffit', 'rail', 'deck_power', 'soffit_power')} | b
+    # the page round the view, where the view opens, where the porter may go, the notes, the sounds: as written
+    for k in ('page', 'home', 'walk', 'pois', 'sound', 'drama', 'decks', 'nogo'):
+        if k in spec: scene[k] = strip(spec[k])
 
     # the porter, in pieces (body, swinging baskets) at full resolution
     Wk = spec['walker']; pieces = []
@@ -518,6 +554,10 @@ def main(spec_path, master_path, out_dir):
         crowd.append({'id': C['id'], 'file': f"crowd-{C['id']}.png", 'box': box, 'feet': [round((min(xs) + max(xs)) / 2), max(ys)], 'top': min(ys),
                       'faces': C.get('faces', 'left')})
     scene['crowd'] = {'height': spec.get('crowd_height', 52), 'people': crowd}
+    if 'strollers' in spec:                  # away from the bridge, they walk lanes along the streets (painted, on the ground)
+        St = spec['strollers']
+        scene['crowd'] |= {'n': St.get('n', 9), 'lanes': [{'path': [ground_at(spec['map'], spec['bank'], u, v) for u, v in Ln['path']], 'width': Ln.get('width', 60)} for Ln in St['lanes']]}
+    elif 'bridge' not in spec: del scene['crowd']
 
     if placed: scene['people'] = placed
     if trees: scene['trees'] = trees
@@ -530,14 +570,16 @@ def main(spec_path, master_path, out_dir):
                             'rects': {k: v for k, v in place.items()}}
     if 'boat' in spec: scene['boat'] = {k: v for k, v in spec['boat'].items() if k not in ('poly', 'about')}
     if 'boats' in spec: scene['boats'] = [{k: v for k, v in Bt.items() if k != 'about'} for Bt in spec['boats']]
-    (out / 'scene.json').write_text(json.dumps(scene, separators=(',', ':')))
+    (out / 'scene.json').write_text(json.dumps(scene, separators=(',', ':'), ensure_ascii=False))
 
     # a preview of what the masks decided, for checking by eye
     prev = shrink(rgb, 4) * .55
     mw, ml = shrink(water_s, 4)[..., None], shrink(land_s, 4)[..., None]
     prev = prev + mw * np.array([0, 60, 120]) + ml * np.array([90, 60, 0])
-    Image.fromarray(np.clip(prev, 0, 255).astype(np.uint8)).save(Path(__file__).parent / 'world-masks-preview.png')
-    print('bridge L', round(b['L']), 'face', b['face']['size'], 'water px', int(water.sum()), 'land px', int(land.sum()))
+    name = out.name
+    Image.fromarray(np.clip(prev, 0, 255).astype(np.uint8)).save(Path(__file__).parent / ('world-masks-preview.png' if name == 'bridge' else f'world-masks-preview-{name}.png'))
+    print(name, *(['bridge L', round(b['L']), 'face', b['face']['size']] if b else []), 'water px', int(water.sum()), 'land px', int(land.sum()),
+          'models', len(models), 'people', len(placed), 'trees', len(trees), 'sprites', len(sprites))
 
 
 if __name__ == '__main__':

@@ -4,8 +4,8 @@
 //
 // shot.focus: the rectangle the camera frames [x0, y0, x1, y1]; shot.points: details marked with a numbered seal and a
 // short label whose leader line points at the subject (centre `at`, rough size `r`) and leads off in direction `dir`. side: where the
-// text column sits on wide screens (the subject is framed on the other side). walk: a link into the scene's
-// 3D view, where there is one.
+// text column sits on wide screens (the subject is framed on the other side). walk: a link into the scene
+// rebuilt in 3D (world.html?scene=<id>).
 export const SCROLL = {
   width: 38414, height: 1800,
   cm: [24.8, 528.7],             // the painting's size; the scan covers all of it (38,414 / 1,800 ≈ 528.7 / 24.8)
@@ -21,6 +21,7 @@ export const INTRO = {
 export const CHAPTERS = [
   {
     id: 'road', num: '一', zh: '开卷 · 驮炭驴队', en: 'The road into town', side: 'left',
+    walk: { href: 'world.html?scene=road', label: 'Walk the road in 3D', zh: '走进郊野', seal: '入画' },
     body: [
       'The scroll opens on the quiet edge of the city: bare trees, mist over the fields, a plank bridge over a stream.',
       'Two men drive a string of donkeys loaded with charcoal along the path toward town, the same way the whole scroll will travel.',
@@ -32,6 +33,7 @@ export const CHAPTERS = [
   },
   {
     id: 'willow', num: '二', zh: '清明 · 插柳', en: 'Willow for Qingming', side: 'right',
+    walk: { href: 'world.html?scene=willow', label: 'Join the party in 3D', zh: '随轿踏青', seal: '入画' },
     body: [
       'A sedan chair comes down the path with willow branches and flowers tied to its roof, led by a rider and followed by porters with their loads.',
       'Putting up willow was a Qingming custom, and many readers take this party to be returning from sweeping the family graves: one of the clearest links to the festival in the title.',
@@ -43,6 +45,7 @@ export const CHAPTERS = [
   },
   {
     id: 'grain', num: '三', zh: '汴河 · 卸粮', en: 'Grain on the Bian River', side: 'left',
+    walk: { href: 'world.html?scene=grain', label: 'Walk the landing in 3D', zh: '漫步河岸', seal: '入画' },
     body: [
       'Here the countryside gives way to the canal. In the Northern Song the Bian River was the main route carrying grain from the south to the capital, Kaifeng.',
       'Two deep-laden boats are moored at the bank, and porters carry sacks ashore to a man seated on the pile.',
@@ -54,7 +57,7 @@ export const CHAPTERS = [
   },
   {
     id: 'bridge', num: '四', zh: '虹桥 · 船过桥', en: 'Under the Rainbow Bridge', side: 'right',
-    walk: { href: 'world.html', label: 'Walk the bridge in 3D', zh: '步上虹桥', seal: '入画' },   // the scene rebuilt in 3D
+    walk: { href: 'world.html?scene=bridge', label: 'Walk the bridge in 3D', zh: '步上虹桥', seal: '入画' },
     body: [
       'The most crowded moment of the scroll, near its middle. A large boat swings toward the arched timber bridge with its mast not yet fully down, and the crew rushes to lower it.',
       'On the bridge, stalls and passers-by fill the deck, and many lean over the rail to watch.',
@@ -72,6 +75,7 @@ export const CHAPTERS = [
   },
   {
     id: 'gate', num: '五', zh: '城门 · 驼队', en: 'Through the city gate', side: 'left',
+    walk: { href: 'world.html?scene=gate', label: 'Through the gate in 3D', zh: '穿过城门', seal: '入画' },
     body: [
       'The road reaches the city wall. A tall gate tower stands over the gateway, and a camel caravan is passing through.',
       'No soldiers seem to be on guard. The Palace Museum scholar Yu Hui reads the open, unguarded gate as one of the picture’s quiet warnings; others see simply a city at peace.',
@@ -83,6 +87,7 @@ export const CHAPTERS = [
   },
   {
     id: 'tavern', num: '六', zh: '孙羊正店', en: 'The Sun family tavern', side: 'right',
+    walk: { href: 'world.html?scene=tavern', label: 'Walk the street in 3D', zh: '走过正店', seal: '入画' },
     body: [
       'Inside the walls the street is full of shoppers, porters and sedan chairs. The largest building is the Sun family’s licensed tavern, a 正店 or “main shop”, behind a gateway of poles dressed with flowers.',
       'Its lamp-box signs held candles to glow at night. Licensed taverns brewed their own wine and sold it on to smaller inns.',
@@ -95,6 +100,7 @@ export const CHAPTERS = [
   },
   {
     id: 'end', num: '七', zh: '卷尾 · 赵太丞家', en: 'Dr. Zhao’s shop', side: 'left',
+    walk: { href: 'world.html?scene=end', label: 'Visit Dr. Zhao’s in 3D', zh: '步入卷尾', seal: '入画' },
     body: [
       'Near the end stands a doctor’s shop, 赵太丞家, “the house of Zhao, court physician”. The tall board by its door advertises 集香丸, pills “truly prescribed for harm done by wine”; two women with a child stand inside.',
       'A few steps further the painting simply stops. Several scholars have suspected that the scroll was cut short here.',

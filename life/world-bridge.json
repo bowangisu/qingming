@@ -1,5 +1,24 @@
 {
  "about": "The Rainbow Bridge rebuilt in 3D (world.html). World units are master-scan px. X runs along the scroll, Z away from the painter, Y up. The painting is read as an oblique view of that world: a point (X, Y, Z) is painted at u = X + a*Z, v = c - s*Z - Y. Water is at Y = 0 and both banks are raised to Y = bank. The ground and the river are the painting itself, projected back onto them; the bridge, the boat and the figures are rebuilt or stood up, and what they covered is filled with the painting's own water or silk. Build with tools/make_world.py.",
+ "page": {
+  "about": "the page round the view: its title and seal (the chapter's number on the scroll), the way back, the loading line and the notes under About",
+  "zh": "虹桥",
+  "en": "Walk the Rainbow Bridge",
+  "seal": "四",
+  "back": "index.html#bridge",
+  "loader": [
+   "桥",
+   "Raising the bridge out of the painting…"
+  ],
+  "label": "The Rainbow Bridge from Along the River During the Qingming Festival, rebuilt in 3D, with a porter you can walk across it and a camera that goes all the way round",
+  "description": "The Rainbow Bridge from Along the River During the Qingming Festival, rebuilt in 3D from the painting: walk a porter across it and go all the way round.",
+  "text": [
+   "The river and its banks are the painting itself, laid back down on the ground it shows: from the painter’s own direction they line up with the scroll exactly. The bridge, the boats, the halls, houses, sheds, stalls, tables and umbrellas along both banks are rebuilt as simple models dressed in their own painted timbers and roofs, so you can walk round them.",
+   "The people are the painting’s own: the crowd on the bridge, the street at the bridge’s foot, the porters on a boat and the trackers hauling another, each cut out of the scroll and stood up where they are painted, with the carts, horses, donkeys and willows beside them. The painting only ever shows one side of things, so a model’s far side wears its near side, mirrored, and where the painting is hidden behind something the gap is filled with its own blank water and silk.",
+   "Your walker is a porter with two baskets on a shoulder pole, borrowed from the street outside Dr. Zhao’s shop near the end of the scroll. He can go anywhere on the bridge and the banks around it, but not into the river or through a building; hold Shift to hurry. He, and everyone else, turns to face you like a paper cut-out.",
+   "The near miss is staged from what the painting shows at its moment; how it got there is imagined. The sounds are synthesized, not recorded. The notes quote Meng Yuanlao’s memoir of Kaifeng, 东京梦华录 (1147)."
+  ]
+ },
  "map": {
   "a": 0.7,
   "s": 0.5,
@@ -7,6 +26,17 @@
  },
  "region": [16400, 0, 22800, 1800],
  "bank": 110,
+ "home": {
+  "about": "the stretch of painting the view opens on: its centre (master px) and how much of it fills the screen",
+  "cu": 19560,
+  "cv": 560
+ },
+ "walk": {
+  "about": "where the porter can go: within reach of the centre (master px, on the ground), and where he starts",
+  "centre": "bridge",
+  "reach": 1700,
+  "start": "bridge"
+ },
  "river": {
   "about": "the water's edge in world (X, Z); land is everything outside, raised to the bank height with a timber revetment along this line",
   "poly": [[14678, 460], [16078, 460], [17271, 470], [17664, 480], [17716, 620], [17518, 1060], [17336, 1420], [17342, 1540], [17900, 1400], [18080, 1060], [18214, 753], [18430, 650], [18700, 520], [19000, 430], [19450, 420], [19620, 300], [20600, 290], [20896, 220], [21384, -120], [21844, -420], [22250, -500], [22562, -860], [22848, -1140], [24798, -1140], [22796, 1720], [21168, 1760], [20717, 1690], [20250, 2100], [19513, 2124], [19380, 2100], [19554, 1780], [19204, 1780], [18951, 1740], [18735, 1843], [18300, 1990], [17634, 1880], [17173, 1796], [16931, 1956], [16224, 1966], [15203, 1996], [13603, 1996]]
@@ -37,18 +67,7 @@
   "poly": [[18890, 1030], [18860, 900], [18880, 760], [18900, 640], [18950, 540], [19040, 420], [19150, 300], [19300, 190], [19450, 120], [19600, 100], [19800, 120], [20000, 180], [20110, 250], [20120, 460], [19950, 560], [19650, 585], [19300, 590], [19120, 600], [19060, 760], [19000, 1040]]
  },
  "swatch": {
-  "water": [19120, 620, 19440, 900],
-  "silk": [8892, 452, 9148, 708]
- },
- "walker": {
-  "about": "a porter with a shoulder pole and two baskets, borrowed from the street by Dr. Zhao's shop near the end of the scroll; cut into his body and the two hanging baskets so the baskets can swing. height = how tall he stands in the world",
-  "pieces": [
-   {"id": "body", "kind": "halo", "poly": [[1236, 1060], [1290, 1060], [1294, 1086], [1348, 1090], [1348, 1110], [1298, 1112], [1302, 1168], [1316, 1236], [1290, 1248], [1196, 1248], [1200, 1170], [1208, 1110], [1158, 1104], [1158, 1084], [1212, 1088], [1228, 1072]]},
-   {"id": "basket-left", "pivot": [1186, 1094], "kind": "halo", "poly": [[1158, 1098], [1214, 1100], [1218, 1214], [1140, 1216], [1144, 1168]]},
-   {"id": "basket-right", "pivot": [1336, 1098], "kind": "halo", "poly": [[1296, 1106], [1350, 1104], [1370, 1160], [1370, 1218], [1290, 1218], [1294, 1160]]}
-  ],
-  "feet": [1253, 1242],
-  "height": 88
+  "water": [19120, 620, 19440, 900]
  },
  "people": [
   {"id": "deck", "about": "the crowd on the bridge: head centres (master px), optionally how far back across the deck (0 front railing, 1 far railing)", "on": "deck", "box": [19040, 150, 20000, 512], "heads": [[19076, 405], [19092, 362, 0.35], [19150, 332], [19180, 305], [19236, 254], [19222, 215, 0.85], [19270, 178, 0.9], [19292, 236], [19300, 278], [19332, 212], [19352, 228], [19415, 220], [19450, 236], [19482, 203], [19528, 212], [19582, 192], [19630, 192], [19676, 203], [19714, 208], [19765, 222], [19863, 252], [19893, 268], [19925, 280]]},
@@ -56,16 +75,6 @@
   {"id": "street", "about": "people in the street at the bridge's left foot: heads, and each one's height as painted", "on": "bank", "box": [18380, 380, 18960, 1110], "heads": [[18580, 835, 175], [18465, 979, 120], [18696, 527, 110], [18757, 625, 100], [18644, 669, 75], [18854, 401, 115], [18810, 454, 95], [18433, 793, 115]], "halo": 7},
   {"id": "street-south", "about": "people in the street between the wine shop and the bridge: heads, height as painted, and how wide (porters with baskets)", "on": "bank", "box": [17420, 1230, 18440, 1800], "heads": [[17515, 1612, 160], [17610, 1632, 160], [17541, 1712, 80], [17772, 1585, 180], [17652, 1250, 190], [18185, 1585, 175, 1.8], [18330, 1536, 170, 1.3]], "halo": 7},
   {"id": "trackers", "about": "the trackers hauling the passenger boat upstream on its towline", "on": "bank", "box": [21780, 120, 22200, 420], "heads": [[21825, 150, 62], [21880, 170, 58], [21940, 172, 58], [21995, 182, 58], [22085, 215, 58], [22125, 322, 62]], "halo": 7}
- ],
- "crowd_height": 84,
- "crowd": [
-  {"id": "grain-talker-1", "poly": [[28060, 618], [28085, 615], [28098, 630], [28100, 660], [28112, 690], [28115, 740], [28122, 762], [28100, 770], [28075, 770], [28052, 768], [28058, 740], [28055, 700], [28058, 660], [28058, 630]], "faces": "right"},
-  {"id": "grain-talker-2", "poly": [[28135, 662], [28160, 658], [28170, 672], [28172, 690], [28190, 690], [28198, 705], [28180, 715], [28176, 740], [28178, 770], [28188, 790], [28160, 797], [28135, 795], [28128, 770], [28128, 740], [28125, 705], [28132, 680]], "faces": "right"},
-  {"id": "gate-walker-1", "poly": [[6122, 1222], [6145, 1212], [6160, 1222], [6162, 1245], [6185, 1270], [6195, 1300], [6192, 1330], [6172, 1345], [6168, 1372], [6185, 1395], [6205, 1412], [6180, 1420], [6150, 1418], [6128, 1410], [6118, 1375], [6100, 1350], [6092, 1300], [6100, 1262], [6118, 1248]], "faces": "right"},
-  {"id": "gate-walker-2", "poly": [[5812, 1092], [5835, 1080], [5852, 1090], [5855, 1115], [5866, 1140], [5868, 1195], [5860, 1230], [5866, 1272], [5845, 1282], [5815, 1282], [5806, 1250], [5800, 1200], [5798, 1150], [5806, 1118]], "faces": "left"},
-  {"id": "end-walker-1", "poly": [[1858, 1128], [1880, 1120], [1895, 1130], [1902, 1150], [1912, 1175], [1918, 1210], [1915, 1250], [1900, 1262], [1870, 1264], [1852, 1255], [1848, 1215], [1852, 1175], [1866, 1160]], "faces": "right"},
-  {"id": "end-walker-2", "poly": [[1955, 1112], [1978, 1106], [1992, 1118], [1995, 1140], [2005, 1150], [2008, 1200], [2006, 1255], [1985, 1264], [1955, 1264], [1945, 1240], [1944, 1190], [1946, 1150], [1958, 1140]], "faces": "left"},
-  {"id": "end-walker-shop", "poly": [[1288, 818], [1300, 812], [1312, 822], [1314, 842], [1330, 860], [1338, 900], [1334, 940], [1328, 965], [1310, 978], [1285, 978], [1275, 955], [1268, 925], [1252, 910], [1256, 870], [1275, 845], [1288, 838]], "faces": "left"}
  ],
  "boat": {
   "about": "the big grain boat drifting toward the bridge: its near side as painted (master px), the far side as wide again behind it. The hull stands on the painted waterline with the painted gunwale above it; the cabin sits on the deck between two stations along the hull (0 = bow, 1 = stern)",
@@ -182,5 +191,18 @@
    "hz": 0.35,
    "surge": 14
   }
- }
+ },
+ "drama": "near-miss",
+ "sound": {
+  "about": "market talk where the crowds are (painted u, v, world height, voices, level); the deck's crowd and the river come with the bridge",
+  "crowds": [[18650, 700, 150, 4, 0.09], [17700, 1450, 150, 4, 0.08], [19300, 80, 150, 3, 0.06]]
+ },
+ "pois": [
+  {"id": "bridge", "title": "The Rainbow Bridge", "zh": "虹桥", "at": {"anchor": "bridge"}, "body": "Meng Yuanlao’s memoir of Kaifeng, written in 1147 after the city was lost, describes it: no piers, only great timbers spanning the river, painted red, “like a flying rainbow”. With nothing standing in the water, boats could pass right under it.", "link": ["index.html#bridge", "This scene on the scroll"]},
+  {"id": "boat", "title": "The big boat", "zh": "客船", "at": {"anchor": "boat"}, "body": "The largest boat in this stretch, swinging toward the arch with its mast still coming down. Readers have long felt the danger here, and Yu Hui of the Palace Museum counts the near collision among the scroll’s quiet warnings.", "action": ["watch", "Watch the near miss"]},
+  {"id": "stalls", "title": "Stalls on the deck", "zh": "桥市", "at": {"anchor": "stalls"}, "body": "Peddlers have set up on the bridge itself, under awnings and umbrellas, and everyone else squeezes past them. In the painting the deck is as crowded as any street."},
+  {"id": "wine", "title": "The wine shop", "zh": "十千脚店", "at": {"tree": "wine-gateway", "h": 620}, "body": "Its signs read 十千脚店: “ten thousand”, probably from an old line of verse praising wine at ten thousand cash a measure, and jiaodian, a smaller shop that bought its wine from one of the city’s great licensed taverns. Meng Yuanlao wrote that every wine shop in the capital tied a festive gateway of poles like this one at its door.", "link": ["index.html#tavern", "A great licensed tavern, on the scroll"]},
+  {"id": "trackers", "title": "Trackers", "zh": "纤夫", "at": {"group": "trackers", "h": 90}, "body": "A team hauls a boat upstream on a towline made fast high on its mast, leaning into it a step at a time.", "link": ["index.html#grain", "Boats on the Bian River, on the scroll"]},
+  {"id": "restaurant", "title": "An open restaurant", "zh": "食店", "at": {"model": "near-restaurant", "h": 330}, "body": "On the near bank, diners sit at tables under a broad tiled roof, open to the street and the river."}
+ ]
 }

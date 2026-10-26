@@ -1,5 +1,6 @@
 """Simple 3D models fitted to things the painting shows: houses (boxes with hip, gable or shed roofs, or traced off
-the painted roof's own corners), open sheds and pavilions on posts, mat awnings and tables, umbrellas. Every model is
+the painted roof's own corners), open sheds and pavilions on posts, mat awnings and tables, umbrellas, and masonry
+blocks with sloping walls (a city gate's platform, its passage through it). Every model is
 given in the painting's own terms (master px, as painted) and built in the world of tools/make_world.py, where a point
 (X, Y, Z) is painted at u = X + a·Z, v = c − s·Z − Y.
 
@@ -72,6 +73,7 @@ class Mesh:
         out = {'id': id, 'shade': shade, 'pos': r(self.pos), 'uv': r(self.uv), 'nrm': r(self.nrm, 3), 'idx': self.idx, **extra}
         if self.edges: out['edges'] = r([list(a) + list(b) for a, b in self.edges])
         if self.foot: out['foot'] = self.foot
+        if getattr(self, 'solids', None): out['solids'] = self.solids
         if self.plain['idx']:
             # each post shows the painting along its own axis, so seen as painted it is the painted post
             out['plain'] = {'pos': r(self.plain['pos']), 'uv': r(W.paint(np.array(self.plain['axis']))), 'nrm': r(self.plain['nrm'], 3),
@@ -190,11 +192,14 @@ def traced(W, T):
     painted_face(M, W, [E[2], E[3], R[0], R[1]], mir_d)
     painted_face(M, W, [E[1], E[2], R[1]], mir_l)
     painted_face(M, W, [E[3], E[0], R[0]], mir_l)
-    if 'walls' in T or 'open' in T:
-        g = T.get('y', W.bank); k = T.get('walls', T.get('open'))
-        # the wall loop: the eave loop pulled in by k world units
+    if 'walls' in T or 'open' in T or 'wall_at' in T:
+        g = T.get('y', W.bank); k = T.get('walls', T.get('open', 0))
+        # the wall loop: the eave loop pulled in by k world units, or the walls' feet as painted (u, v) at the ground
         c = np.mean(E, 0)
         wl = [c + (e - c) * (1 - k / max(np.linalg.norm((e - c) * [1, 0, 1]), 1)) for e in E]
+        if 'wall_at' in T:
+            wl = [W.at(u, v, g) * [1, 0, 1] + [0, ye, 0] for u, v in T['wall_at']]
+            M.foot['pts'] = [[round(float(q[0]), 1), round(float(q[2]), 1)] for q in wl]
         if 'open' in T:                                   # a pavilion: a post at each corner instead of walls
             for e in wl: M.timber(np.array([e[0], g, e[2]]), np.array([e[0], ye, e[2]]), 3.0)
             return M
@@ -260,3 +265,77 @@ def fit_preview(master, W, models, box, scale, path, extra=()):
         d.text((2, (y - y0) * scale + 2), str(y), fill=(255, 255, 0))
         d.line([(0, (y - y0) * scale), (6, (y - y0) * scale)], fill=(255, 255, 0))
     im.save(path)
+
+
+def block(W, B):
+    """A masonry block with sloping walls: a city gate's platform. base: its four corners at the ground as painted (u, v)
+    (front-left, front-right, back-right, back-left); h: its height; batter: how far each wall leans in by the top
+    (front, right, back, left; world units). passage: {d: [from, to], h} a passage running through it from the left
+    face to the right, between those fractions of its depth and that high. Returns the block, with the part in front
+    of the passage as its footprint, and a second, empty model whose footprint is the part behind it."""
+    g = B.get('y', W.bank); H = B['h']; bf, br, bb, bl = B.get('batter', [0, 0, 0, 0])
+    base = [W.at(u, v, g) for u, v in B['base']]
+    f = base[1] - base[0]; f /= np.linalg.norm(f); n = base[3] - base[0]; n /= np.linalg.norm(n)
+    # the top: each wall pulled in along its own normal (in the plane), corners where neighbouring walls meet
+    ins = [n * bf, -f * br, -n * bb, f * bl]                # front, right, back, left
+    top = [base[0] + ins[0] + ins[3], base[1] + ins[0] + ins[1], base[2] + ins[1] + ins[2], base[3] + ins[2] + ins[3]]
+    top = [q + [0, H, 0] for q in top]
+    def Q(tt, d, y):                                      # a point on the block: tt along the front, d back, at height y
+        k = y / H
+        c = [base[i] + (top[i] - base[i]) * k for i in range(4)]
+        a = c[0] + (c[1] - c[0]) * tt; b = c[3] + (c[2] - c[3]) * tt
+        return a + (b - a) * d
+    M = Mesh(); M.foot = None
+    def quad(corners, src=None, n=None):
+        """corners as (tt, d, y); src maps each to the point whose painted px it shows (default: itself)"""
+        pts = [Q(*c) for c in corners]
+        uv = [W.paint(Q(*(src(c) if src else c))) for c in corners]
+        if n is None:
+            n = np.cross(pts[1] - pts[0], pts[3] - pts[0]); n /= np.linalg.norm(n) or 1
+        M.face(pts, uv, n)
+    P = B.get('passage'); d0, d1 = P['d'] if P else (0, 0); hp = P['h'] if P else 0
+    seen = lambda c: c                                    # the front, the right face and the top: as painted
+    back = lambda c: (c[0], 1 - c[1], c[2])               # the back wears the front, the left face the right
+    left = lambda c: (1 - c[0], c[1], c[2])
+    def face(corners, src, outward):
+        # wound so it faces outward: the viewer drops faces seen from behind, so a camera inside the masonry sees
+        # through it into the passage
+        pts = [Q(*c) for c in corners]; nn = np.cross(pts[1] - pts[0], pts[3] - pts[0]); nn /= np.linalg.norm(nn) or 1
+        if np.dot(nn, outward) < 0: nn = -nn; corners = corners[::-1]
+        quad(corners, src, nn)
+    fwd, side = -n, f
+    face([(0, 0, 0), (1, 0, 0), (1, 0, H), (0, 0, H)], seen, fwd)                     # front
+    face([(0, 1, 0), (1, 1, 0), (1, 1, H), (0, 1, H)], back, -fwd)                    # back
+    face([(0, 0, H), (1, 0, H), (1, 1, H), (0, 1, H)], seen, np.array([0, 1.0, 0]))   # top
+    for tt, src, out in ((1, seen, side), (0, left, -side)):                          # the right and left faces, round the passage
+        parts = [(0, d0, 0, H), (d1, 1, 0, H), (d0, d1, hp, H)] if P else [(0, 1, 0, H)]
+        for a, b, y0, y1 in parts:
+            if b > a: face([(tt, a, y0), (tt, b, y0), (tt, b, y1), (tt, a, y1)], src, out)
+    if P:
+        # inside the passage: its walls and vault in the brickwork of the painted right face beside the opening,
+        # a strip of it repeated along the passage, a little darker for the shade in there
+        k = max(4, int(round(np.linalg.norm(base[1] - base[0]) / 60)))
+        strip = (max(0.0, d0 - 0.1), max(0.02, d0 - 0.01))
+        for j in range(k):
+            a, b = j / k, (j + 1) / k
+            brick = lambda c, a=a: (1, strip[0] + (strip[1] - strip[0]) * (c[0] - a) * k, c[2])
+            vault = lambda c, a=a: (1, strip[0] + (strip[1] - strip[0]) * (c[0] - a) * k, hp * (.55 + .4 * (c[1] - d0) / (d1 - d0)))
+            face([(a, d0, 0), (b, d0, 0), (b, d0, hp), (a, d0, hp)], brick, n)
+            face([(a, d1, 0), (b, d1, 0), (b, d1, hp), (a, d1, hp)], brick, -n)
+            face([(a, d0, hp), (b, d0, hp), (b, d1, hp), (a, d1, hp)], vault, np.array([0, -1.0, 0]))
+    # ink lines: the block's edges and the passage's mouth on each side
+    for i in range(4):
+        M.edge(base[i], base[(i + 1) % 4]); M.edge(top[i], top[(i + 1) % 4]); M.edge(base[i], top[i])
+    if P:
+        for tt in (0, 1):
+            for a, b in (((tt, d0, 0), (tt, d0, hp)), ((tt, d0, hp), (tt, d1, hp)), ((tt, d1, hp), (tt, d1, 0))):
+                M.edge(Q(*a), Q(*b))
+    box = lambda a, b: {'kind': 'box', 'y': round(float(g), 1), 'pts': [[round(float(q[0]), 1), round(float(q[2]), 1)] for q in (Q(0, a, 0), Q(1, a, 0), Q(1, b, 0), Q(0, b, 0))]}
+    M.foot = box(0, d0) if P else box(0, 1)
+    # what the camera must keep out of: the masonry in front of and behind the passage, and over it
+    span = lambda a, b, lo: {'pts': box(a, b)['pts'], 'y': [round(float(g + lo), 1), round(float(g + H), 1)]}
+    M.solids = [span(0, d0, 0), span(d1, 1, 0), {**span(d0, d1, hp), 'axis': [round(float(f[0]), 4), round(float(f[2]), 4)]}] if P else [span(0, 1, 0)]
+    rest = None
+    if P:
+        rest = Mesh(); rest.foot = box(d1, 1)
+    return [M, rest] if rest else M

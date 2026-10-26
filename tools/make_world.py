@@ -460,7 +460,15 @@ def main(spec_path, master_path, out_dir):
         col = retone(np.asarray(master.crop(tuple(box)).convert('RGB'), np.float32), a, silk_tone)
         key = f"tree-{T['id']}"; sprites[key] = np.dstack([np.clip(col, 0, 255), a * 255]).astype(np.uint8)
         gy = T.get('y', spec['bank']); Z = (spec['map']['c'] - T['foot'][1] - gy) / spec['map']['s']
-        trees.append({'sprite': key, 'anchor': [T['foot'][0] - box[0], T['foot'][1] - box[1]], 'sway': T.get('sway', 0), 'bob': T.get('bob', 0),
+        if 'wheel' in T:                       # a cart's wheel, cut as a disc of its own so it can turn
+            (wu, wv), wr = T['wheel']['at'], T['wheel']['r']
+            wb = (int(wu - wr - 3), int(wv - wr - 3), int(wu + wr + 4), int(wv + wr + 4))
+            yy, xx = np.mgrid[wb[1]:wb[3], wb[0]:wb[2]]
+            wa = np.clip((wr + 1.5 - np.hypot(xx + .5 - wu, yy + .5 - wv)) / 2.5, 0, 1)
+            wc = retone(np.asarray(master.crop(wb).convert('RGB'), np.float32), wa, silk_tone)
+            sprites[f"wheel-{T['id']}"] = np.dstack([np.clip(wc, 0, 255), wa * 255]).astype(np.uint8)
+        trees.append({'id': T['id'], 'sprite': key, 'anchor': [T['foot'][0] - box[0], T['foot'][1] - box[1]], 'sway': T.get('sway', 0), 'bob': T.get('bob', 0),
+                      **({'wheel': {'sprite': f"wheel-{T['id']}", 'at': [T['wheel']['at'][0] - T['foot'][0], T['foot'][1] - T['wheel']['at'][1]], 'r': T['wheel']['r']}} if 'wheel' in T else {}),
                       'p': [round(T['foot'][0] - spec['map']['a'] * Z, 1), gy, round(Z, 1)]})
         g = np.zeros((H, W), np.float32); g[box[1] - R[1]:box[3] - R[1], box[0] - R[0]:box[2] - R[0]] = a
         rebuilt = np.maximum(rebuilt, grow((g > .3).astype(np.float32), 3))
@@ -513,6 +521,7 @@ def main(spec_path, master_path, out_dir):
 
     if placed: scene['people'] = placed
     if trees: scene['trees'] = trees
+    if 'walks' in spec: scene['walks'] = {k: v for k, v in spec['walks'].items() if k != 'about'}
     if models: scene['models'] = models
     if sprites:
         atlas, place = pack(sprites)

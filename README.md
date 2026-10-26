@@ -97,6 +97,30 @@ at Y = 0 and the banks raised to Y = 110. A point (X, Y, Z) is painted at *u* = 
   in three pieces so his baskets swing, and seven walkers traced from other scenes. Every cut-out's colours are scaled
   so the silk round it matches the scene's silk, so no pale halo shows. Seen as painted, cut-outs stand flat across
   the scroll; as the camera frees they turn to face it.
+- **Moving through it:** some of the painting's own figures walk (life/world-bridge.json, `walks`): the donkey, the
+  loaded horse, the sedan chair and its bearer, two porters and the two carts head down the street, each a set
+  distance before fading and coming round again, and mirror themselves so they never walk backwards on screen. The
+  carts' wheels are cut out separately and turn as far as the cart rolls. The trackers lean into their towline a
+  step at a time and their boat surges against it. Seen as painted, everyone stands exactly where the painter put
+  them: the walking grows as the scene lifts.
+- **The near miss** (*Watch the near miss*, or by itself the first time the porter reaches the crown): the big boat
+  swings in toward the arch with its mast up; the crew lower it and brace two poles against the arch, the bow recoils,
+  someone lets a rope down from the deck and the crowd at the railing leans out. It ends exactly as painted.
+  Captions tell it; the Watch button also flies the camera through it, low on the water, under the arch and along the
+  railing. Dragging takes the camera back.
+- **Reflections, shadows, outlines:** everything standing is drawn a second time, mirrored in the water's plane, at
+  half size; the river samples that picture, broken up by its ripples. Soft shadows sit under every figure, cart,
+  stall, building and boat, and under the arch. Thin ink lines, a ribbon the vertex shader widens to a pixel or so
+  on screen with a wavering weight, follow the edges of everything rebuilt (roofs, eaves, walls, gunwales, the
+  bridge's rails and arch), so its invented sides read as brushwork. None of it shows while the scene is flat.
+- **Sound** (off until *Sound* is pressed; all synthesized with Web Audio, nothing recorded): the river as filtered
+  noise with a slow swell, crowd talk where the crowds are (murmuring voices made of a buzz and a breath through two
+  formant filters, spoken in random syllables), creaking hulls, and in the near miss the mast's groan, the poles'
+  thud, the rope's whistle and shouts from the deck. Every source has a place in the world and is heard from the
+  camera.
+- **Points of interest:** seals on the bridge, the big boat, the stalls on the deck, the wine shop, the trackers and
+  a restaurant open notes. The notes quote Meng Yuanlao's memoir of Kaifeng, 东京梦华录 (1147), where it has
+  something to say, describe what the painting shows where it does not, and link back to the scroll's scenes.
 - **Camera:** it opens on the painting through a very long lens far off along the painter's own line of sight, with a
   shear that turns its picture into the scroll's oblique one. Then it lifts into an ordinary perspective camera that
   orbits the porter. Drag to go round (all the way), wheel or pinch to come closer; ← → or the buttons walk.

@@ -35,6 +35,8 @@
     behind something the gap is filled with its own blank water and silk.</p>
   <p>Your walker is a porter with two baskets on a shoulder pole, borrowed from the street outside Dr. Zhao’s shop near
     the end of the scroll. He, and everyone else, turns to face you like a paper cut-out.</p>
+  <p>The near miss is staged from what the painting shows at its moment; how it got there is imagined. The sounds are
+    synthesized, not recorded. The notes quote Meng Yuanlao’s memoir of Kaifeng, 东京梦华录 (1147).</p>
 </section>
 
 <footer id="controls">
@@ -44,8 +46,19 @@
     <p class="hint"><span class="desk"><span class="keys">← →</span> to walk · drag to go round · wheel to come closer</span><span class="touch">Hold ◀ or ▶ to walk · drag to go round · pinch to come closer</span></p>
     <button type="button" class="walk" id="walk-right" aria-label="Walk right">▶</button>
   </div>
-  <button type="button" class="link" id="flat">See it as painted</button>
+  <div class="links"><button type="button" class="link" id="watch"><span class="long">Watch the near miss</span><span class="short">Near miss</span></button><button type="button" class="link" id="flat">See it as painted</button><button type="button" class="link" id="sound" aria-pressed="false">Sound off</button></div>
 </footer>
+
+<p id="caption" aria-live="polite"></p>
+
+<div id="pois" aria-label="Points of interest"></div>
+<aside id="note" hidden role="dialog" aria-labelledby="note-title">
+  <button type="button" id="note-close" class="close" aria-label="Close the note">×</button>
+  <p class="kicker"><span class="seal" id="note-num" lang="zh-Hans"></span><span class="zh" id="note-zh" lang="zh-Hans"></span></p>
+  <h2 id="note-title"></h2>
+  <p id="note-body"></p>
+  <div class="act" id="note-act"></div>
+</aside>
 
 <div id="loader" role="status"><span class="seal" lang="zh-Hans">桥</span><p>Raising the bridge out of the painting…</p></div>
 <noscript><p class="noscript">This view needs JavaScript and WebGL 2.</p></noscript>

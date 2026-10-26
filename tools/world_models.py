@@ -33,7 +33,15 @@ class Mesh:
     def __init__(self):
         self.pos, self.uv, self.nrm, self.idx = [], [], [], []
         self.plain = {'pos': [], 'nrm': [], 'idx': []}
-        self.faces = []                               # painted outlines, for taking the model off the ground
+        self.edges = {}                               # outline edges, for the viewer's ink lines (deduplicated)
+        self.foot = None                              # what it stands on: a ground quad, or a disc, for its shadow
+
+    def edge(self, a, b):
+        key = tuple(sorted((tuple(np.round(a, 0)), tuple(np.round(b, 0)))))
+        if key[0] != key[1]: self.edges[key] = True
+
+    def outline_face(self, pts):
+        for i in range(len(pts)): self.edge(pts[i], pts[(i + 1) % len(pts)])
 
     def face(self, pts, uvs, n=None):
         pts = [np.asarray(p, np.float64) for p in pts]
@@ -62,6 +70,8 @@ class Mesh:
     def export(self, W, id, shade=1.0, **extra):
         r = lambda a, k=1: [round(float(x), k) for x in np.ravel(a)]
         out = {'id': id, 'shade': shade, 'pos': r(self.pos), 'uv': r(self.uv), 'nrm': r(self.nrm, 3), 'idx': self.idx, **extra}
+        if self.edges: out['edges'] = r([list(a) + list(b) for a, b in self.edges])
+        if self.foot: out['foot'] = self.foot
         if self.plain['idx']:
             # each post shows the painting along its own axis, so seen as painted it is the painted post
             out['plain'] = {'pos': r(self.plain['pos']), 'uv': r(W.paint(np.array(self.plain['axis']))), 'nrm': r(self.plain['nrm'], 3),
@@ -89,6 +99,7 @@ def painted_face(M, W, pts, mirror=None, n=None, up=False):
     seen = np.dot(n, W.home) > 0.02
     src = pts if seen or mirror is None else [mirror(p) for p in pts]
     M.face(pts, [W.paint(p) for p in src], n)
+    M.outline_face(pts)
 
 
 def house(W, H):
@@ -116,6 +127,7 @@ def house(W, H):
     up = np.array([0, 1.0, 0])
     FL, FR, BR, BL = P1, P2, P2 + n * D, P1 + n * D
     M = Mesh()
+    M.foot = {'kind': 'box', 'y': round(float(y0), 1), 'pts': [[round(float(q[0]), 1), round(float(q[2]), 1)] for q in (FL, FR, BR, BL)]}
     if H.get('posts'):
         k = H.get('bays', 2)
         for t in np.linspace(0, 1, k + 1):
@@ -173,6 +185,7 @@ def traced(W, T):
     def mir_d(p): t, d = local(p); return world(t, 1 - d, p[1])
     def mir_l(p): t, d = local(p); return world(1 - t, d, p[1])
     M = Mesh()
+    M.foot = {'kind': 'box', 'y': T.get('y', W.bank), 'pts': [[round(float(e[0]), 1), round(float(e[2]), 1)] for e in E]}
     painted_face(M, W, [E[0], E[1], R[1], R[0]], mir_d)
     painted_face(M, W, [E[2], E[3], R[0], R[1]], mir_d)
     painted_face(M, W, [E[1], E[2], R[1]], mir_l)
@@ -202,7 +215,8 @@ def awning(W, A):
     yf, yb = A['y']
     P = [W.at(*A['corners'][0], yf), W.at(*A['corners'][1], yf), W.at(*A['corners'][2], yb), W.at(*A['corners'][3], yb)]
     M = Mesh()
-    M.face([P[0], P[1], P[2], P[3]], [W.paint(p) for p in P])
+    M.face([P[0], P[1], P[2], P[3]], [W.paint(p) for p in P]); M.outline_face([P[0], P[1], P[3], P[2]])
+    M.foot = {'kind': 'box', 'y': A.get('ground', W.bank), 'pts': [[round(float(q[0]), 1), round(float(q[2]), 1)] for q in (P[0], P[1], P[3], P[2])]}
     g = A.get('ground', W.bank)
     for p in P: M.timber(p, np.array([p[0], g, p[2]]), 2.0)
     return M
@@ -214,6 +228,9 @@ def umbrella(W, U):
     apex = C + np.array([0, r * .22, 0])
     M = Mesh(); N = 16
     rim = [C + np.array([np.cos(t) * r, -r * .06, np.sin(t) * r]) for t in np.linspace(0, 2 * np.pi, N + 1)]
+    M.foot = {'kind': 'disc', 'y': g, 'c': [round(float(C[0]), 1), round(float(C[2]), 1)], 'r': r}
+    for k in range(N): M.edge(rim[k], rim[k + 1])
+    for k in range(0, N, 4): M.edge(apex, rim[k])
     for k in range(N):
         a, b = rim[k], rim[k + 1]
         M.face([apex, a, b], [W.paint(apex), W.paint(a), W.paint(b)], np.cross(b - apex, a - apex) / (np.linalg.norm(np.cross(b - apex, a - apex)) or 1) * -1)

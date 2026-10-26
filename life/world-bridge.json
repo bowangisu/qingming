@@ -160,7 +160,27 @@
   {"id": "street-horse", "poly": [[18535, 1178], [18705, 1178], [18705, 1352], [18535, 1352]], "foot": [18620, 1350], "bob": 1.2},
   {"id": "sedan", "about": "a sedan chair carried up the street", "poly": [[18685, 428], [18800, 428], [18800, 588], [18685, 588]], "foot": [18742, 586], "bob": 1.0},
   {"id": "far-bank-cart", "about": "a handcart at the bridge's far end", "poly": [[19835, 95], [20010, 95], [20010, 212], [19835, 212]], "foot": [19930, 210]},
-  {"id": "timber-cart", "about": "a two-wheeled cart loaded with timber, pushed toward the wine shop", "poly": [[17460, 1320], [17690, 1300], [17760, 1330], [17800, 1430], [17760, 1560], [17560, 1570], [17470, 1520], [17420, 1450]], "foot": [17640, 1560], "halo": 5},
-  {"id": "basket-cart", "about": "a covered two-wheeled cart", "poly": [[18060, 1235], [18200, 1225], [18300, 1290], [18310, 1380], [18210, 1470], [18110, 1470], [18050, 1380]], "foot": [18170, 1470], "halo": 5}
- ]
+  {"id": "timber-cart", "about": "a two-wheeled cart loaded with timber, pushed toward the wine shop", "poly": [[17460, 1320], [17690, 1300], [17760, 1330], [17800, 1430], [17760, 1560], [17560, 1570], [17470, 1520], [17420, 1450]], "foot": [17640, 1560], "halo": 5, "wheel": {"at": [17712, 1488], "r": 62}},
+  {"id": "basket-cart", "about": "a covered two-wheeled cart", "poly": [[18060, 1235], [18200, 1225], [18300, 1290], [18310, 1380], [18210, 1470], [18110, 1470], [18050, 1380]], "foot": [18170, 1470], "halo": 5, "wheel": {"at": [18160, 1420], "r": 46}}
+ ],
+ "walks": {
+  "about": "who walks in the 3D view, and which way (as painted: du, dv on the silk). Each walks forward the given distance and fades, then comes round again; seen as painted, everyone stands where the painter put them. faces: which way the figure looks as painted. A wheel turns as its cart rolls.",
+  "loops": [
+   {"who": [{"standee": "black-donkey"}], "dir": [-1, 0.05], "dist": 260, "speed": 24, "faces": "left", "phase": 0.1},
+   {"who": [{"standee": "street-horse"}], "dir": [-1, 0.35], "dist": 240, "speed": 20, "faces": "left", "phase": 0.55},
+   {"who": [{"standee": "sedan"}, {"group": "street", "i": 2}], "dir": [-1, 0.55], "dist": 220, "speed": 17, "faces": "left", "phase": 0.3},
+   {"who": [{"group": "street", "i": 3}], "dir": [-1, 0.6], "dist": 200, "speed": 22, "faces": "left", "phase": 0.75},
+   {"who": [{"group": "street-south", "i": 3}], "dir": [-1, 0.0], "dist": 220, "speed": 21, "faces": "left", "phase": 0.4},
+   {"who": [{"standee": "timber-cart"}], "dir": [-1, 0.0], "dist": 180, "speed": 12, "faces": "left", "phase": 0.2},
+   {"who": [{"standee": "basket-cart"}], "dir": [-1, 0.15], "dist": 180, "speed": 13, "faces": "left", "phase": 0.65}
+  ],
+  "haul": {
+   "about": "the trackers lean into the towline step by step and the boat surges against it",
+   "group": "trackers",
+   "boat": "east-passenger-boat",
+   "faces": "left",
+   "hz": 0.35,
+   "surge": 14
+  }
+ }
 }
